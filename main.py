@@ -17,16 +17,15 @@ Window.top = 25
 
 
 import os
-
-
 class Tracker(MDApp):
 
     KV_DIRS = [os.path.join(os.getcwd(), "View")]
     DEBUG = 0
 
+
     def build_app(self) -> MDScreenManager:
         import View.screens
-
+    
         self.manager_screens = MDScreenManager()
         Window.bind(on_key_down=self.on_keyboard_down)
         importlib.reload(View.screens)
@@ -50,6 +49,8 @@ class Tracker(MDApp):
         if "meta" in modifiers or "ctrl" in modifiers and text == "r":
             self.rebuild()
 
+    def get_manager(self):
+        return self.manager_screens
 
 Tracker().run()
 

@@ -15,5 +15,4 @@ class HomeModel(BaseScreenModel):
     get_user_photo = PATH.removesuffix('\\Model') + '/images/me.png'
     get_username = 'Brunosvaldo Sampaio' 
 
-    
     SunData = SunPosition( latitude = -29.71332542661317, longitude = -53.71766381408064, altitude = 300 )

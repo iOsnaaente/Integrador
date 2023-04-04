@@ -1,19 +1,35 @@
-from kivy.properties import StringProperty, NumericProperty, ObjectProperty
-from kivy.lang import Builder
+from kivy.properties import ObjectProperty
 from kivy.clock import Clock 
 
 from kivymd.uix.boxlayout import MDBoxLayout 
 from kivymd.uix.behaviors import HoverBehavior
 from kivymd.theming import ThemableBehavior 
 from kivymd.uix.card import MDCard
+from kivymd.app import MDApp
 
 import os 
 PATH = os.path.dirname( __file__ ).removesuffix('\\View\\commom_components\\SideBar')
 IMAGES = PATH + '/images/'
+APP = MDApp.get_running_app()
 
-imgs = [ 'smart.png'  , 'map.png'   , 'green-power.png', 'connectivity.png', 'smart-power.png', 'security.png' ]
-lbls = [ 'Home'       , 'Mapa'      , 'Geral'          , 'Atuador'         , 'Sensor'         , 'Diagnos.'     ] 
-lnks = [ 'home screen', 'map screen', 'geral screen'   , 'atuador screen'  , 'sensor screen'  , 'diagnosticos' ]
+imgs = [ 'smart.png'          ,
+         'map.png'            ,  
+         'connectivity.png'   ,
+         'smart-power.png'    ,
+         'security.png'       , 
+        ]
+lbls = [ 'Home'               ,
+         'Mapa'               ,  
+         'Atuador'            ,
+         'Sensor'             ,
+         'Diagnos.'           ,
+        ] 
+lnks = [ 'home screen'        ,
+         'map screen'         ,  
+         'serial screen'    ,
+         'sensor screen'      ,
+         'diagnosticos screen', 
+        ]
     
 
 class MyCardMenu( MDCard, ThemableBehavior, HoverBehavior ):    
@@ -22,14 +38,19 @@ class MyCardMenu( MDCard, ThemableBehavior, HoverBehavior ):
     
     def __init__(self, text, image, body_size, screen_link = '', *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
         self.card_title.text = text 
         self.card_image.source = image
         self.size_hint = body_size
         self.screen_link = screen_link 
 
     def on_press(self):
-        print('Link to screen: ', self.screen_link  ) 
+        manager_screen = APP.manager_screens
+        current = manager_screen.current 
+        try: 
+            print('Link to screen: ', self.screen_link  )
+            manager_screen.current = self.screen_link 
+        except: 
+            manager_screen.current = current 
         return super().on_press()
     
     def on_enter(self):

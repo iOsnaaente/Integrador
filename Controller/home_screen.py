@@ -8,8 +8,6 @@ import View.HomeScreen.home_screen
 importlib.reload(View.HomeScreen.home_screen)
 
 
-
-
 class HomeScreenController:
     """
     The `HomeScreenController` class represents a controller implementation.
