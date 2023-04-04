@@ -1,0 +1,440 @@
+#
+# Card New User 
+#
+<CardNewUser>:
+    id: login_card
+    new_user:       user
+    new_password:   password
+    super_user:     super_user 
+
+    size_hint: .3, .5
+    
+    pos_hint: { 'center_x': .5, 'center_y': .5}
+    orientation: 'vertical'
+    elevation: 2 
+
+    MDBoxLayout:
+        size_hint_y: .2 
+        padding: [ 25, 0, 25, 0]
+        md_bg_color: app.theme_cls.primary_color
+        orientation: 'horizontal'
+        MDLabel: 
+            text: 'Criar novo usuário'
+            font_size: 16
+            theme_text_color: 'Custom'
+            text_color: 1,1,1,1
+        MDIconButton:
+            icon: 'close'
+            pos_hint: {'center_y': .5 }
+            theme_text_color: 'Custom'
+            text_color: 1,1,1,1
+            on_release: root.parent.controller.close_widget( )
+    MDFloatLayout:
+        MDTextField:
+            id: user 
+            hint_text: 'Usuário:'
+            pos_hint: {'center_x': .5, 'center_y': .9 }
+            size_hint_x: .9 
+            max_text_length: 32
+            hint_text: 'Usuário'
+            icon_left: 'account-circle'
+            mode: "rectangle"  
+        MDTextField:
+            id: password
+            hint_text: 'Senha'
+            password: True 
+            pos_hint: {'center_x': .5, 'center_y': .65 }
+            size_hint_x: .9 
+            icon_left: 'key-variant'
+            mode: "rectangle"
+        MDIconButton:
+            icon: "eye-off"
+            pos_hint: {"right": .95, "center_y": .635}
+            theme_icon_color: 'Custom'
+            icon_color: [.8,.8,.8,1]
+            on_release:
+                self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+                password.password = False if password.password is True else True
+        MDTextField:
+            id: super_user
+            icon_left: 'account-supervisor'
+            hint_text: 'Código de permissão'
+            pos_hint: {'center_x': .5, 'center_y': .4 }
+            size_hint_x: .9 
+            mode: "rectangle"
+        MDRaisedButton: 
+            text: 'Create'
+            pos_hint: {'center_x': .5, 'center_y': .15 }
+            size_hint_x: .9
+            size_hint_y: .1
+            on_release: 
+                root.parent.create_new_user( user.text, password.text, super_user.text ) 
+
+#
+# Main Screen 
+#
+<LoginScreenView>
+    username: login_user_field 
+    password: login_password_field 
+    
+    md_bg_color: 'white'
+    size_hint: 1, 1
+    #
+    # Background 
+    #
+    MDNavigationLayout:
+        MDScreenManager:     
+            MDScreen:
+                md_bg_color: [0.1, 0.1, 0.1, 0.9 ]
+                #
+                # Header Image 
+                #
+                MDFloatLayout:
+                    id: __header_image
+                    size_hint: 1, 0.5
+                    pos_hint: {'rigth': 0.95,'top': 1 }
+                    FitImage:
+                        pos_hint: {'rigth': 0.1,'top': 1 }
+                        source: root.sunrise_image 
+                    MDBoxLayout:
+                        md_bg_color: [0,0,0,0.5]
+                        pos_hint: {'rigth': 0.1,'top': 1 }
+                #
+                # Body 
+                # 
+                MDBoxLayout:
+                    size_hint: 1, 1
+                    pos_hint: {'rigth': 0.95,'center_y': 0.5}
+                    orientation: 'vertical'
+                    # Header
+                    MDBoxLayout:
+                        size_hint: 1, 0.2
+                    #
+                    # Title 
+                    #
+                    MDBoxLayout: 
+                        size_hint: 1, 0.5
+                        orientation: 'vertical'
+                        MDLabel:
+                            size_hint: 1, 0.4
+                            text: "Tracker"
+                            color: 'white'
+                            font_style: 'H1'
+                            bold: True 
+                            halign: 'center'
+                        MDLabel:
+                            size_hint: 1, 0.1
+                            text: 'Sistema de controle supervisório'
+                            color: 'white'
+                            font_style: 'H1'
+                            bold: True 
+                            font_size: dp(24)
+                            halign: 'center'
+                        MDLabel:
+                            size_hint: 1, 0.1
+                            text: 'com geração de energia inteligente'
+                            color: 'white'
+                            font_style: 'H1'
+                            bold: True 
+                            font_size: dp(24)
+                            halign: 'center'
+                        MDLabel:
+                            size_hint: 1, 0.4
+                    #
+                    # Icons
+                    #
+                    MDBoxLayout:
+                        size_hint: 0.75, 0.2
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                        #
+                        # Mapa 
+                        #
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint: 0.2, 1 
+                            MDIconButton:
+                                icon: root.map_icon
+                                size_hint: 1, 0.75
+                                pos_hint: { 'center_x': 0.50 }
+                                icon_size: "76sp"
+                                halign: 'center'
+                                theme_icon_color: "Custom"
+                                icon_color: 'white'
+                            MDLabel:
+                                text: 'Geolocalização'
+                                size_hint: 1, 0.25
+                                color: 'white'
+                                font_style: 'H2'
+                                font_size: 20
+                                halign: 'center'
+                        #
+                        # Segurança 
+                        #
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint: 0.2, 1 
+                            MDIconButton:
+                                icon: root.security_icon
+                                size_hint: 1, 0.75
+                                pos_hint: { 'center_x': 0.50 }
+                                icon_size: "76sp"
+                                halign: 'center'
+                                theme_icon_color: "Custom"
+                                icon_color: 'white'
+                            MDLabel:
+                                text: 'Segurança'
+                                size_hint: 1, 0.25
+                                color: 'white'
+                                font_style: 'H2'
+                                font_size: 20
+                                halign: 'center'
+                        #
+                        # Produção inteligente 
+                        #
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint: 0.2, 1 
+                            MDIconButton:
+                                icon: root.solar_icon 
+                                size_hint: 1, 0.75
+                                pos_hint: { 'center_x': 0.50 }
+                                icon_size: "76sp"
+                                halign: 'center'
+                                theme_icon_color: "Custom"
+                                icon_color: 'white'
+                            MDLabel:
+                                text: 'Geração inteligente'
+                                size_hint: 1, 0.25
+                                color: 'white'
+                                font_style: 'H2'
+                                font_size: 20
+                                halign: 'center'
+                        #
+                        # Conectividade  
+                        #
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint: 0.2, 1 
+                            MDIconButton:
+                                icon: root.connectivity_icon 
+                                size_hint: 1, 0.75
+                                pos_hint: { 'center_x': 0.50 }
+                                icon_size: "76sp"
+                                halign: 'center'
+                                theme_icon_color: "Custom"
+                                icon_color: 'white'
+                            MDLabel:
+                                text: 'Conectividade'
+                                size_hint: 1, 0.25
+                                color: 'white'
+                                font_style: 'H2'
+                                font_size: 20
+                                halign: 'center'
+                        #
+                        # Energia limpa  
+                        #
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint: 0.2, 1 
+                            MDIconButton:
+                                icon: root.green_power_icon
+                                size_hint: 1, 0.75
+                                pos_hint: { 'center_x': 0.50 }
+                                icon_size: "76sp"
+                                halign: 'center'
+                                theme_icon_color: "Custom"
+                                icon_color: 'white'
+                            MDLabel:
+                                text: 'Geração limpa'
+                                size_hint: 1, 0.25
+                                color: 'white'
+                                font_style: 'H2'
+                                font_size: 20
+                                halign: 'center'
+                    #
+                    # Footer
+                    #
+                    MDBoxLayout:
+                        size_hint: 0.04, 0.1 
+                        pos_hint: {'right': 1.0,'center_y': 0.5}
+                        orientation: 'vertical'
+                        MDIconButton:
+                            size_hint: 0.7, 0.6
+                            icon: 'arrow-left'
+                            icon_size: "36sp"
+                            halign: 'center'
+                            theme_icon_color: "Custom"
+                            icon_color: [1,1,1,1]
+                            pos_hint: {'rigth': 0.50,'center_y': 0.50}
+                            on_release: drawer_login.set_state( 'open' )
+                        MDLabel:
+                            size_hint: 1, 0.2
+                            text: 'swipe to login'
+                            font_size: 13
+                            halign: 'center'
+                            color: 'white'
+                        MDLabel:
+                            size_hint: 1, 0.2                        
+    #
+    # Login content
+    #
+    MDNavigationDrawer:
+        id: drawer_login
+        size_hint: 0.3, 1
+        radius: 30, 0, 0, 30
+        orientation: 'vertical'
+        anchor: 'right'
+        md_bg_color: [ 84/255, 84/255, 84/255, 1 ] # RGBA( 84, 84, 84, 1)
+        #
+        # Body
+        #
+        MDBoxLayout:
+            size_hint: 1, 1
+            orientation: 'vertical'
+            #
+            # Title
+            #
+            MDBoxLayout:
+                id: login_title 
+                size_hint: 1, .2
+                orientation: 'vertical'
+                MDLabel:
+                    size_hint: 1, .25
+                MDLabel:
+                    size_hint: 1, .15
+                    text: "Bem vindo ao sistema de controle".upper()
+                    color: 'white'
+                    font_style: 'H2'
+                    bold:  False
+                    font_size: 26
+                    valign: 'bottom'
+                    halign: 'center'
+                MDLabel:
+                    size_hint: 1, .6
+                    text: "Solar"
+                    font_style: 'H2'
+                    color:  'white'
+                    bold:  True
+                    font_size: 46
+                    valign: 'center'
+                    halign: 'center'
+            #
+            # Image 
+            #
+            MDBoxLayout:
+                id: login_image
+                size_hint: 0.8, .3
+                pos_hint: {'center_x': 0.50,'center_y': 0.50 }
+                FitImage:
+                    id: smart_sun
+                    source: root.smart_sun 
+                    allow_stretch: True 
+                    keep_ratio: True
+                    color: [1,0,0,1]
+            #
+            # Usuário 
+            #
+            MDBoxLayout: 
+                size_hint: 0.9, .1
+                pos_hint: {'center_x': 0.5,'center_y': 0.35}
+                orientation: 'horizontal'
+                MDTextField:
+                    id: login_user_field
+                    max_text_length: 32
+                    text: root.model.user
+                    hint_text: 'Usuário'
+                    icon_left: 'account-circle-outline'
+                    text_color_normal: 'white'
+                    line_color_normal: 'white'
+                    icon_left_color_normal: 'white'
+                    max_length_text_color: app.theme_cls.primary_color
+                    hint_text_color_normal:  'white'
+            #
+            # Senha 
+            #
+            MDBoxLayout: 
+                size_hint: 0.9, .1
+                pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                orientation: 'horizontal'
+                MDTextField:
+                    id: login_password_field
+                    password: True 
+                    hint_text: 'Senha'
+                    text: root.model.psd 
+                    icon_left: 'key-variant'
+                    text_color_normal: 'white'
+                    line_color_normal: 'white'
+                    icon_left_color_normal: 'white'
+                    hint_text_color_normal:  'white'
+                MDIconButton:
+                    icon: "eye-off"
+                    pos_hint: {"center_y": .5}
+                    theme_icon_color: 'Custom'
+                    icon_color: 'white'
+                    on_release:
+                        self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+                        login_password_field.password = False if login_password_field.password is True else True
+            #
+            # Login Buttom
+            #
+            MDBoxLayout:
+                size_hint: 0.9, .1
+                pos_hint: {'center_x': 0.50,'center_y': 0.5 }
+                MDFillRoundFlatButton:
+                    size_hint: 0.9, .5
+                    pos_hint: {'center_x': 0.50,'center_y': 0.5 }
+                    md_bg_color: app.theme_cls.primary_color
+                    text: 'Login'
+                    font_style: 'Button'
+                    font_size: 16
+                    on_release: root.login( ) 
+
+
+            #
+            # Reter usuário e senha 
+            #
+            MDBoxLayout:
+                size_hint: 0.9, .1
+                orientation: 'horizontal'
+                pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                MDCheckbox:
+                    id: checkbox_keep_login
+                    pos_hint: {'top': 1 }
+                    size_hint: .1, .5
+                    state: 
+                        root.model.checkbox_keep_login_data
+                    on_release: 
+                        root.model.checkbox_keep_login_data = self.state
+                    color_inactive: 'white'
+                MDLabel:
+                    text: ' usuário e senha?'
+                    font_style: 'Subtitle2'
+                    pos_hint: {'top': 1 }
+                    size_hint: .9, .5
+                    halign: 'left'
+                    color: 'white'
+
+            #
+            # New user
+            #
+            MDBoxLayout: 
+                size_hint: .9, .1
+                pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                orientation: 'vertical'
+                MDLabel:
+                    size_hint: 1, .4
+                    text: 'Não possui registro?'
+                    halign: 'center'
+                    font_style: 'Body1'
+                    color: 'white'
+                    bold: True
+                    font_size: 12
+                MDBoxLayout:
+                    size_hint: 1, .6
+                    MDFillRoundFlatButton:
+                        size_hint: 1, .7
+                        text: 'Registre-se'
+                        font_style: 'Button'
+                        md_bg_color: [ .75, .75, .75, .75]
+                        pos_hint: {'center_y': 0.6 }
+                        on_release: root.controller.raise_card( )  

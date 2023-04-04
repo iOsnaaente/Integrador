@@ -1,0 +1,7 @@
+kivy==2.1.0
+kivymd==1.0.0
+watchdog
+
+
+# Buildozer requiements - akivymd
+# requirements = https://github.com/kivymd-extensions/akivymd/archive/main.zip

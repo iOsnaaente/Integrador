@@ -1,0 +1,100 @@
+<MyCardMenu@MDCard>:
+    card_image: card_image
+    card_title: card_title
+
+    md_bg_color: app.theme_cls.bg_darkest
+    orientation: 'vertical'
+    radius: 20
+    padding: 10
+    spacing: 10 
+    
+    MDCard:
+        size_hint: None, None
+        size: dp(50), dp(50)
+        pos_hint: {'center_x': 0.50,'top': 1}
+        md_bg_color: [0,0,0,0] 
+        radius: self.parent.radius
+        FitImage:
+            id: card_image
+            souce: ''
+    MDLabel:
+        id: card_title 
+        text: ""
+        color: 'white'
+        halign: 'center'
+        font_style: 'Subtitle1'
+        font_size: 12
+        bold: True  
+
+
+<SideBar@MDBoxLayout>:
+    user_photo: user_photo
+    username: username
+    user_level_access: user_level_access
+    home_side_bar: home_side_bar
+
+    size_hint: None, 1
+    size: dp(100), 1
+    pos_hint: {'x': 0,'y': 0}
+    md_bg_color: app.theme_cls.bg_darkest
+    orientation: 'vertical'
+    spacing: 10 
+    padding: 10 
+    
+    MDCard:
+        size_hint: None, None 
+        size: dp(90), dp(90)
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        elevation: 3
+        radius: 45
+        FitImage:
+            id: user_photo 
+            source: ''             
+            radius: self.parent.radius 
+    MDCard: 
+        orientation: 'vertical'
+        size_hint: None, None 
+        size: dp(90), dp(100)
+        pos_hint: {'center_x': 0.5 }
+        md_bg_color: [0,0,0,0]
+        MDLabel:
+            id: username 
+            size_hint: 1, 0.6
+            text: ''
+            font_style: 'Subtitle1'
+            font_size: 16
+            bold: True
+            halign: 'center'
+        MDLabel:
+            size_hint: 1, 0.15
+            text: 'Access level:'
+            font_size: 12
+            halign: 'center' 
+            valign: 'center'
+        MDLabel: 
+            id: user_level_access
+            size_hint: 1, 0.15
+            text:  ''
+            font_size: 12
+            bold: True 
+            halign: 'center' 
+            valign: 'center'
+        MDLabel:
+            size_hint: 1, 0.1
+
+
+    MDBoxLayout:
+        size_hint: 1, None 
+        size: 1, dp( 45 )
+
+    MDBoxLayout:
+        id: home_side_bar 
+        size_hint: 1, 0.75
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        orientation: 'vertical'
+        spacing: 10 
+    
+    MDBoxLayout:
+        size_hint: 1, None 
+        size: 1, dp( 45 )
+
