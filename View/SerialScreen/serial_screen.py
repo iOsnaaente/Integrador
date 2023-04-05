@@ -1,11 +1,18 @@
 from View.commom_components.SideBar.side_bar import SideBar 
-from kivy_garden.mapview import MapMarkerPopup
-from kivy_garden.mapview import MapView 
-
 from View.base_screen import BaseScreenView
 from kivy.graphics import *
 
 from kivymd_extensions.akivymd.uix.charts import AKLineChart
+from kivymd.uix.card import MDCard
+
+from kivy.lang import Builder 
+
+import os 
+PATH = os.path.dirname( __file__ )
+
+class SerialConfiguration( MDCard ):
+    ''' Serial Configuration Class '''
+    Builder.load_file( PATH + '/serial_conf.kv' )
 
 
 class SerialScreenView(BaseScreenView):
