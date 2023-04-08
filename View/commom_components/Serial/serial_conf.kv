@@ -1,0 +1,104 @@
+#
+# Serial config 
+<SerialConfiguration@MDCard>: 
+    comport: serial_comport_select
+    baudrate:serial_baudrate_select
+    timeout: serial_timeout_select
+
+    MDBoxLayout: 
+        orientation: 'vertical'
+        size_hint: 1, 0.85
+        padding: 10
+        spacing: 10 
+        #
+        # Configurações Seriais 
+        MDLabel: 
+            text: 'Configurações seriais'
+            size_hint: 1, 0.1
+            font_style: 'H3'
+            font_size: 18
+            bold: True 
+            halign: 'center'
+        # 
+        # Serial configuration content
+        MDCard:
+            id: teste
+            orientation: 'vertical'
+            md_bg_color: [0.25,0.25,0.25,0.5]
+            padding: 10
+            spacing: 10 
+            MDGridLayout:
+                cols: 2 
+                size_hint: 1, 0.75
+                radius: self.parent.radius
+                padding: 10 
+                #
+                # Serial comport
+                MDLabel:
+                    size_hint_x: 0.25
+                    text: 'Comport'
+                MDBoxLayout:
+                    size_hint_x: 0.75
+                    orientation: 'horizontal'
+                    MDDropDownItem:
+                        id: serial_comport_select
+                        size_hint_x: 0.75
+                        text: 'Select serial comport'
+                        items: ['COMP3', 'COMP4', 'COMP5', 'COMP10', 'COMP15']
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                        on_release: print( 'serial dropdown comport select')
+                    MDIconButton: 
+                        icon: 'refresh-circle'
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                        on_release: print( 'Atualizar portas seriais' )
+                #
+                # Serial Baudrate
+                MDLabel:
+                    size_hint_x: 0.25
+                    text: 'Baudrate'
+                MDBoxLayout:
+                    size_hint_x: 0.75
+                    MDDropDownItem:
+                        id: serial_baudrate_select
+                        size_hint_x: 1
+                        text: 'Select serial baudrate'
+                        items: ['9600', '19200', '57600', '115200']
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                #
+                # Serial Timeout
+                MDLabel:
+                    size_hint_x: 0.25
+                    text: 'Timeout'
+                MDBoxLayout:
+                    size_hint_x: 0.75
+                    MDDropDownItem:
+                        id: serial_timeout_select
+                        size_hint_x: 1
+                        text: 'Select serial timeout'
+                        items: [0.1, 1, 10, None ]
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                        on_release: print( 'serial dropdown comport select')
+            #
+            # Iniciar a conexão serial 
+            MDFlatButton:
+                size_hint: 1, 0.15
+                md_bg_color: 'green'
+                text: 'Iniciar conexão' 
+                on_release: print('Iniciar conexão serial' )
+    #
+    # Serial Status connection 
+    MDGridLayout:
+        size_hint: 1, 0.15
+        radius: self.parent.radius 
+        cols: 2 
+        padding: 10
+        spacing: 10 
+        MDIconButton:
+            id: serial_status_connection
+            icon: 'circle'
+            theme_icon_color: "Custom"
+            icon_color: 'red'
+            pos_hint: {'center_x': 0.50,'center_y': 0.50}
+            elevation: 3
+        MDLabel:
+            text: 'Serial disconnected'

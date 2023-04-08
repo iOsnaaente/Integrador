@@ -41,7 +41,7 @@ class Tracker(MDApp):
 
         self.theme_cls.theme_style = "Dark"
 
-        self.manager_screens.current = 'serial screen'
+        self.manager_screens.current = 'login screen'
 
         return self.manager_screens
 

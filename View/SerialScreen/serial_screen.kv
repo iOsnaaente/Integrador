@@ -20,7 +20,9 @@
             #
             # Upper 
             MDBoxLayout:
+                id: serial_and_graphs
                 size_hint: 1, 0.5
+                orientation: 'horizontal'
                 spacing: 10
                 padding: 10
                 #
@@ -32,159 +34,28 @@
                     text: "Dummy label"
                 #
                 # Serial config 
-                MDCard: 
+                SerialConfiguration:
                     orientation: 'vertical'
                     size_hint: 0.33, 1
                     md_bg_color: [1,1,1,0.5]
-                    padding: 10
-                    spacing: 10 
-                    MDBoxLayout: 
-                        orientation: 'vertical'
-                        size_hint: 1, 0.85
-                        padding: 10
-                        spacing: 10 
-                        #
-                        # Configurações Seriais 
-                        MDLabel: 
-                            text: 'Configurações seriais'
-                            size_hint: 1, 0.1
-                            font_style: 'H3'
-                            font_size: 18
-                            bold: True 
-                            halign: 'center'
-                        # 
-                        # Serial configuration content
-                        MDCard:
-                            orientation: 'vertical'
-                            md_bg_color: [0.25,0.25,0.25,0.5]
-                            padding: 10
-                            spacing: 10 
-                            MDGridLayout:
-                                cols: 2 
-                                size_hint: 1, 0.75
-                                radius: self.parent.radius
-                                padding: 10 
-                                #
-                                # Serial comport
-                                MDLabel:
-                                    size_hint_x: 0.25
-                                    text: 'Comport'
-                                MDBoxLayout:
-                                    size_hint_x: 0.75
-                                    orientation: 'horizontal'
-                                    MDDropDownItem:
-                                        id: serial_comp_select
-                                        size_hint_x: 0.75
-                                        text: 'Select serial comport'
-                                        items: ['COMP3', 'COMP4', 'COMP5', 'COMP10', 'COMP15']
-                                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                                        on_release: print( 'serial dropdown comport select')
-                                    MDIconButton: 
-                                        icon: 'refresh-circle'
-                                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                                        on_release: print( 'Atualizar portas seriais' )
-                                #
-                                # Serial Baudrate
-                                MDLabel:
-                                    size_hint_x: 0.25
-                                    text: 'Baudrate'
-                                MDBoxLayout:
-                                    size_hint_x: 0.75
-                                    MDDropDownItem:
-                                        id: serial_baudrate_select
-                                        size_hint_x: 1
-                                        text: 'Select serial baudrate'
-                                        items: ['9600', '19200', '57600', '115200']
-                                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                                        on_release: print( 'serial dropdown comport select')
-                                #
-                                # Serial Timeout
-                                MDLabel:
-                                    size_hint_x: 0.25
-                                    text: 'Timeout'
-                                MDBoxLayout:
-                                    size_hint_x: 0.75
-                                    MDDropDownItem:
-                                        id: serial_timeout_select
-                                        size_hint_x: 1
-                                        text: 'Select serial timeout'
-                                        items: [0.1, 1, 10, None ]
-                                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                                        on_release: print( 'serial dropdown comport select')
-                            #
-                            # Iniciar a conexão serial 
-                            MDFlatButton:
-                                size_hint: 1, 0.15
-                                md_bg_color: 'green'
-                                text: 'Iniciar conexão' 
-                                on_release: print('Iniciar conexão serial' )
-                    #
-                    # Serial Status connection 
-                    MDGridLayout:
-                        id: serial_status_connection
-                        size_hint: 1, 0.15
-                        radius: self.parent.radius 
-                        cols: 2 
-                        padding: 10
-                        spacing: 10 
-                        MDIconButton:
-                            icon: 'circle'
-                            theme_icon_color: "Custom"
-                            icon_color: 'red'
-                            pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                            elevation: 3
-                        MDLabel:
-                            text: 'Serial disconnected'
-
-
                 #
-                # Motors graph
-                MDBoxLayout:
-                    size_hint: 0.6, 1
-                    orientation: 'vertical'
-                    spacing: 10
-                    MDBoxLayout:
-                        size_hint: 1, 0.75
-                        orientation: 'horizontal'
-                        spacing: 10
-                        #
-                        # Azimute 
-                        MDCard: 
-                            size_hint: 0.5, 1
-                            pos_hint: {'center_x': 0.5,'top': 1 }
-                            md_bg_color: 'gray'
-                            orientation: 'vertical'
-                            MDLabel: 
-                                size_hint: 1, 0.1
-                                text: 'Azimute'
-                                font_style: 'H3'
-                                font_size: 18
-                                bold: True
-                                halign: 'center'
-                            AKLineChart:
-                                size_hint: 1, 1
-                                pos_hint: {'rigth':1, 'top':1}
-                                x_values: [ i for i in range(100) ]
-                                y_values: [ i**(0.5) for i in range(100)]
-                                label_size: dp(15)
-                                bg_color: [0,0,0,0]
-                                circles: False
-                                lines_color: [0.3, 0.5, 1, 0.8]
-                        #
-                        # Zenite 
-                        MDCard: 
-                            size_hint: 0.5, 1
-                            pos_hint: {'center_x': 0.5,'top': 1 }
-                            md_bg_color: 'white'
-                    #
-                    # Connections 
-                    MDCard: 
-                        size_hint: 1, 0.25
-                        md_bg_color: 'white'
+                # Azimute 
+                # AzimuteGraph: 
+                #     size_hint: 0.3, 1
+                #     pos_hint: {'center_x': 0.5,'top': 1 }
+                #     md_bg_color: 'gray'
+                #
+                # Zenite 
+                # ZeniteGraph: 
+                #     size_hint: 0.3, 1
+                #     pos_hint: {'center_x': 0.5,'top': 1 }
+                #     md_bg_color: 'gray'
+
             #
             # Connection logs and commands content
             MDBoxLayout:
                 size_hint: 1, 0.5
+                orientation: 'horizontal'
                 padding: 10, 0, 10, 10 
                 spacing: 10
                 #
@@ -198,4 +69,4 @@
                 # Content
                 MDCard:
                     size_hint: 1, 1
-                    md_bg_color: 'white'
+                    md_bg_color: 'gray'

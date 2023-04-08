@@ -18,12 +18,14 @@ imgs = [ 'smart.png'          ,
          'smart-power.png'    ,
          'security.png'       , 
         ]
+
 lbls = [ 'Home'               ,
          'Mapa'               ,  
          'Atuador'            ,
          'Sensor'             ,
          'Diagnos.'           ,
         ] 
+
 lnks = [ 'home screen'        ,
          'map screen'         ,  
          'serial screen'    ,
