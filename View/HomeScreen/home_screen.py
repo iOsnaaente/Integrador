@@ -8,7 +8,7 @@ import os
 PATH = os.path.dirname( __file__ )
 IMAGES = PATH.removesuffix('\\View\\HomeScreen') + '/images/'
 
-
+from kivymd.app import MDApp 
 
 class HomeScreenView( BaseScreenView ):
 
@@ -22,3 +22,14 @@ class HomeScreenView( BaseScreenView ):
     def on_enter(self, *args):
         self.ids.box_content.add_widget( SideBar( model = self.model ) ) 
         return super().on_enter(*args)
+
+    @property 
+    def username( self ): 
+        return self.model.shared_data.username 
+    @property 
+    def last_access( self ): 
+        return self.model.shared_data.last_access 
+    @property 
+    def level_access( self ): 
+        return self.model.shared_data.level_access 
+    

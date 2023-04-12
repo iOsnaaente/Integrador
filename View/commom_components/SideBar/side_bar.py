@@ -82,9 +82,20 @@ class SideBar( MDBoxLayout ):
         Clock.schedule_once( self.build, 0.1 )
 
     def build( self, clock_event ):
-        self.user_level_access.text = self.model.get_user_level_access
-        self.user_photo.source = self.model.get_user_photo 
-        self.username.text = self.model.get_username
+        
+        self.user_level_access.text = str(self.model.shared_data.level_access) 
+
+        ##
+        ##  COLCOAR A FOTO NO LUAGR CERTO 
+        ##
+        if self.model.shared_data.photo: 
+            self.user_photo.source = self.model.shared_data.photo
+        else: 
+            self.user_photo.source = PATH.removesuffix('\\View\\commom_components\\SideBar') + '/images/me.png'
+        #
+        # ACERTAR A FOTO
+        #
+        self.username.text = str(self.model.shared_data.username)
 
         for img, label, link in zip( imgs, lbls, lnks ):
             self.home_side_bar.add_widget(  MyCardMenu(

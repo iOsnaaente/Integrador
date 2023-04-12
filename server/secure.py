@@ -62,7 +62,7 @@ def get_sync_unikey( connection : socket.socket, __debug : bool = False ):
         ans  = encode_object( b'SYNC', UNIKEY = data )
         connection.send( ans )
         if __debug: 
-            print( f"UNIQUE KEY set at: {data}\nAnswered b'SYNC' with encrypt: {ans}" )
+            print( f"UNIQUE KEY set at: {data}\nAnswered b'SYNC' with encrypt: {ans}\n" )
         return data 
     except socket.error as e:
         if __debug: 

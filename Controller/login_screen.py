@@ -1,7 +1,8 @@
 import importlib
 
-import View.LoginScreen.login_screen 
+import View.LoginScreen.login_screen
 
+from shared_data import SharedData 
 
 # We have to manually reload the view module in order to apply the
 # changes made to the code on a subsequent hot reload.
@@ -18,11 +19,13 @@ class LoginScreenController:
     """
 
     card_widget = None 
+    __shared_data : SharedData 
 
-    def __init__(self, model):
+    def __init__(self, model, shared_data : SharedData = None ):
         self.model = model  # Model.login_screen.LoginScreenModel
         self.view = View.LoginScreen.login_screen.LoginScreenView( controller = self, model = self.model )
-
+        self.__shared_data = shared_data 
+        
     def get_view(self) -> View.LoginScreen.login_screen:
         return self.view
     

@@ -1,3 +1,21 @@
+<Dropdown@MDCard>:
+    orientation: 'horizontal'
+    md_bg_color: app.theme_cls.primary_color
+    MDRaisedButton:
+        id: button
+        size_hint: 0.8, 1
+        md_bg_color: [0,0,0,0] 
+        elevation: 0 
+        text: "Comport"
+        pos_hint: {"center_x": .5, "center_y": .5}
+        on_release: root.dropdown.open(self)
+    MDIconButton:
+        icon:'chevron-down'
+        size_hint: 0.2, 1
+        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+        on_release: root.dropdown.open(self)
+
+
 #
 # Serial config 
 <SerialConfiguration@MDCard>: 
@@ -38,15 +56,19 @@
                     size_hint_x: 0.25
                     text: 'Comport'
                 MDBoxLayout:
+                    id: serial_comport_select
                     size_hint_x: 0.75
                     orientation: 'horizontal'
-                    MDDropDownItem:
-                        id: serial_comport_select
-                        size_hint_x: 0.75
-                        text: 'Select serial comport'
-                        items: ['COMP3', 'COMP4', 'COMP5', 'COMP10', 'COMP15']
+                    Dropdown:
+                        size_hint: 0.75, 0.5
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                        on_release: print( 'serial dropdown comport select')
+                    # MDDropDownItem:
+                    #     id: serial_comport_select
+                    #     size_hint_x: 0.75
+                    #     text: 'Select serial comport'
+                    #     items: ['COMP3', 'COMP4', 'COMP5', 'COMP10', 'COMP15']
+                    #     pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                    #     on_release: print( 'serial dropdown comport select')
                     MDIconButton: 
                         icon: 'refresh-circle'
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}

@@ -15,33 +15,33 @@ from kivy.core.window import Window
 Window.left = -1375
 Window.top = 25
 
+from shared_data import SharedData 
 
 import os
 class Tracker(MDApp):
 
     KV_DIRS = [os.path.join(os.getcwd(), "View")]
+    shared_data : SharedData 
     DEBUG = 0
-
 
     def build_app(self) -> MDScreenManager:
         import View.screens
-    
+        self.shared_data = SharedData()
         self.manager_screens = MDScreenManager()
         Window.bind(on_key_down=self.on_keyboard_down)
         importlib.reload(View.screens)
         screens = View.screens.screens
-
+           
         for i, name_screen in enumerate(screens.keys()):
-            model = screens[name_screen]["model"]()
-            controller = screens[name_screen]["controller"](model)
+            model = screens[name_screen]["model"]( shared_data = self.shared_data)
+            controller = screens[name_screen]["controller"]( model = model, shared_data = self.shared_data)
             view = controller.get_view()
             view.manager_screens = self.manager_screens
             view.name = name_screen
             self.manager_screens.add_widget(view)
 
         self.theme_cls.theme_style = "Dark"
-
-        self.manager_screens.current = 'login screen'
+        self.manager_screens.current = "serial screen"
 
         return self.manager_screens
 
@@ -51,6 +51,7 @@ class Tracker(MDApp):
 
     def get_manager(self):
         return self.manager_screens
+    
 
 Tracker().run()
 

@@ -29,10 +29,9 @@ class LoginScreenView( BaseScreenView ):
     smart_sun = IMAGE_PATH +  '/smart.png'
     map_icon = IMAGE_PATH +  '/map.png'
     
-
     def __init__(self, **kw):
         super().__init__(**kw)
-        
+                
 
     # Tenta iniciar o socket de login
     def on_enter(self, *args):
@@ -47,7 +46,9 @@ class LoginScreenView( BaseScreenView ):
                 self.model.set_table( 'DOWN', self.username.text, self.password.text )
             elif self.ids.checkbox_keep_login.state == 'normal':
                 self.model.set_table( 'NORMAL', '' , '' ) 
+            
             self.manager_screens.current = 'home screen'
+            
             if self.__debug: 
                 print( 'Logado com \nUsuário: {}\nSenha: {}'.format( self.username.text, self.password.text ) )
                 print( 'Keep data state : ', self.ids.checkbox_keep_login.state )

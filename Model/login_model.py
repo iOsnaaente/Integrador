@@ -1,15 +1,19 @@
 from Model.base_model import BaseScreenModel
 
-from cryptography.fernet import Fernet 
 from libs.Security import encode_object, decode_object, sync_unikey
+from cryptography.fernet import Fernet 
 from Model.db.database import Database 
+from shared_data import SharedData 
 from kivy.clock import Clock
 
+from kivymd.app import MDApp 
+
+import json 
 import socket
 SERVER = '127.0.0.1'
 LOGIN_PORT = 50505
 
-class LoginModel(BaseScreenModel):
+class LoginModel( BaseScreenModel ):
     """
     Implements the logic of the
     :class:`~View.login_screen.LoginScreen.LoginScreenView` class.
@@ -17,18 +21,19 @@ class LoginModel(BaseScreenModel):
     __login_client : socket.socket
     __debug = True 
 
-    __checkbox = 'normal'
-    __user = ''
-    __psd = ''
+    __checkbox : str = 'normal'
+    __user : str = ''
+    __psd : str = ''
 
     __login_index : int 
-    __sync = False 
+    __sync : bool =  False 
 
     db = Database()
 
     KEY = Fernet.generate_key()
 
-
+    def __init__( self, shared_data : SharedData = None ): 
+        self.__shared_data = shared_data 
 
     # sistema de login não usa nenhum tipo de criptografia de dados
     # usar um arquivo xml para isso e colocar cripto em cima 
@@ -36,8 +41,8 @@ class LoginModel(BaseScreenModel):
         login_data = {
             'type'    : 'LOGIN',
             'username': user,
-            'password': psd,
-            'family'  : '' }
+            'password': psd
+            }
         try:
             data = encode_object( login_data, UNIKEY = self.KEY )
             self.__login_client.send( data ) 
@@ -45,16 +50,23 @@ class LoginModel(BaseScreenModel):
             ans = decode_object( ANS, UNIKEY = self.KEY )
         except socket.error as e:
             ans = e 
-        if self.__debug:    print( f'Socket connection OK\nSend {data}\nReceived {ans}' ) 
-        if ans == b'False' or type(ans) == socket.error :
+        if self.__debug:    
+            print( f'Socket connection OK\nSend {data}\nReceived {ans} of type {type(ans)}' ) 
+        if ans == b'UNKNOW' or 'error' in ans.decode() or type(ans) == socket.error :
             return False 
         else:
             try:
-                self.__login_index = int( ans.decode() )
-                if self.__debug:    print( f'Login index {self.__login_index}' ) 
+                ans = json.loads( ans.decode() )
             except: 
-                if self.__debug:    print( 'Login index not valid' ) 
-                return False
+                print( ans, ans.decode() ) 
+                return False 
+            self.shared_data.login_index = ans['id'] 
+            self.shared_data.username = ans['username'] 
+            self.shared_data.last_access = ans['last_access'] 
+            self.shared_data.level_access = ans['level_access'] 
+            self.shared_data.photo = ans['photo']
+            if self.__debug:    
+                print( f'Login index {self.shared_data.login_index}' ) 
             return True 
 
     # Criar novo usuário 
@@ -125,3 +137,7 @@ class LoginModel(BaseScreenModel):
     @property
     def psd( self ):
         return self.__psd 
+    
+    @property
+    def shared_data( self ):
+        return self.__shared_data 
