@@ -4,16 +4,15 @@ from kivymd.uix.screenmanager import MDScreenManager
 # TODO: You may know an easier way to get the size of a computer display.
 import importlib
 
-# Change the values of the application window size as you need.
-from kivy import Config
-Config.set( "graphics", "width" , "1400" )
-Config.set( "graphics", "height", "900"  )
+# Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
+from screeninfo import get_monitors
+monitor = get_monitors()[1]
 
-
-# Place the application window on the right side of the computer screen.
 from kivy.core.window import Window
-Window.left = -1375
-Window.top = 25
+Window.size = ( monitor.width, monitor.height )
+Window.left = monitor.x
+Window.top = monitor.y + 25
+# Window.fullscreen = 'auto'
 
 from shared_data import SharedData 
 

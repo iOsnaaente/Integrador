@@ -111,10 +111,10 @@ class LoginModel( BaseScreenModel ):
 
     # Getter and Setter DB properties  
     def get_table(self):
-        return self.db.get_login_table()[0]
+        return self.db.login[0]
     
     def set_table(self, state, user, psd ):
-        self.db.set_login_table( state, user, psd )
+        self.db.login( state, user, psd )
 
     # Getter and Setter checkbox property 
     @property 

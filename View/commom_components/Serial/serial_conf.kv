@@ -1,33 +1,30 @@
-<Dropdown@MDCard>:
-    orientation: 'horizontal'
-    md_bg_color: app.theme_cls.primary_color
-    MDRaisedButton:
-        id: button
-        size_hint: 0.8, 1
-        md_bg_color: [0,0,0,0] 
-        elevation: 0 
-        text: "Comport"
-        pos_hint: {"center_x": .5, "center_y": .5}
-        on_release: root.dropdown.open(self)
-    MDIconButton:
-        icon:'chevron-down'
-        size_hint: 0.2, 1
-        pos_hint: {'center_x': 0.50,'center_y': 0.50}
-        on_release: root.dropdown.open(self)
-
-
 #
 # Serial config 
 <SerialConfiguration@MDCard>: 
-    comport: serial_comport_select
-    baudrate:serial_baudrate_select
-    timeout: serial_timeout_select
+    connection_icon: connection_icon 
+    connection_label: connection_label 
+    connection_button: connection_button
+    connection_keep: connection_keep
+
+    comport_label: comport_label
+    comport_icon: comport_icon
+
+    baudrate_label: baudrate_label
+    baudrate_icon: baudrate_icon
+
+    timeout_label: timeout_label
+    timeout_icon: timeout_icon
+
+    refresh: refresh
+
+    orientation: 'vertical'
+    padding: dp(20) 
 
     MDBoxLayout: 
         orientation: 'vertical'
         size_hint: 1, 0.85
-        padding: 10
-        spacing: 10 
+        padding: dp(10)
+        spacing: dp(10) 
         #
         # Configurações Seriais 
         MDLabel: 
@@ -40,7 +37,6 @@
         # 
         # Serial configuration content
         MDCard:
-            id: teste
             orientation: 'vertical'
             md_bg_color: [0.25,0.25,0.25,0.5]
             padding: 10
@@ -56,23 +52,30 @@
                     size_hint_x: 0.25
                     text: 'Comport'
                 MDBoxLayout:
-                    id: serial_comport_select
                     size_hint_x: 0.75
                     orientation: 'horizontal'
-                    Dropdown:
+                    MDCard:
+                        # items: ['COMP3', 'COMP4', 'COMP5', 'COMP10', 'COMP15']
                         size_hint: 0.75, 0.5
-                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                    # MDDropDownItem:
-                    #     id: serial_comport_select
-                    #     size_hint_x: 0.75
-                    #     text: 'Select serial comport'
-                    #     items: ['COMP3', 'COMP4', 'COMP5', 'COMP10', 'COMP15']
-                    #     pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                    #     on_release: print( 'serial dropdown comport select')
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}    
+                        orientation: 'horizontal'
+                        md_bg_color: app.theme_cls.primary_color
+                        MDLabel:
+                            id: comport_label 
+                            size_hint: 0.8, 1
+                            md_bg_color: [0,0,0,0]
+                            text: "    Comport"
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                        MDIconButton:
+                            id: comport_icon 
+                            icon:'chevron-down'
+                            size_hint: 0.2, 1
+                            pos_hint: {'center_x': 0.50,'center_y': 0.50}
                     MDIconButton: 
+                        id: refresh
                         icon: 'refresh-circle'
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                        on_release: print( 'Atualizar portas seriais' )
+                        # on_release: root.att_comport() 
                 #
                 # Serial Baudrate
                 MDLabel:
@@ -80,12 +83,24 @@
                     text: 'Baudrate'
                 MDBoxLayout:
                     size_hint_x: 0.75
-                    MDDropDownItem:
-                        id: serial_baudrate_select
-                        size_hint_x: 1
-                        text: 'Select serial baudrate'
-                        items: ['9600', '19200', '57600', '115200']
-                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                    MDCard:
+                        # items: ['9600', '19200', '57600', '115200']
+                        size_hint: 0.75, 0.5
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}    
+                        orientation: 'horizontal'
+                        md_bg_color: app.theme_cls.primary_color
+                        MDLabel:
+                            id: baudrate_label
+                            size_hint: 0.8, 1
+                            md_bg_color: [0,0,0,0]
+                            text: "    Baudrate"
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                        MDIconButton:
+                            id: baudrate_icon
+                            icon:'chevron-down'
+                            size_hint: 0.2, 1
+                            pos_hint: {'center_x': 0.50,'center_y': 0.50}
+
                 #
                 # Serial Timeout
                 MDLabel:
@@ -93,34 +108,58 @@
                     text: 'Timeout'
                 MDBoxLayout:
                     size_hint_x: 0.75
-                    MDDropDownItem:
-                        id: serial_timeout_select
-                        size_hint_x: 1
-                        text: 'Select serial timeout'
-                        items: [0.1, 1, 10, None ]
-                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
-                        on_release: print( 'serial dropdown comport select')
+                    MDCard:
+                        # items: [0.1, 1, 10, None ]
+                        size_hint: 0.75, 0.5
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}    
+                        orientation: 'horizontal'
+                        md_bg_color: app.theme_cls.primary_color
+                        MDLabel:
+                            id: timeout_label 
+                            size_hint: 0.8, 1
+                            md_bg_color: [0,0,0,0]
+                            text: "    Timeout"
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                        MDIconButton:
+                            id: timeout_icon 
+                            icon:'chevron-down'
+                            size_hint: 0.2, 1
+                            pos_hint: {'center_x': 0.50,'center_y': 0.50}
             #
             # Iniciar a conexão serial 
             MDFlatButton:
+                id: connection_button
                 size_hint: 1, 0.15
                 md_bg_color: 'green'
                 text: 'Iniciar conexão' 
-                on_release: print('Iniciar conexão serial' )
     #
     # Serial Status connection 
     MDGridLayout:
         size_hint: 1, 0.15
         radius: self.parent.radius 
         cols: 2 
-        padding: 10
-        spacing: 10 
-        MDIconButton:
-            id: serial_status_connection
-            icon: 'circle'
-            theme_icon_color: "Custom"
-            icon_color: 'red'
+        padding: 5
+        spacing: 5 
+        MDCheckbox:
+            id: connection_keep
+            active: True
+            # checkbox_icon_normal: "close"
+            checkbox_icon_down: "check"
+            size_hint_x: 0.1
             pos_hint: {'center_x': 0.50,'center_y': 0.50}
             elevation: 3
         MDLabel:
+            id: connection_label 
+            text: 'Keep connection state'
+        MDIconButton:
+            id: connection_icon
+            icon: 'circle'
+            theme_icon_color: "Custom"
+            icon_color: 'red'
+            size_hint: 0.2, 0.5
+            pos_hint: {'center_x': 0.50,'center_y': 0.50}
+            elevation: 3
+        MDLabel:
+            id: connection_label 
+            size_hint: 0.8, 0.5
             text: 'Serial disconnected'

@@ -5,7 +5,7 @@ from kivy.graphics import *
 from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 
-from View.commom_components.Serial.Serial import SerialConfiguration 
+from View.commom_components.Serial.serial_conf import SerialConfiguration 
 from View.commom_components.Graphs.graph_area import Azimute, Zenite 
 
 class SerialScreenView(BaseScreenView):
@@ -14,11 +14,14 @@ class SerialScreenView(BaseScreenView):
     Azimute = ObjectProperty()
     Zenite = ObjectProperty() 
 
+    serial = ObjectProperty() 
+
     already_draw = False 
+
 
     def __init__(self, **kw):
         super().__init__(**kw)
-        
+
     def model_is_changed(self) -> None:
         """
         Called whenever any change has occurred in the data model.
@@ -39,6 +42,7 @@ class SerialScreenView(BaseScreenView):
                                 md_bg_color = [0.5, 0.5, 0.5, 1 ]
                             )
             self.Serial = SerialConfiguration()
+            self.serial.add_widget( self.Serial )
 
             Clock.schedule_interval( self.Azimute.update_graph, 0.1 )
             Clock.schedule_interval( self.Zenite.update_graph, 0.1 )

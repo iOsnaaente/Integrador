@@ -1,6 +1,7 @@
 #:import MapView kivy.garden.mapview.MapView 
 
 <SerialScreenView>
+    serial: serial 
     md_bg_color: app.theme_cls.bg_darkest
     #
     # Content 
@@ -34,10 +35,9 @@
                     text: "Dummy label"
                 #
                 # Serial config 
-                SerialConfiguration:
-                    orientation: 'vertical'
+                MDBoxLayout:
+                    id: serial
                     size_hint: 0.33, 1
-                    md_bg_color: [1,1,1,0.5]
                 #
                 # Azimute 
                 # AzimuteGraph: 

@@ -19,7 +19,7 @@ class SensorScreenView(BaseScreenView):
         according to these changes.
         """
 
-    def on_enter (self, *args):    
+    def on_kv_post (self, *args):    
         if not self.already_draw:
             self.side_bar = SideBar( model = self.model ) 
             self.ids.float_content.add_widget( self.side_bar  )
