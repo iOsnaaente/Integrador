@@ -40,7 +40,7 @@ class Tracker(MDApp):
             self.manager_screens.add_widget(view)
 
         self.theme_cls.theme_style = "Dark"
-        self.manager_screens.current = "serial screen"
+        self.manager_screens.current = "map screen"
 
         return self.manager_screens
 

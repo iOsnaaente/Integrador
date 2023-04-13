@@ -12,7 +12,7 @@ class SunPosition:
     month  = 0
     day    = 0
     hour   = 0
-    minute = 0
+    minute = 0 
     second = 0
 
     # DEFINIÃO DOS PARAMETROS DE LAT/LONG

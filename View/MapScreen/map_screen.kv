@@ -1,7 +1,11 @@
 #:import MapView kivy.garden.mapview.MapView 
 
 <MapScreenView>
+    zenite_graph: zenite_graph
+    azimute_graph: azimute_graph
+    
     md_bg_color: app.theme_cls.bg_darkest
+    
     MDFloatLayout:
         id: float_content 
         size_hint: 1, 1    
@@ -11,7 +15,7 @@
         MDBoxLayout: 
             size_hint: None, 0.8
             size: dp(300), 0.8
-            md_bg_color: [0.3, 0.3, 0.3, 0.75]
+            md_bg_color: [0.3, 0.3, 0.3, 0.85]
             pos_hint: {'right': 0.975,'top': 0.975 }
             orientation: 'vertical'
             radius: 20
@@ -43,6 +47,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: hora_att 
                         text: '01:23:45'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -53,6 +58,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: dia_att
                         text: '28/03/23'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -63,6 +69,7 @@
                         font_size: 14
                         halign: 'left'
                     MDProgressBar:
+                        id: hora_att_sun_progress
                         size_hint: 0.5, 0.33
                         size: 1, dp(50)
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -93,6 +100,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: hora_sys 
                         text: '01:23:45'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -103,6 +111,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: dia_sys 
                         text: '28/03/23'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -113,6 +122,7 @@
                         font_size: 14
                         halign: 'left'
                     MDProgressBar:
+                        id: dia_sys_sun_progress
                         size_hint: 0.5, 0.33
                         size: 1, dp(50)
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -140,6 +150,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: latitude 
                         text: '35.43464684'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -150,6 +161,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: longitude
                         text: '35.43464684'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -160,6 +172,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: altitude
                         text: '35.43464684'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -170,7 +183,8 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
-                        text: '35.43464684'
+                        id: daylight
+                        text: '10h 38min 24s'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
 
@@ -195,6 +209,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: rising
                         text: '06:13:34'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -205,6 +220,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: culminant
                         text: '12:03:41'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -215,6 +231,7 @@
                         font_size: 14
                         halign: 'left'
                     MDLabel: 
+                        id: sunset 
                         text: '18:45:42'
                         size_hint: 0.5, 0.33
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
@@ -223,39 +240,20 @@
         # Hover plot 
         #
         MDBoxLayout:
-            size_hint: 0.4, 0.3
-            md_bg_color: [0.5, 0.5, 0.5, 0.2 ]
-            pos_hint: {'center_x': 0.285,'top': 0.325}
+            size_hint: 0.6, 0.3
+            pos_hint: {'right': 0.685,'top': 0.325}
             radius: 20
-            spacing: 5 
+            spacing: 20
             padding: 5 
             MDCard:
+                id: zenite_graph
                 size_hint: 0.5, 1
                 orientation: 'vertical'
-                md_bg_color: [0.5, 0.5, 0.5, 0.2 ]
-                MDLabel:
-                    text: 'zenite'
-                AKLineChart:
-                    id: chart1
-                    labels: True
-                    anim: True
-                    x_values: [0, 5, 8, 15,0, 5, 8, 15,0, 5, 8, 15] 
-                    y_values: [0, 10, 6, 8,0, 10, 6, 8,0, 10, 6, 8] 
-                    bg_color: 0.6, 0, 0, 0
-                    circles_color: [0.4, 0.4, 1, 1]
-                    labels: True
+                radius: self.parent.radius
+                
             MDCard:
+                id: azimute_graph
                 size_hint: 0.5, 1
                 orientation: 'vertical'
-                md_bg_color: [0.5, 0.5, 0.5, 0.2 ]
-                MDLabel:
-                    text: 'Azimute'
-                AKLineChart:
-                    id: chart1
-                    labels: False
-                    anim: True
-                    x_values: [0, 5, 8, 15]
-                    y_values: [0, 10, 6, 8]
-                    bg_color: 0.6, 0, 0, 0
-                    circles_color: [0.4, 0.4, 1, 1]
-                    labels: True
+                radius: self.parent.radius
+                

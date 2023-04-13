@@ -1,3 +1,6 @@
+from kivy.clock import Clock
+from datetime import datetime 
+
 class SharedData:
 
     __username : str = ''
@@ -6,9 +9,34 @@ class SharedData:
     __photo : bytearray = b''
     __login_index : int = 0 
 
+    __date : str = '00:00:00 01/01/2001'
+
+    __connected = False 
+
     def __init__(self):
+        Clock.schedule_interval( self.update_date, 1 )
         self.username = ""
         self.email = ""
+
+    def update_date( self, dt ):
+        self.datetime =  datetime.now().strftime("%H:%M:%S %d/%m/%Y")
+
+    @property
+    def datetime( self ): 
+        return self.__date 
+    @datetime.setter
+    def datetime( self, value : str ):
+        self.__date = value 
+    @property 
+    def time(self):
+        return self.__date.split(' ')[0]
+    @property
+    def date(self):
+        return self.__date.split(' ')[1]
+    
+    @property
+    def connected(self):
+        return self.__connected
 
     @property
     def username( self ):

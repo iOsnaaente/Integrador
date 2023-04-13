@@ -1,21 +1,22 @@
 from View.commom_components.SideBar.side_bar import SideBar 
-from kivymd.uix.floatlayout import MDFloatLayout 
 from kivy_garden.mapview import MapMarkerPopup
 from kivy_garden.mapview import MapView 
 from kivymd.uix.widget import MDWidget 
 from kivymd.uix.label import MDLabel 
+from kivymd.uix.button import MDFlatButton
+from kivy.graphics import *
+from kivy.clock import Clock 
 
 from View.base_screen import BaseScreenView
-from kivy.graphics import *
-
-from kivymd_extensions.akivymd.uix.charts import AKLineChart
+from View.commom_components.Graphs.graph_all_day import AzimuteAllDay, ZeniteAllDay 
 
 #####################################
 from libs.Model import SunPosition 
 import math 
 #####################################
 
-
+import os 
+MAP_SOURCE_ICON = os.path.dirname(__file__).removesuffix('\\View\\MapScreen') + '/assets/icons/marker_popup.png' 
 
 class Ecliptica( MDWidget ):
 
@@ -45,6 +46,9 @@ class Ecliptica( MDWidget ):
         center        = [ width//2, height//2 ]
         r             = width//2 - 20 if width+20 <= height else height//2 - 20
         
+        # Atualiza a hora 
+        self.SUN_DATA.update_date()
+
         # DESENHO DA LINHA DE NASCER DO SOL E POR DO SOL 
         azi = self.SUN_DATA.get_pos_from_date( self.SUN_DATA.rising )[1]
         alt = self.SUN_DATA.get_pos_from_date( self.SUN_DATA.sunset )[1] # [ alt , azi ]
@@ -120,11 +124,17 @@ class MapScreenView(BaseScreenView):
     map_view : MapView 
     side_bar : SideBar 
     markers = [ 
-            MapMarkerPopup( lat=-29.71332542661317, lon=-53.71766381408064 ) 
+            MapMarkerPopup( lat=-29.71332542661317, lon=-53.71766381408064, source = MAP_SOURCE_ICON ) 
         ]
+    markers[0].add_widget( MDFlatButton(text=f'Informações do sistema\nlat={markers[0].lat}\nlon={markers[0].lon}\nNot connected', md_bg_color='gray' ) )
 
     already_draw = False 
     ecliptica : Ecliptica 
+
+    azimute_all_day : AzimuteAllDay
+    zenite_all_day : ZeniteAllDay
+
+    render_clock : Clock.schedule_interval 
 
     def model_is_changed(self) -> None:
         """
@@ -133,31 +143,98 @@ class MapScreenView(BaseScreenView):
         according to these changes.
         """
 
-
     def on_enter (self, *args):    
         if not self.already_draw:
-            self.side_bar = SideBar(
-                    model = self.model 
-                ) 
-            self.ecliptica = Ecliptica( 
-                    sun_data = self.model.SunData, 
-                    size = [1, 1], 
-                    pos = {'center_x': 0.5,'center_y': 0.5} 
-                ) 
+            #
+            # Map view 
             self.map_view = MapView(size_hint = [0.99, 0.99], 
                     pos_hint = {'center_x': 0.50, 'center_y': 0.5 }, 
                     zoom = 25 , 
                     lon = self.markers[0].lon, 
                     lat = self.markers[0].lat 
                 )
-            
-            # for marker in self.markers:
-            #     self.map_view.add_widget( marker )
-
             self.ids.float_content.add_widget( self.map_view  )
+            #
+            # Ecliptica draw 
+            self.ecliptica = Ecliptica( 
+                    sun_data = self.model.SunData, 
+                    size = [1, 1], 
+                    pos = {'center_x': 0.5,'center_y': 0.5} 
+                ) 
             self.ids.float_content.add_widget( self.ecliptica ) 
-            self.ids.float_content.add_widget( self.side_bar  )
-        
-            self.already_draw = True 
+            #
+            # Graphs Zenite and Azimute 
+            self.zenite_graph = ZeniteAllDay( hover = True )   
+            self.ids.zenite_graph.add_widget( self.zenite_graph )
+            self.azimute_graph = AzimuteAllDay( hover = True ) 
+            self.ids.azimute_graph.add_widget( self.azimute_graph )
+            #
+            # Side bar 
+            self.side_bar = SideBar(
+                    model = self.model 
+                ) 
+            self.ids.float_content.add_widget( self.side_bar )
+            #
+            # Markers popup
+            for marker in self.markers:
+                self.map_view.add_widget( marker )
+            #
+            # Flag already draw
+            self.already_draw = True
+            # Já atualiza a página
+            self.render_clock = Clock.schedule_once( self.render_page )
+            self.render_clock = Clock.schedule_once( self.att_graphs )
 
+        # Quando entrar na página, executa o timer de 1 em 1 segundo 
+        self.render_clock = Clock.schedule_interval( self.render_page, 1 )
         return super().on_enter(*args)
+    
+
+    def on_leave(self, *args):
+        # Quando sair da página, verifique se o timer esta ativo e desative-o
+        if self.render_clock and self.render_clock in Clock.get_events():
+            Clock.unschedule(self.render_clock)
+        return super().on_leave(*args)
+
+
+    def on_touch_move(self, touch):
+        coord = self.map_view.get_latlon_at(touch.pos[0], touch.pos[1])
+        lat, lon = coord.lat, coord.lon 
+        self.ids.latitude.text  = str( round(lat, 10) )
+        self.ids.longitude.text = str( round(lon, 10) ) 
+        self.ids.altitude.text = '325m'
+        return super().on_touch_move(touch)
+
+
+    def render_page( self, clock_event ):
+        self.ecliptica.update_canvas() 
+
+        self.ids.hora_att.text = self.model.shared_data.date
+        self.ids.dia_att.text = self.model.shared_data.time
+        self.ids.hora_att_sun_progress.value = 100-(self.ecliptica.SUN_DATA.total_seconds/(24*3600))*-100
+
+        if not self.model.shared_data.connected:
+            self.ids.hora_sys.text = 'Not connected'
+            self.ids.dia_sys.text = 'Not connected'
+            self.ids.dia_sys_sun_progress.value = 0
+        else: 
+            self.ids.hora_sys.text = self.model.shared_data.sys_time
+            self.ids.dia_sys.text = self.model.shared_data.sys_date
+            self.ids.dia_sys_sun_progress.value = self.model.shared_data.sys_count
+         
+        self.ids.daylight.text = str(self.ecliptica.SUN_DATA.get_sunlight_hours()).split('.')[0]
+
+        self.ids.rising.text = str(self.ecliptica.SUN_DATA.rising.strftime('%H:%M:%S') )
+        self.ids.culminant.text = str(self.ecliptica.SUN_DATA.transit.strftime('%H:%M:%S') )
+        self.ids.sunset.text = str( self.ecliptica.SUN_DATA.sunset.strftime('%H:%M:%S') )
+        
+
+    def att_graphs( self, clock_event = None ): 
+        data = self.model.SunData.trajetory( resolution = 50, all_day = False )
+        azi, alt, time = [], [], []
+        for az, al, dt in data: 
+            azi.append( math.degrees(az - math.pi) if az > math.pi else math.degrees(az + math.pi) )
+            alt.append( math.degrees(al) if al < math.pi else 0  )
+            time.append(dt)
+        self.zenite_graph.update_graph ( x_points = time, y_points = alt ) 
+        self.azimute_graph.update_graph( x_points = time, y_points = azi )

@@ -2,119 +2,104 @@ from extensions.kivy_garden.graph import Graph, MeshLinePlot
 from kivymd.uix.behaviors import HoverBehavior
 from kivymd.uix.card import MDCard
 
-from kivy.properties import ObjectProperty 
+from datetime import datetime
 import math 
 
-MAX_POINTS_GRAPH_CANVAS = 1000
+HOVER_ENTER_COLOR = [0.1, 0.1, 0.1, 0.85 ] 
+HOVER_LEAVE_COLOR = [0.5, 0.5, 0.5, 0.5 ]
 
 class AzimuteAllDay( MDCard, HoverBehavior ):
-    ''' Azimute Graph Class 
-    KV file: graph_all_day.kv
-    ids: [
-        title_label
-        graph
-    ]
-    Main widgets: [
-        kivy_garden.graph linechart graph 
-    ]
-    '''
     azimute = None 
     graph_x = []
     graph = None 
+    hover : bool 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, hover : bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.hover = hover 
         self.graph = Graph(
-                    xlabel = 'X', 
-                    ylabel = 'Y', 
+                    xlabel = 'Time [h]', 
+                    ylabel = 'Azimute Deg [º]', 
                     x_ticks_minor = 5,
-                    x_ticks_major = 10,
-                    y_ticks_major = 0.5,
+                    x_ticks_major = 30,
+                    y_ticks_major = 60,
                     y_grid_label = True,
                     x_grid_label = True ,
                     padding = 5 ,
                     x_grid = True, 
-                    y_grid = True, 
-                    xmin = -0, 
-                    xmax = 100, 
-                    ymin = -1*1.1, 
-                    ymax = 1*1.1
+                    y_grid = True,
                 )
         
         self.graph_x = [ 0 ]
 
-        self.azimute_motor = MeshLinePlot( color = [1, 0, 0, 1] )
-        self.azimute_sensor = MeshLinePlot( color = [1, 0, 0, 1] ) 
-
-        self.graph.add_plot( self.azimute_motor )
-        self.graph.add_plot( self.azimute_sensor )
-
+        self.azimute = MeshLinePlot( color = [1, 0, 0, 1] )
+        self.graph.add_plot( self.azimute )
         self.ids.graph.add_widget( self.graph )
-        self.update_graph( )
 
-    def update_graph( self, clock_event = 1 ):
-        '''print( f'Must update the {self.title} graph')'''
-        self.graph_x.append( self.graph_x[-1]+clock_event )
-        self.graph.xmin = self.graph_x[ 0 ]
-        self.graph.xmax = self.graph_x[-1 ]
-        if len(self.graph_x) > MAX_POINTS_GRAPH_CANVAS: 
-            self.graph_x.pop(0)
-        self.azimute_motor.points  = [ ( x, math.sin( x / 1.0 ) ) for x in self.graph_x ]
-        self.azimute_sensor.points = [ ( x, math.cos( x / 1.0 ) ) for x in self.graph_x ]
+    def update_graph( self, x_points : list, y_points : list ):
+        x_ticks = [(x_point - x_points[0]).total_seconds() for x_point in x_points]
+        self.graph.xmax = x_ticks[-1]
+        self.graph.x_ticks_major = (x_ticks[-1] - x_ticks[0]) // 10
+        self.graph.x_ticks_minor = self.graph.x_ticks_major // 5
+        self.graph.x_labels = {
+            x: datetime.fromtimestamp(x_points[0].timestamp() + x).strftime('%H:%M:%S')
+            for x in range(int(x_ticks[0]), int(x_ticks[-1]) + 1, int(self.graph.x_ticks_major))
+        }
+        self.azimute.points = [(x, y ) for x, y in zip(x_ticks, y_points)]
+        self.azimute.x_ticks = x_ticks
+        self.graph.ymin = 0
+        self.graph.ymax = 360
+    
+    def on_enter(self, *args):
+        if self.hover:
+            self.md_bg_color = HOVER_ENTER_COLOR
+    def on_leave(self, *args):
+        if self.hover:
+            self.md_bg_color = HOVER_LEAVE_COLOR
 
-
-class Zenite( MDCard ):
-    ''' Azimute Graph Class 
-    KV file: graph_area.kv
-    ids: [
-        title_label
-        graph
-    ]
-    Main widgets: [
-        kivy_garden.graph linechart graph 
-    ]
-    '''
-    zenite_motor = None 
-    zenite_sensor = None
+class ZeniteAllDay( MDCard, HoverBehavior ):
+    zenite = None
     graph_x = []
     graph = None 
+    hover : bool 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, hover : bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.hover = hover 
         self.graph = Graph(
-                    xlabel = 'X', 
-                    ylabel = 'Y', 
+                    xlabel = 'Time [h]', 
+                    ylabel = 'Zenite Deg (º)', 
                     x_ticks_minor = 5,
-                    x_ticks_major = 10,
-                    y_ticks_major = 0.5,
+                    x_ticks_major = 7.5,
+                    y_ticks_major = 15,
                     y_grid_label = True,
                     x_grid_label = True ,
                     padding = 5 ,
                     x_grid = True, 
-                    y_grid = True, 
-                    xmin = -0, 
-                    xmax = 100, 
-                    ymin = -1*1.1, 
-                    ymax = 1*1.1
-                )
-        
+                    y_grid = True,
+        )
         self.graph_x = [ 0 ]
-
-        self.zenite_motor = MeshLinePlot( color = [1, 0, 0, 1] )
-        self.zenite_sensor = MeshLinePlot( color = [1, 0, 0, 1] ) 
-
-        self.graph.add_plot( self.zenite_motor )
-        self.graph.add_plot( self.zenite_sensor )
-
+        self.zenite = MeshLinePlot( color = [1, 0, 0, 1] )
+        self.graph.add_plot( self.zenite )
         self.ids.graph.add_widget( self.graph )
-        self.update_graph( )
 
-    def update_graph( self, clock_event = 1 ):
-        '''print( f'Must update the {self.title} graph')'''
-        self.graph_x.append( self.graph_x[-1]+clock_event )
-        self.graph.xmin = self.graph_x[ 0 ]
-        self.graph.xmax = self.graph_x[-1 ]
-        if len(self.graph_x) > MAX_POINTS_GRAPH_CANVAS: 
-            self.graph_x.pop(0)
-        self.zenite_motor.points  = [ ( x, math.sin( x / 10.0 ) ) for x in self.graph_x ]
-        self.zenite_sensor.points = [ ( x, math.cos( x / 10.0 ) ) for x in self.graph_x ]
+    def update_graph( self, x_points : list, y_points : list ):
+        x_ticks = [(x_point - x_points[0]).total_seconds() for x_point in x_points]
+        self.graph.xmax = x_ticks[-1]
+        self.graph.x_ticks_major = (x_ticks[-1] - x_ticks[0]) // 10
+        self.graph.x_ticks_minor = self.graph.x_ticks_major // 5
+        self.graph.x_labels = {
+            x: datetime.fromtimestamp(x_points[0].timestamp() + x).strftime('%H:%M:%S')
+            for x in range(int(x_ticks[0]), int(x_ticks[-1]) + 1, int(self.graph.x_ticks_major))
+        }
+        self.zenite.points = [(x, y)  for x, y in zip(x_ticks, y_points)]
+        self.zenite.x_ticks = x_ticks
+        self.graph.ymin = 0
+        self.graph.ymax = 95
+
+    def on_enter(self, *args):
+        if self.hover:
+            self.md_bg_color = HOVER_ENTER_COLOR
+    def on_leave(self, *args):
+        if self.hover:
+            self.md_bg_color = HOVER_LEAVE_COLOR
