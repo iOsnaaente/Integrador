@@ -177,7 +177,13 @@ class MapScreenView(BaseScreenView):
             #
             # Markers popup
             for marker in self.markers:
-                self.map_view.add_widget( marker )
+                # Faz a verificação se o marker já possui um parente
+                if marker.parent is None:    
+                    self.map_view.add_widget( marker )
+                # Se ele possuir, temos que retira-lo e adicionar de novo 
+                else: 
+                    marker.parent.remove_widget(marker)
+                    self.map_view.add_widget( marker )
             #
             # Flag already draw
             self.already_draw = True

@@ -35,24 +35,23 @@ class LoginModel( BaseScreenModel ):
     def __init__( self, shared_data : SharedData = None ): 
         self.__shared_data = shared_data 
 
-    # sistema de login não usa nenhum tipo de criptografia de dados
-    # usar um arquivo xml para isso e colocar cripto em cima 
+
     def login( self, user : str , psd : str ) -> bool:
-        login_data = {
-            'type'    : 'LOGIN',
-            'username': user,
-            'password': psd
-            }
+        login_data = { 'type' : 'LOGIN', 'username': user, 'password': psd }
         try:
             data = encode_object( login_data, UNIKEY = self.KEY )
             self.__login_client.send( data ) 
             ANS = self.__login_client.recv( 1024 )
             ans = decode_object( ANS, UNIKEY = self.KEY )
-        except socket.error as e:
+        except Exception as e:
             ans = e 
+            if self.__debug:
+                print( e )
+
         if self.__debug:    
             print( f'Socket connection OK\nSend {data}\nReceived {ans} of type {type(ans)}' ) 
-        if ans == b'UNKNOW' or 'error' in ans.decode() or type(ans) == socket.error :
+        
+        if type(ans) == socket.error or ans == b'UNKNOW' or 'error' in ans.decode():
             return False 
         else:
             try:
@@ -70,17 +69,13 @@ class LoginModel( BaseScreenModel ):
             return True 
 
     # Criar novo usuário 
-    def create_new_user( self, user : str, password : str, family : str  ) -> bool:
-        create_user_data = {
-            'type'    : 'NEW USER',
-            'username': user,
-            'password': password,
-            'family'  : family 
-        }
+    def create_new_user( self, user : str, password : str, manager_group : str, manager_psd : str  ) -> bool:
+        create_user_data = {'type' : 'NEW_USER', 'username': user, 'password': password, 'manager_group' : manager_group, 'manager_psd' : manager_psd    }
         if user and password:
             try: 
                 data = encode_object( create_user_data, UNIKEY = self.KEY )
                 self.__login_client.send( data ) 
+                self.__login_client.settimeout(1)
                 ANS = self.__login_client.recv( 1024 )
                 ans = decode_object( ANS, UNIKEY = self.KEY )        
             except socket.error as e:
@@ -97,7 +92,7 @@ class LoginModel( BaseScreenModel ):
     def connect_server( self, clock_event = None ) -> bool:
         try:
             self.__login_client = socket.socket( socket.AF_INET, socket.SOCK_STREAM ) 
-            self.__sync = sync_unikey( self.__login_client, SERVER, LOGIN_PORT, self.KEY, timeout = 0.1 )
+            self.__sync = sync_unikey( self.__login_client, SERVER, LOGIN_PORT, self.KEY, timeout = 0.25 )
             if self.__sync: 
                 if self.__debug:   print( 'Server login sync' )
                 return True 
@@ -114,7 +109,7 @@ class LoginModel( BaseScreenModel ):
         return self.db.login[0]
     
     def set_table(self, state, user, psd ):
-        self.db.login( state, user, psd )
+        self.db.set_login( state, user, psd )
 
     # Getter and Setter checkbox property 
     @property 

@@ -60,8 +60,8 @@ class Azimute( MDCard, HoverBehavior ):
         self.graph.xmax = self.graph_x[-1 ]
         if len(self.graph_x) > MAX_POINTS_GRAPH_CANVAS: 
             self.graph_x.pop(0)
-        self.azimute_motor.points  = [ ( x, math.sin( x / 10.0 ) ) for x in self.graph_x ]
-        self.azimute_sensor.points = [ ( x, math.cos( x / 10.0 ) ) for x in self.graph_x ]
+        self.azimute_motor.points  = [ ( x, math.sin( x / 100.0 ) ) for x in self.graph_x ]
+        self.azimute_sensor.points = [ ( x, math.cos( x / 100.0 ) ) for x in self.graph_x ]
 
 
 class Zenite( MDCard ):

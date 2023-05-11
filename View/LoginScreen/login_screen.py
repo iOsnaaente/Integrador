@@ -56,8 +56,8 @@ class LoginScreenView( BaseScreenView ):
 
 
     # Criar novo usuário 
-    def create_new_user( self, user, password, family ):
-        ans = self.model.create_new_user( user, password, family )
+    def create_new_user( self, user, password, super, super_psd ):
+        ans = self.model.create_new_user( user, password, super, super_psd )
         if ans: 
             self.ids.login_user_field.text = user 
             self.ids.login_password_field.text = password

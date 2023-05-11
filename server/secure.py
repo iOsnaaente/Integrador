@@ -11,8 +11,6 @@ def decode_obj( data : bytearray, signature_len : int = 128, encrypted : bool = 
         if UNIKEY != b'':
             f = Fernet( UNIKEY )
             data = f.decrypt( data )
-            if __debug: 
-                print( f'Data decrypted received {data}')
         else:         
             if __debug: 
                 print( f'UNIQUE KEY not set [{UNIKEY}]' )
@@ -44,9 +42,7 @@ def encode_object( obj : object, encrypted : bool = True, UNIKEY : bytearray = b
             if __debug:
                 print( 'UNIQUE KEY is not valid\nNot encrypted data' )
     if __debug:
-        print( f'Encoded {data} with key {UNIKEY}. Hash {digest}' )
-        if encrypted and UNIKEY != b'':
-            print( f'Encrypted { encrypt }' )
+        print( f'Encoded {data}' )
     if not encrypted:
         return to_send
     else: 
@@ -62,7 +58,7 @@ def get_sync_unikey( connection : socket.socket, __debug : bool = False ):
         ans  = encode_object( b'SYNC', UNIKEY = data )
         connection.send( ans )
         if __debug: 
-            print( f"UNIQUE KEY set at: {data}\nAnswered b'SYNC' with encrypt: {ans}\n" )
+            print( f"UNIQUE KEY set at: {data}" )
         return data 
     except socket.error as e:
         if __debug: 

@@ -12,7 +12,12 @@ from kivy.core.window import Window
 Window.size = ( monitor.width, monitor.height )
 Window.left = monitor.x
 Window.top = monitor.y + 25
-# Window.fullscreen = 'auto'
+
+#
+# Debug 
+LOAD_SCREEN = 'login screen'
+#
+#
 
 from shared_data import SharedData 
 
@@ -27,7 +32,7 @@ class Tracker(MDApp):
         import View.screens
         self.shared_data = SharedData()
         self.manager_screens = MDScreenManager()
-        Window.bind(on_key_down=self.on_keyboard_down)
+        Window.bind( on_key_down = self.on_keyboard_down)
         importlib.reload(View.screens)
         screens = View.screens.screens
            
@@ -40,7 +45,7 @@ class Tracker(MDApp):
             self.manager_screens.add_widget(view)
 
         self.theme_cls.theme_style = "Dark"
-        self.manager_screens.current = "map screen"
+        self.manager_screens.current = LOAD_SCREEN
 
         return self.manager_screens
 

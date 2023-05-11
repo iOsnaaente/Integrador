@@ -31,7 +31,6 @@ class Database:
                     username VARCHAR(24) NOT NULL,
                     password VARCHAR(24) NOT NULL,
                     last_access date NOT NULL,
-                    name VARCHAR(24) NOT NULL,
                     photo blob,
                     manager_id integer NOT NULL,
                     FOREIGN KEY (manager_id) REFERENCES manager (id)
@@ -40,7 +39,7 @@ class Database:
         )
         self.con.commit() 
 
-    def create_new_user( self, manager_group : str, manager_psd : str, username : str, psd : str, name : str, __debug : bool = False ) -> bool:
+    def create_new_user( self, manager_group : str, manager_psd : str, username : str, psd : str, __debug : bool = False ) -> bool:
         # Primeiro verifica se o manager possui as credenciais 
         self.cursor.execute( 'SELECT id FROM manager WHERE manager_group = ? AND password = ?', (manager_group, manager_psd, ) )
         manager_id = self.cursor.fetchall() 
@@ -61,7 +60,7 @@ class Database:
             else:  
                 last_access = self.get_date_now() 
                 manager_id = manager_id[0][0]
-                self.cursor.execute( 'INSERT INTO user(username, password, last_access, name, manager_id ) VALUES (?,?,?,?,?)', ( username, psd, last_access, name, manager_id ,) )
+                self.cursor.execute( 'INSERT INTO user( username, password, last_access, manager_id ) VALUES (?,?,?,?)', ( username, psd, last_access, manager_id ,) )
                 self.con.commit()
                 if __debug:
                     print(f'Username {username} registered.')
@@ -106,10 +105,9 @@ class Database:
             "username": result[1],
             "password": result[2],
             "last_access": result[3],
-            "name": result[4],
-            "photo": result[5].hex() if result[5] else None,
-            "manager_id" : result[6],
-            "level_access": result[7]
+            "photo": result[4].hex() if result[4] else None,
+            "manager_id" : result[5],
+            "level_access": result[6]
         }
         # Atualiza o ultimo acesso 
         self.set_user_last_access( username ) 
@@ -174,11 +172,11 @@ class Database:
 if __name__ == '__main__':
     db = Database( os.path.dirname(__file__) + '/db/database.db') 
     db.create_new_manager( 'sup', 'sup123', 10, True )
-    db.create_new_user( 'sup', 'sup123', 'iosnaaente', '1205', 'BrunoSup', True )
+    db.create_new_user( 'sup', 'sup123', 'iosnaaente', '1205', True )
     db.get_user_level_access( 'iosnaaente', True )
     print( db.login( 'iosnaaente', '1205', True ) )
     
     db.create_new_manager( 'adm', 'adm123',  1, True )
-    db.create_new_user( 'adm', 'adm123', 'iOsnaaenteAdm', '1205', 'BrunoAdm', True )
+    db.create_new_user( 'adm', 'adm123', 'iOsnaaenteAdm', '1205', True )
     db.get_user_level_access( 'iOsnaaenteAdm', True )
     print( db.login( 'iOsnaaenteAdm', '1205', True ) )

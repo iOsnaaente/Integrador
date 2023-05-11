@@ -9,27 +9,135 @@
         id: box_content 
         size_hint: 1, 1
 
+        MDBoxLayout: 
+            size_hint: 1, 1 
+            pos_hint: {'x': 0.0,'y': 0.0}
+            padding: 100, 200, 5, 5 
+            md_bg_color: 'gray'
+            FitImage: 
+                id: background_image 
+    
         MDBoxLayout:
             size_hint: 1, 1 
             pos_hint: {'x': 0.0,'y': 0.0}
-            md_bg_color: 'lightgray'
+            md_bg_color: [0.5, 0.5, 0.5, 0.9]
             orientation: 'vertical'
-            padding: 20 
+            padding: 110, 10, 10, 10 
             spacing: 10
+            
+            MDBoxLayout: 
+                spacing: 10
+                size_hint: 1, 0.5
+                #
+                # Sistema 
+                MDCard: 
+                    size_hint: 0.25, 1
+                    orientation: 'vertical'
+                    radius: 20 
+                    MDTopAppBar:
+                        title: 'Visualização do Sistema'
+                        elevation: 2
+                        right_action_items: [['weather-sunny']]
+                        specific_text_color: [1, 1, 1, 1]
+                        md_bg_color: [226/255, 141/255, 0, 1 ]
+                    MDSeparator:
+                        height: '1dp'
+                        color: 'black'
+                    MDBoxLayout:
+                        id: system_content
+                        size_hint: 1, 1
+                        radius: [0,0,10,10]
+                #
+                # Mapa loc
+                MDCard:
+                    size_hint: 0.25, 1
+                    orientation: 'vertical'
+                    MDTopAppBar:
+                        title: 'Mapa'
+                        elevation: 2
+                        right_action_items: [['earth' ]]
+                        specific_text_color: [1, 1, 1, 1]
+                    MDSeparator:
+                        height: '1dp'
+                        color: 'white'
+                    MDBoxLayout:
+                        id: map_content
+                        size_hint: 1, 1
+                        radius: [0,0,10,10]
+                
+    
 
-            AKCircularProgress:
-                id: progress_relative
-                pos_hint: {"center_x": .5, "center_y": .5}
-                size_hint: None, None
-                size: dp(100), dp(100)
-                percent_type: "percent"
-                start_deg: 240
-                end_deg: 480
-                percent_type: "relative"
-                line_width: 6
-                background_circle_color: [1,1,1,1]
-                background_line_width: 5
-                max_percent: 25
+                #
+                # Posição dos motores 
+                MDCard: 
+                    size_hint: 0.5, 1              
+                    orientation: 'vertical'
+                    MDTopAppBar:
+                        title: 'Posição dos motores'
+                        elevation: 2
+                        right_action_items: [['engine' ]]
+                        specific_text_color: [1, 1, 1, 1]
+                    MDSeparator:
+                        height: '1dp'
+                        color: 'white'
+                    MDBoxLayout:
+                        id: motors_content
+                        size_hint: 1, 1
+                        radius: [0,0,10,10]
+
+            #
+            # Geração / Histórico de geração  
+            MDBoxLayout:
+                spacing: 10 
+                size_hint: 1, 0.5
+                #
+                # Geração solar 
+                MDCard: 
+                    size_hint: 0.25, 1
+                    orientation: 'vertical'
+                    MDTopAppBar:
+                        title: 'Geração'
+                        elevation: 2
+                        right_action_items: [['solar-power' ]]
+                        specific_text_color: [1, 1, 1, 1]
+                    MDSeparator:
+                        height: '1dp'
+                        color: 'white'
+                    MDBoxLayout:
+                        id: power_content
+                        size_hint: 1, 1
+                        radius: [0,0,10,10]                        
+                        AKCircularProgress:
+                            id: progress_relative
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                            size_hint: None, None
+                            size: dp(100), dp(100)
+                            percent_type: "percent"
+                            start_deg: 240
+                            end_deg: 480
+                            percent_type: "relative"
+                            line_width: 6
+                            background_circle_color: [1,1,1,1]
+                            background_line_width: 5
+                            max_percent: 25
+                #
+                # Histórico de geração 
+                MDCard:
+                    size_hint: 0.75, 1
+                    orientation: 'vertical'
+                    MDTopAppBar:
+                        title: 'Histórico de geração'
+                        elevation: 2
+                        right_action_items: [['chart-line-variant' ]]
+                        specific_text_color: [1, 1, 1, 1]
+                    MDSeparator:
+                        height: '1dp'
+                        color: 'white'
+                    MDBoxLayout:
+                        id: log_content
+                        size_hint: 1, 1
+                        radius: [0,0,10,10]
+
                 # MDRaisedButton: on_release: progress_relative.current_percent = 0
 
             # Graph:

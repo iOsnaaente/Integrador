@@ -5,8 +5,8 @@ from kivymd.uix.card import MDCard
 from datetime import datetime
 import math 
 
-HOVER_ENTER_COLOR = [0.1, 0.1, 0.1, 0.85 ] 
-HOVER_LEAVE_COLOR = [0.5, 0.5, 0.5, 0.5 ]
+HOVER_ENTER_COLOR = [0.5, 0.5, 0.5, 0.40 ] 
+HOVER_LEAVE_COLOR = [0.1, 0.1, 0.1, 0.85 ]
 
 class AzimuteAllDay( MDCard, HoverBehavior ):
     azimute = None 

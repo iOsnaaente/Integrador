@@ -3,8 +3,10 @@
 #
 <CardNewUser>:
     id: login_card
+
     new_user:       user
     new_password:   password
+    super_psd:      super_psd
     super_user:     super_user 
 
     size_hint: .3, .5
@@ -43,13 +45,13 @@
             id: password
             hint_text: 'Senha'
             password: True 
-            pos_hint: {'center_x': .5, 'center_y': .65 }
+            pos_hint: {'center_x': .5, 'center_y': .725 }
             size_hint_x: .9 
             icon_left: 'key-variant'
             mode: "rectangle"
         MDIconButton:
             icon: "eye-off"
-            pos_hint: {"right": .95, "center_y": .635}
+            pos_hint: {"right": .95, "center_y": .720}
             theme_icon_color: 'Custom'
             icon_color: [.8,.8,.8,1]
             on_release:
@@ -58,9 +60,17 @@
         MDTextField:
             id: super_user
             icon_left: 'account-supervisor'
-            hint_text: 'Código de permissão'
-            pos_hint: {'center_x': .5, 'center_y': .4 }
+            hint_text: 'Supervisor'
+            pos_hint: {'center_x': .5, 'center_y': .55 }
             size_hint_x: .9 
+            mode: "rectangle"
+        MDTextField:
+            id: super_psd
+            icon_left: 'key'
+            hint_text: 'Senha Supervisor'
+            pos_hint: {'center_x': .5, 'center_y': .375 }
+            size_hint_x: .9 
+            password: True 
             mode: "rectangle"
         MDRaisedButton: 
             text: 'Create'
@@ -68,7 +78,7 @@
             size_hint_x: .9
             size_hint_y: .1
             on_release: 
-                root.parent.create_new_user( user.text, password.text, super_user.text ) 
+                root.parent.create_new_user( user.text, password.text, super_user.text, super_psd.text ) 
 
 #
 # Main Screen 
