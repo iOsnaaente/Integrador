@@ -1,6 +1,12 @@
 # Integrador
 Repositório para versionamento do Projeto integrador e TCC
 
+### Geral 
+
+- [ ] Definir uma paleta de cores puxando para o amarelo ou laranja 
+    - [ ] Definir cores primarias 
+    - [ ] Definir cores de acentuação 
+
 
 ### Login Screen
 
@@ -22,8 +28,8 @@ Tarefas para a área de login
 
 Tarefas para a área de Home Page 
 
-- [ ] Mudar as cores dos cards 
-- [ ] Dimensionar o title dos cards 
+- [x] Mudar as cores dos cards 
+- [x] Dimensionar o title dos cards 
 - [ ] Corrigir os links do SideBar
 - [ ] Colocar o Mapa criado em MapScreen dentro do card Mapa
 - [ ] Colocar os graficos de posição dos motores criados dentro do card Posição dos motores 
