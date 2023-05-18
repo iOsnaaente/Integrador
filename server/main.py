@@ -12,4 +12,5 @@ MAX_APP_CONNECTED  = 10
 APP_PORT = 50506
 _thread.start_new_thread( listen_app_connections, ( IP, APP_PORT, MAX_APP_CONNECTED, True, ) )
 
-input('Para encerrar a execução pressione enter.')
+input('Para encerrar a execução pressione enter.\n')
+print( 'Encerrado' )

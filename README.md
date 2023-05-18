@@ -6,14 +6,17 @@ Repositório para versionamento do Projeto integrador e TCC
 
 Tarefas para a área de login
 
-- [ ] Adicionar os SweetCards para login 
-- [ ] Adicionar os SweetCards para registro de novo usuário 
-- [ ] Verificar se o servidor esta conectado se se continua vivo 
-- [ ] Verificar se o servidor não conectado volta a conectar 
-- [ ] Adicionar os SweetCards para servidor não conectado e conectado  
+- [x] Adicionar os SweetCards para login 
+- [x] Adicionar os SweetCards para registro de novo usuário 
+- [x] Verificar se o servidor esta conectado se se continua vivo 
+- [x] Verificar se o servidor não conectado volta a conectar 
+- [x] Adicionar os SweetCards para servidor não conectado e conectado  
+- [x] Fazer o shcedule_interval parar após o login
+- [ ] Fazer o schedule_interval voltar quando feito Logout
+- [ ] Fazer indicador se o servidor esta conectado ou não (canto da tela)
 - [ ] Fazer a aquisição da foto com o banco de dados 
 - [ ] Corrigir foto do card de login para multi dimensões 
-- [ ] Corrigir falha de primeiro acesso
+- [ ] Corrigir falha de primeiro acesso (será que precisa ??)
 
 ### Home Screen 
 

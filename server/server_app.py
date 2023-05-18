@@ -64,7 +64,7 @@ def listen_app_connections( IP : str, PORT : str, MAX_CLIENT_CONNECTED : int = 5
         app.listen( MAX_CLIENT_CONNECTED )
         loginCount = 0 
         if __debug:
-            print('Socket login is listening..')
+            print('Socket app is listening..')
     except socket.error as e:
         if __debug:
             print( str(e) )

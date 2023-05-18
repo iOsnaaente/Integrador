@@ -13,6 +13,9 @@ Window.size = ( monitor.width, monitor.height )
 Window.left = monitor.x
 Window.top = monitor.y + 25
 
+# Inicia em modo Tela Cheia 
+Window.fullscreen = 'auto'
+
 #
 # Debug 
 LOAD_SCREEN = 'login screen'
@@ -43,6 +46,7 @@ class Tracker(MDApp):
             view.manager_screens = self.manager_screens
             view.name = name_screen
             self.manager_screens.add_widget(view)
+
 
         self.theme_cls.theme_style = "Dark"
         self.manager_screens.current = LOAD_SCREEN

@@ -23,24 +23,26 @@ def multi_threaded_login( connection : socket.socket, __debug : bool = False ):
                     if __debug:
                         print( f'Data received: {obj} of type {type(obj)}' )            
                     
-
                         ''' Sistema de login OK '''
                     if obj['type'] == 'LOGIN': 
                         ans = db.login( obj['username'], obj['password'], True )
                     
-
                         ''' Sistema de criação de novo usuário OK '''
                     elif obj['type'] == 'NEW_USER':
                         ans = db.create_new_user( obj['manager_group'], obj['manager_psd'], obj['username'], obj['password'], True)
-                        if ans:     ans = db.login( obj['username'], obj['password'], True )
+                        if ans:     ans = 'SUCCESS'
                         else:       ans = 'FAILED'
-                    
                     
                     elif obj['type'] == 'NEW_MAN': 
                         # ans = db.create_new_manager() 
                         ans = 'UNKONW'
+                    
+                    elif obj['type'] == 'PING': 
+                        ans = 'PONG'                      
+                    
                     elif obj['type'] == 'CHANGE': 
                         ans = 'UNKNOW'                    
+                    
                     else:
                         ans = 'UNKNOW'
                 else:
