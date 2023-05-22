@@ -1,7 +1,10 @@
-from View.base_screen   import BaseScreenView
-from kivy.properties    import ObjectProperty
-from kivymd.uix.card    import MDCard 
-from kivy.clock         import Clock
+from View.base_screen       import BaseScreenView
+from kivy.properties        import ObjectProperty
+from kivymd.uix.card        import MDCard 
+from kivy.clock             import Clock
+from kivymd.uix.behaviors   import HoverBehavior 
+from kivymd.theming         import ThemableBehavior
+
 from extensions.sweetalert.sweetalert import SweetAlert 
 
 import os 
@@ -13,12 +16,28 @@ class CardNewUser( MDCard ):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+# Linha para puxar a tela de login 
+class SwipeLine( MDCard, ThemableBehavior, HoverBehavior ):
+    HOVER_ENTER_COLOR : list = [ 0.8, 0.8, 0.8, 0.85 ] 
+    HOVER_LEAVE_COLOR : list = [ 0.5, 0.5, 0.5, 0.60 ] 
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def on_enter(self, *args):
+        self.md_bg_color = self.HOVER_ENTER_COLOR
+        return super().on_enter()
+    
+    def on_leave(self, *args):
+        self.md_bg_color = self.HOVER_LEAVE_COLOR
+        return super().on_leave()
+
 
 class LoginScreenView( BaseScreenView ):
 
     __debug : bool = True 
 
-    IMAGE_PATH = os.path.dirname( __file__ ).removesuffix('\\View\\LoginScreen') + '/images'
+    IMAGE_PATH = os.path.dirname( __file__ ).removesuffix('\\View\\LoginScreen') + '/assets/images'
 
     username = ObjectProperty()
     password = ObjectProperty()

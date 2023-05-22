@@ -1,12 +1,34 @@
 # Integrador
 Repositório para versionamento do Projeto integrador e TCC
 
-### Geral 
+### How to install 
+
+### How to use 
+
+### Back log de projeto 
+
+Tarefas gerais a serem realizadas 
 
 - [ ] Definir uma paleta de cores puxando para o amarelo ou laranja 
     - [ ] Definir cores primarias 
-    - [ ] Definir cores de acentuação 
+    - [ ] Definir cores de acentuação
+- [ ] Corrigir os links do SideBar
+- [ ] Não enviar as informações sensíveis quando alguém loga no sistema 
+- [ ] Fazer o tema claro
+- [ ] Fazer botão para alternar entre os temas
+- [ ] Fazer botão para logout 
+- [ ] Solicitar a foto do usuário para o banco de dados 
+- [ ] Fazer a tela de configuração da foto de usuário 
+- [ ] Unificar os arquivos Models entre LoginModel e SystemModel
 
+### Shared Data 
+
+Tarefas que serão compartilhadas entre todas as telas para acesso em qualquer ponto do código 
+- [ ] Colocar o Map dentro do Shared Data 
+- [ ] Colocar as posições do motor (Azimute e Zenite) dentro do Shared Data 
+- [ ] Criar rotina de leitura dos motores 
+- [ ] Conexão Serial
+- [ ] Valores de geração    
 
 ### Login Screen
 
@@ -23,6 +45,8 @@ Tarefas para a área de login
 - [ ] Fazer a aquisição da foto com o banco de dados 
 - [ ] Corrigir foto do card de login para multi dimensões 
 - [ ] Corrigir falha de primeiro acesso (será que precisa ??)
+- [x] Adicionar um MDCard em formato de linha de slide lateral para puxar a tela de login
+- [ ] Registro de usuário não fecha quando cadastra
 
 ### Home Screen 
 
@@ -30,16 +54,25 @@ Tarefas para a área de Home Page
 
 - [x] Mudar as cores dos cards 
 - [x] Dimensionar o title dos cards 
-- [ ] Corrigir os links do SideBar
-- [ ] Colocar o Mapa criado em MapScreen dentro do card Mapa
-- [ ] Colocar os graficos de posição dos motores criados dentro do card Posição dos motores 
+- [x] Colocar o Mapa criado em MapScreen dentro do card Mapa
+- [x] Colocar os graficos de posição dos motores criados dentro do card Posição dos motores 
+- [ ] Atualizar o gráfico de posição dos motores
 - [ ] Criar o histórico de geração
+- [x] Corrigir o Side Bar para apresentar o nome 
+- [ ] Corrigir as dimensões dos objetos dentro da janela
 
 ### Map Screen
 
 Tarefas para a área de Map Screen 
-
-- [ ] Corrigir as informações do sistema 
+- [x] Adicionar o mapa de fundo
+- [x] Definir os cards de informação
+    - [x] Informações do sistema 
+    - [x] Informações de angulo do zenite
+    - [x] Informações de angulo do azimute
+- [x] Adicionar efeitos de hover nos cards informativos
+- [x] Fazer rotina de atualização do card de informações do sistema
+- [ ] Corrigir o slider de segundos de sol 
+- [ ] Corrigir as informações de conexão
 - [ ] Centralizar o Tracker com o mapa 
 - [ ] Embelezar o botão do tracker 
 - [ ] Corrigir as informações de hora com o mover do mapa 
@@ -58,12 +91,14 @@ Tarefas para a área de Serial Screen
 - [ ] Implementar o card de controle manual dos motores
 - [ ] Implementar o card de log da serial 
 - [ ] Corrigir os gráficos para os valores lidos na serial 
+- [ ] Corrigir as cores dos gráficos 
 
 
 ### Sensor Screen
 Tarefas para a área de Sensor Screen 
-- [x] A definir 
+- [ ] Criar a screen de Sensor
+
 
 ### Diagnostic Screen
 Tarefas para a área de Diagnostic Screen 
-- [ ] A definir 
+- [ ] Criar as Screens de Diagnóstico

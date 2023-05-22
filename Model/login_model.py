@@ -3,7 +3,7 @@ from Model.base_model import BaseScreenModel
 from libs.Security import encode_object, decode_object, sync_unikey
 from cryptography.fernet import Fernet 
 from Model.db.database import Database 
-from shared_data import SharedData
+from Model.shared_data import SharedData
 
 import threading
 import socket

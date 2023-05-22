@@ -1,3 +1,8 @@
+<SwipeLine@MDCard>:
+    size_hint: 0.005, 0.5
+    pos_hint: { 'center_x' : 0.995, 'center_y' : 0.5 }
+    md_bg_color: 0.5, 0.5, 0.5, 0.6
+
 #
 # Card New User 
 #
@@ -269,22 +274,24 @@
                         pos_hint: {'right': 1.0,'center_y': 0.5}
                         orientation: 'vertical'
                         MDIconButton:
-                            size_hint: 0.7, 0.6
+                            size_hint: 0.8, 0.5
                             icon: 'arrow-left'
-                            icon_size: "36sp"
+                            icon_size: "26sp"
                             halign: 'center'
                             theme_icon_color: "Custom"
                             icon_color: [1,1,1,1]
                             pos_hint: {'rigth': 0.50,'center_y': 0.50}
                             on_release: drawer_login.set_state( 'open' )
                         MDLabel:
-                            size_hint: 1, 0.2
-                            text: 'swipe to login'
+                            size_hint: 1, 0.1
+                            text: 'login'
                             font_size: 13
                             halign: 'center'
                             color: 'white'
                         MDLabel:
-                            size_hint: 1, 0.2                        
+                            size_hint: 1, 0.4 
+                MDFloatLayout:
+                    SwipeLine:                     
     #
     # Login content
     #

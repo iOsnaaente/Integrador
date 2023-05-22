@@ -5,7 +5,7 @@ from View.commom_components.Graphs.graph_all_day import AzimuteAllDay, ZeniteAll
 from View.commom_components.Serial.serial_conf import SerialConfiguration 
 from View.commom_components.Graphs.graph_area import Zenite, Azimute 
 from View.commom_components.SideBar.side_bar import SideBar 
-
+from View.MapScreen.map_screen import MapView
 from View.base_screen import BaseScreenView
 
 
@@ -16,6 +16,12 @@ IMAGES = PATH.removesuffix('\\View\\HomeScreen') + '/assets/images/'
 
 class HomeScreenView( BaseScreenView ):
 
+    serial_configuration : SerialConfiguration 
+    azimute_graph : Azimute 
+    zenite_graph : Zenite 
+    map_view : MapView 
+    side_bar : SideBar
+
     def model_is_changed(self) -> None:
         """
         Called whenever any change has occurred in the data model.
@@ -23,11 +29,33 @@ class HomeScreenView( BaseScreenView ):
         according to these changes.
         """
 
-    def on_enter(self, *args):
-        self.ids.box_content.add_widget( SideBar( model = self.model ) ) 
+    def on_kv_post(self, *args):
         self.ids.background_image.source = IMAGES + '/panel.png'
+        
+        self.side_bar = SideBar( model = self.model ) 
+        self.serial_configuration = SerialConfiguration() 
+        self.map_view = MapView( 
+                            lat = -29.71332542661317, 
+                            lon = -53.71766381408064,
+                            zoom = 20,  
+                            pos_hint = {'center_x': 0.50, 'center_y': 0.5 } 
+                        ) 
+        self.zenite_graph = Zenite() 
+        self.azimute_graph = Azimute() 
 
-        return super().on_enter(*args)
+        self.ids.box_content.add_widget( self.side_bar )
+        self.ids.system_content.add_widget( self.serial_configuration )
+        self.ids.map_content.add_widget( self.map_view )
+        self.ids.azimute_content.add_widget( self.azimute_graph ) 
+        self.ids.zenite_content.add_widget ( self.zenite_graph ) 
+        
+        return super().on_kv_post(*args)
+
+    # Gambiarra para puxar o nome de usuário e level de acesso
+    def on_enter( self, *args ):
+        self.side_bar = SideBar( model = self.model ) 
+        self.ids.box_content.add_widget( self.side_bar )
+        return super().on_enter() 
 
     @property 
     def username( self ): 

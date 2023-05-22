@@ -4,7 +4,6 @@
 #
 <HomeScreenView>
     on_enter: progress_relative.current_percent = 20
-    box: box_content 
 
     MDFloatLayout:
         id: box_content 
@@ -97,7 +96,14 @@
                         id: motors_content
                         size_hint: 1, 0.9
                         radius: [0,0,10,10]
-
+                        MDCard: 
+                            id: azimute_content
+                            size_hint: 0.5, 1
+                            radius: 5
+                        MDCard: 
+                            id: zenite_content
+                            size_hint: 0.5, 1
+                            radius: 5
             #
             # Geração / Histórico de geração  
             MDBoxLayout:

@@ -1,25 +1,31 @@
 from Model.base_model import BaseScreenModel
-from shared_data import SharedData
+from Model.shared_data import SharedData 
+from libs.Sun import SunPosition 
+from libs.Uart import UART 
 
 import os 
 PATH = os.path.dirname( __file__ )
 
-
 class SystemModel(BaseScreenModel):
     """
     Implements the logic of the
-    :class:`~View.map_screen.MapScreen.MapScreenView` class.
-    """    
-    
-    get_user_level_access = 'Administrador'
-    get_user_photo = PATH.removesuffix('\\Model') + '/images/me.png'
-    get_username = 'Brunosvaldo Sampaio' 
-    __shared_data : SharedData
+    :class:`~View.home_screen.HomeScreen.HomeScreenView` class.
+    """
 
-    def __init__(self, shared_data : SharedData = None ) -> None:
-        super().__init__()
-        self.__shared_data = shared_data 
+    SunData : SunPosition = SunPosition( 
+        latitude = -29.71332542661317, 
+        longitude = -53.71766381408064, 
+        altitude = 300 
+    )
     
+    __shared_data : SharedData 
+    __serial : UART
+
+    def __init__( self, shared_data : SharedData = None ) -> None:
+        self.__shared_data = shared_data 
+        self.__serial = None 
+        super().__init__() 
+
     @property 
     def shared_data( self ):
-        return self.__shared_data 
+        return self.__shared_data

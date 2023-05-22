@@ -11,7 +11,7 @@ from View.base_screen import BaseScreenView
 from View.commom_components.Graphs.graph_all_day import AzimuteAllDay, ZeniteAllDay 
 
 #####################################
-from libs.Model import SunPosition 
+from libs.Sun import SunPosition 
 import math 
 #####################################
 

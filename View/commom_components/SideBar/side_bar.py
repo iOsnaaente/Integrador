@@ -9,7 +9,7 @@ from kivymd.app import MDApp
 
 import os 
 PATH = os.path.dirname( __file__ ).removesuffix('\\View\\commom_components\\SideBar')
-IMAGES = PATH + '/images/'
+IMAGES = PATH + '/assets/images/'
 APP = MDApp.get_running_app()
 
 imgs = [ 'smart.png'          ,
@@ -62,9 +62,6 @@ class MyCardMenu( MDCard, ThemableBehavior, HoverBehavior ):
     def on_leave(self):
         self.md_bg_color = self.theme_cls.bg_darkest
         return super().on_leave()
-
-
-
     
 class SideBar( MDBoxLayout ):
 
@@ -84,24 +81,22 @@ class SideBar( MDBoxLayout ):
     def build( self, clock_event ):
         
         self.user_level_access.text = str(self.model.shared_data.level_access) 
+        print( self.model.shared_data.username )
 
-        ##
-        ##  COLCOAR A FOTO NO LUAGR CERTO 
-        ##
         if self.model.shared_data.photo: 
             self.user_photo.source = self.model.shared_data.photo
         else: 
-            self.user_photo.source = PATH.removesuffix('\\View\\commom_components\\SideBar') + '/images/me.png'
-        #
-        # ACERTAR A FOTO
-        #
+            self.user_photo.source = PATH.removesuffix('\\View\\commom_components\\SideBar') + '/assets/images/me.png'
+            
         self.username.text = str(self.model.shared_data.username)
 
         for img, label, link in zip( imgs, lbls, lnks ):
-            self.home_side_bar.add_widget(  MyCardMenu(
-                                                text = label,
-                                                image = IMAGES + img, 
-                                                body_size = [ 1, 1/(len(imgs)+1) ],
-                                                screen_link = link
-                                            ) )
-    
+            self.home_side_bar.add_widget(  
+                MyCardMenu(
+                    text = label,
+                    image = IMAGES + img, 
+                    body_size = [ 1, 1/(len(imgs)+1) ],
+                    screen_link = link
+                ) 
+            )
+

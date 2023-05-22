@@ -1,12 +1,14 @@
-from kivymd.tools.hotreload.app import MDApp
 from kivymd.uix.screenmanager import MDScreenManager
+from kivymd.tools.hotreload.app import MDApp
 
-# TODO: You may know an easier way to get the size of a computer display.
 import importlib
 
 # Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
 from screeninfo import get_monitors
-monitor = get_monitors()[1]
+try: 
+    monitor = get_monitors()[1]
+except:
+    monitor = get_monitors()[0]
 
 from kivy.core.window import Window
 Window.size = ( monitor.width, monitor.height )
@@ -16,13 +18,14 @@ Window.top = monitor.y + 25
 # Inicia em modo Tela Cheia 
 Window.fullscreen = 'auto'
 
-#
 # Debug 
 LOAD_SCREEN = 'login screen'
 #
-#
 
-from shared_data import SharedData 
+# Onde as informações devem ser compartilhadas 
+from Model.shared_data import SharedData 
+from Model.login_model import LoginModel 
+from Model.system_model import SystemModel 
 
 import os
 class Tracker(MDApp):
@@ -33,20 +36,25 @@ class Tracker(MDApp):
 
     def build_app(self) -> MDScreenManager:
         import View.screens
-        self.shared_data = SharedData()
+
         self.manager_screens = MDScreenManager()
+        self.shared_data = SharedData()
+        self.login_model = LoginModel( shared_data = self.shared_data )
+        self.system_model = SystemModel( shared_data = self.shared_data )
+
         Window.bind( on_key_down = self.on_keyboard_down)
+
         importlib.reload(View.screens)
-        screens = View.screens.screens
-           
+        screens = View.screens.screens   
         for i, name_screen in enumerate(screens.keys()):
-            model = screens[name_screen]["model"]( shared_data = self.shared_data)
-            controller = screens[name_screen]["controller"]( model = model, shared_data = self.shared_data)
+            if name_screen == 'login screen':
+                controller = screens[name_screen]["controller"]( model = self.login_model, shared_data = self.shared_data)
+            else:
+                controller = screens[name_screen]["controller"]( model = self.system_model, shared_data = self.shared_data)
             view = controller.get_view()
             view.manager_screens = self.manager_screens
             view.name = name_screen
             self.manager_screens.add_widget(view)
-
 
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Orange"

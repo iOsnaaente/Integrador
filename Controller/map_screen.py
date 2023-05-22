@@ -1,6 +1,6 @@
 import View.MapScreen.map_screen
 
-from shared_data import SharedData 
+from Model.shared_data import SharedData 
 
 # We have to manually reload the view module in order to apply the
 # changes made to the code on a subsequent hot reload.

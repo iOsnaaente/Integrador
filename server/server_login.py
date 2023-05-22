@@ -33,10 +33,12 @@ def multi_threaded_login( connection : socket.socket, __debug : bool = False ):
                         if ans:     ans = 'SUCCESS'
                         else:       ans = 'FAILED'
                     
+                        ''' Criação de novo manager''' 
                     elif obj['type'] == 'NEW_MAN': 
                         # ans = db.create_new_manager() 
                         ans = 'UNKONW'
                     
+                        ''' Verifica o status da conexão '''
                     elif obj['type'] == 'PING': 
                         ans = 'PONG'                      
                     

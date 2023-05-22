@@ -1,7 +1,7 @@
 from Model.login_model import LoginModel
 from Controller.login_screen import LoginScreenController
 
-from Model.home_model import HomeModel
+from Model.system_model import SystemModel
 from Controller.home_screen import HomeScreenController
 from Controller.map_screen import MapScreenController
 
@@ -14,11 +14,11 @@ screens = {
         'controller': LoginScreenController,
     },
     'home screen': {
-        'model': HomeModel,
+        'model': SystemModel,
         'controller': HomeScreenController,
     },
     'map screen': {
-        'model': HomeModel,
+        'model': SystemModel,
         'controller': MapScreenController,
     },
     'serial screen': {
@@ -29,5 +29,8 @@ screens = {
         'model': SystemModel,
         'controller': SerialScreenController,
     },
-    
+    'diagnosticos screen': {
+        'model': SystemModel,
+        'controller': SerialScreenController,
+    },   
 }
