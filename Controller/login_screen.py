@@ -37,3 +37,12 @@ class LoginScreenController:
     # Fechar o card de novo usuário     
     def close_widget( self ):
         self.view.remove_widget( self.card_widget )
+    
+    def hover_item_in( self, object = None  ):
+        if object:
+            object.size_hint = [ 0.2, 1 ]
+
+
+    def hover_item_out( self, object = None ):
+        if object:
+            object.size_hint = [ 0.2, 0.8 ]

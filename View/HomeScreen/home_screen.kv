@@ -8,19 +8,20 @@
     MDFloatLayout:
         id: box_content 
         size_hint: 1, 1
+        
+        # BackgroundColor
+        md_bg_color: app.theme_cls.bg_darkest
 
         MDBoxLayout: 
             size_hint: 1, 1 
             pos_hint: {'x': 0.0,'y': 0.0}
             padding: 100, 200, 5, 5 
-            md_bg_color: 'gray'
             FitImage: 
                 id: background_image 
     
         MDBoxLayout:
             size_hint: 1, 1 
             pos_hint: {'x': 0.0,'y': 0.0}
-            md_bg_color: [0.5, 0.5, 0.5, 0.9]
             orientation: 'vertical'
             padding: 110, 10, 10, 10 
             spacing: 5

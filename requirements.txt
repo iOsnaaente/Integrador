@@ -1,13 +1,18 @@
 kivy
 kivymd
+kivymd-extensions
+kivymd-extensions.akivymd
+kivymd-extensions.sweetalert
+screeninfo
 watchdog
-opencv-python
-camera4kivy
+cryptography
 matplotlib
-pyzbar
 requests
-svg-lib
-pillow
+ephem
+pyserial
+pymodbus
+
+
 
 # Buildozer requiements - akivymd
 # requirements = https://github.com/kivymd-extensions/akivymd/archive/main.zip

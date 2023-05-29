@@ -1,4 +1,4 @@
-from View.commom_components.SideBar.side_bar import SideBar 
+from View.Widgets.SideBar.side_bar import SideBar 
 from kivy_garden.mapview import MapMarkerPopup
 from kivy_garden.mapview import MapView 
 from kivymd.uix.widget import MDWidget 
@@ -8,7 +8,7 @@ from kivy.graphics import *
 from kivy.clock import Clock 
 
 from View.base_screen import BaseScreenView
-from View.commom_components.Graphs.graph_all_day import AzimuteAllDay, ZeniteAllDay 
+from View.Widgets.Graphs.graph_all_day import AzimuteAllDay, ZeniteAllDay 
 
 #####################################
 from libs.Sun import SunPosition 

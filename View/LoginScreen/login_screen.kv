@@ -1,3 +1,4 @@
+#:import FrostedGlass extensions.kivygo.kivygo.uix.frostedglass.FrostedGlass
 <SwipeLine@MDCard>:
     size_hint: 0.005, 0.5
     pos_hint: { 'center_x' : 0.995, 'center_y' : 0.5 }
@@ -114,6 +115,7 @@
                     MDBoxLayout:
                         md_bg_color: [0,0,0,0.5]
                         pos_hint: {'rigth': 0.1,'top': 1 }
+
                 #
                 # Body 
                 # 
@@ -124,6 +126,7 @@
                     # Header
                     MDBoxLayout:
                         size_hint: 1, 0.2
+
                     #
                     # Title 
                     #
@@ -161,15 +164,21 @@
                     MDBoxLayout:
                         size_hint: 0.75, 0.2
                         pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                        spacing: '25dp'
                         #
                         # Mapa 
                         #
-                        MDBoxLayout:
+                        MDCard:
                             orientation: 'vertical'
-                            size_hint: 0.2, 1 
-                            MDIconButton:
-                                icon: root.map_icon
-                                size_hint: 1, 0.75
+                            size_hint: 0.2, 0.8
+                            md_bg_color: 0, 0, 0, 0
+                            on_enter: 
+                                root.controller.hover_item_in( self )
+                            on_leave:
+                                root.controller.hover_item_out( self )
+                            Image:
+                                source: root.map_icon
+                                size_hint: 0.75, 0.75
                                 pos_hint: { 'center_x': 0.50 }
                                 icon_size: "76sp"
                                 halign: 'center'
@@ -185,11 +194,16 @@
                         #
                         # Segurança 
                         #
-                        MDBoxLayout:
+                        MDCard:
                             orientation: 'vertical'
-                            size_hint: 0.2, 1 
-                            MDIconButton:
-                                icon: root.security_icon
+                            size_hint: 0.2, 0.8
+                            md_bg_color: 0, 0, 0, 0
+                            on_enter: 
+                                root.controller.hover_item_in( self )
+                            on_leave:
+                                root.controller.hover_item_out( self )
+                            Image:
+                                source: root.security_icon
                                 size_hint: 1, 0.75
                                 pos_hint: { 'center_x': 0.50 }
                                 icon_size: "76sp"
@@ -206,11 +220,16 @@
                         #
                         # Produção inteligente 
                         #
-                        MDBoxLayout:
+                        MDCard:
                             orientation: 'vertical'
-                            size_hint: 0.2, 1 
-                            MDIconButton:
-                                icon: root.solar_icon 
+                            size_hint: 0.2, 0.8
+                            md_bg_color: 0, 0, 0, 0
+                            on_enter: 
+                                root.controller.hover_item_in( self )
+                            on_leave:
+                                root.controller.hover_item_out( self )
+                            Image:
+                                source: root.solar_icon 
                                 size_hint: 1, 0.75
                                 pos_hint: { 'center_x': 0.50 }
                                 icon_size: "76sp"
@@ -227,11 +246,16 @@
                         #
                         # Conectividade  
                         #
-                        MDBoxLayout:
+                        MDCard:
                             orientation: 'vertical'
-                            size_hint: 0.2, 1 
-                            MDIconButton:
-                                icon: root.connectivity_icon 
+                            size_hint: 0.2, 0.8
+                            md_bg_color: 0, 0, 0, 0
+                            on_enter: 
+                                root.controller.hover_item_in( self )
+                            on_leave:
+                                root.controller.hover_item_out( self )
+                            Image:
+                                source: root.connectivity_icon 
                                 size_hint: 1, 0.75
                                 pos_hint: { 'center_x': 0.50 }
                                 icon_size: "76sp"
@@ -248,11 +272,16 @@
                         #
                         # Energia limpa  
                         #
-                        MDBoxLayout:
+                        MDCard:
                             orientation: 'vertical'
-                            size_hint: 0.2, 1 
-                            MDIconButton:
-                                icon: root.green_power_icon
+                            size_hint: 0.2, 0.8
+                            md_bg_color: 0, 0, 0, 0
+                            on_enter: 
+                                root.controller.hover_item_in( self )
+                            on_leave:
+                                root.controller.hover_item_out( self )
+                            Image:
+                                source: root.green_power_icon
                                 size_hint: 1, 0.75
                                 pos_hint: { 'center_x': 0.50 }
                                 icon_size: "76sp"

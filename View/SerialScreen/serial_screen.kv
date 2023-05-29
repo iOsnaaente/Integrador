@@ -1,7 +1,6 @@
 #:import MapView kivy.garden.mapview.MapView 
 
 <SerialScreenView>
-    serial: serial 
     md_bg_color: app.theme_cls.bg_darkest
     #
     # Content 
@@ -21,11 +20,10 @@
             #
             # Upper 
             MDBoxLayout:
-                id: serial_and_graphs
                 size_hint: 1, 0.5
                 orientation: 'horizontal'
                 spacing: 10
-                padding: 10
+                padding: 10 
                 #
                 # Dummy 
                 MDLabel:
@@ -37,14 +35,28 @@
                 # Serial config 
                 MDBoxLayout:
                     id: serial
-                    size_hint: 0.33, 1
+                    size_hint: 0.33, 1                
+                #
+                # Azimute Graph 
+                MDBoxLayout:
+                    id: azimute
+                    size_hint: 0.30, 1                
+                #
+                # Zenite Graph 
+                MDBoxLayout:
+                    id: zenite
+                    size_hint: 0.30, 1
+            
             #
-            # Connection logs and commands content
+            # #
+            # # Connection logs and commands content
+            # #
+            #
             MDBoxLayout:
                 size_hint: 1, 0.5
                 orientation: 'horizontal'
-                padding: 10, 0, 10, 10 
                 spacing: 10
+                padding: 10, 0, 10, 0 
                 #
                 # Dummy 
                 MDLabel:
@@ -52,8 +64,92 @@
                     size: dp(90), dp(100)
                     md_bg_color:'white'
                     text: "Dummy label"
+                
                 #
-                # Content
+                # #
+                # # Comandos seriais 
+                # #
+                #
                 MDCard:
-                    size_hint: 1, 1
-                    md_bg_color: 'gray'
+                    orientation: 'vertical'
+                    size_hint: 0.33, 1
+                    md_bg_color: [0.25,0.25,0.25,0.5]
+                    spacing: 10 
+                    padding: 10 
+                    MDLabel: 
+                        size_hint: 1, 0.1
+                        text: 'Painel de comandos'
+                    MDScrollView:
+                        size_hint: 1, 0.9
+                        md_bg_color: 0.1, 0.1, 0.1, 0.5
+                        do_scroll_x: False
+                        do_scroll_y: True
+                        radius: 10
+                        MDBoxLayout: 
+                            id: commands_scroll   
+                            orientation: 'vertical'
+                            size_hint: 1, None
+                            adaptive_height: True
+                            spacing: 15
+
+                #
+                # #
+                # # Log da serial 
+                # #
+                #
+                MDStackLayout:
+                    size_hint: 0.6, 1
+                    md_bg_color: [0.25,0.25,0.25,0.5]
+                    radius: 10
+                    spacing: 10 
+                    padding: 10 
+
+                    #
+                    # Serial monitor
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint: 0.75, 0.875
+                        spacing: 5
+                        padding: 5 
+                        MDLabel:
+                            size_hint: 1, 0.1
+                            text: 'Serial monitor:'
+                        MDCard:
+                            id: serial_monitor
+                            size_hint: 1, 0.9 
+                            md_bg_color: 0.1, 0.1, 0.1, 0.5
+ 
+
+                    #
+                    # Serial monitor
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint: 0.25, 0.875
+                        spacing: 5
+                        padding: 5 
+                        MDLabel:
+                            size_hint: 1, 0.1
+                            text: 'Lista de comandos:'
+                        MDCard:
+                            id: command_hint
+                            size_hint: 1, 0.9 
+                            md_bg_color: 0.1, 0.1, 0.1, 0.5
+                    
+                    #
+                    # Serial monitor
+                    MDCard:
+                        orientation: 'horizontal'
+                        size_hint: 1, 0.1
+                        MDLabel:
+                            size_hint: 0.175, 1 
+                            text: 'Enviar Comandos:'
+                        MDTextField:
+                            id: prompt_commandos
+                            size_hint: 0.725, 1.5
+                        MDIconButton:
+                            size_hint: 0.1, 1 
+                            icon: 'send'
+
+                        
+                        
+

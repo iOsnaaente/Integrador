@@ -1,7 +1,11 @@
 from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.tools.hotreload.app import MDApp
+from kivy.utils import rgba, QueryDict 
+from kivy.metrics import sp, dp 
 
 import importlib
+
+from System.tracker import Tracker
 
 # Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
 from screeninfo import get_monitors
@@ -19,7 +23,7 @@ Window.top = monitor.y + 25
 Window.fullscreen = 'auto'
 
 # Debug 
-LOAD_SCREEN = 'login screen'
+LOAD_SCREEN = 'serial screen'
 #
 
 # Onde as informações devem ser compartilhadas 
@@ -33,6 +37,14 @@ class Tracker(MDApp):
     KV_DIRS = [os.path.join(os.getcwd(), "View")]
     shared_data : SharedData 
     DEBUG = 0
+   
+    colors = QueryDict() 
+    # Cores 
+    colors.background    = rgba( '#444444FF' )
+    colors.primary       = rgba( "#FDC6BBFF" )
+    colors.accent        = rgba( "#FD453BFF" )
+    colors.hint          = rgba( "#F6F6F6FF" )
+
 
     def build_app(self) -> MDScreenManager:
         import View.screens

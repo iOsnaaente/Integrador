@@ -5,7 +5,9 @@ from kivy.clock             import Clock
 from kivymd.uix.behaviors   import HoverBehavior 
 from kivymd.theming         import ThemableBehavior
 
-from extensions.sweetalert.sweetalert import SweetAlert 
+from kivymd_extensions.sweetalert.sweetalert import SweetAlert
+import extensions.kivygo.kivygo.uix.frostedglass
+
 
 import os 
 IMAGE_PATH = os.path.dirname( __file__ ).removesuffix('\\View\\LoginScreen') + '/images'

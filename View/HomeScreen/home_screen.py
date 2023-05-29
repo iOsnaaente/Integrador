@@ -1,10 +1,10 @@
 from kivymd_extensions.akivymd.uix.progresswidget import AKCircularProgress 
 from kivymd.app import MDApp 
 
-from View.commom_components.Graphs.graph_all_day import AzimuteAllDay, ZeniteAllDay 
-from View.commom_components.Serial.serial_conf import SerialConfiguration 
-from View.commom_components.Graphs.graph_area import Zenite, Azimute 
-from View.commom_components.SideBar.side_bar import SideBar 
+from View.Widgets.Graphs.graph_all_day import AzimuteAllDay, ZeniteAllDay 
+from View.Widgets.Serial.serial_conf import SerialConfiguration 
+from View.Widgets.Graphs.graph_area import Zenite, Azimute 
+from View.Widgets.SideBar.side_bar import SideBar 
 from View.MapScreen.map_screen import MapView
 from View.base_screen import BaseScreenView
 
@@ -30,8 +30,7 @@ class HomeScreenView( BaseScreenView ):
         """
 
     def on_kv_post(self, *args):
-        self.ids.background_image.source = IMAGES + '/panel.png'
-        
+        # self.ids.background_image.source = IMAGES + '/panel.png'
         self.side_bar = SideBar( model = self.model ) 
         self.serial_configuration = SerialConfiguration() 
         self.map_view = MapView( 
@@ -43,11 +42,11 @@ class HomeScreenView( BaseScreenView ):
         self.zenite_graph = Zenite() 
         self.azimute_graph = Azimute() 
 
-        self.ids.box_content.add_widget( self.side_bar )
-        self.ids.system_content.add_widget( self.serial_configuration )
-        self.ids.map_content.add_widget( self.map_view )
-        self.ids.azimute_content.add_widget( self.azimute_graph ) 
-        self.ids.zenite_content.add_widget ( self.zenite_graph ) 
+        self.ids.box_content.add_widget     ( self.side_bar             )
+        self.ids.system_content.add_widget  ( self.serial_configuration )
+        self.ids.map_content.add_widget     ( self.map_view             )
+        self.ids.azimute_content.add_widget ( self.azimute_graph        ) 
+        self.ids.zenite_content.add_widget  ( self.zenite_graph         ) 
         
         return super().on_kv_post(*args)
 

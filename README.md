@@ -71,8 +71,9 @@ Tarefas para a área de Map Screen
     - [x] Informações de angulo do azimute
 - [x] Adicionar efeitos de hover nos cards informativos
 - [x] Fazer rotina de atualização do card de informações do sistema
-- [ ] Corrigir o slider de segundos de sol 
-- [ ] Corrigir as informações de conexão
+- [ ] Corrigir o slider de progresso do sol 
+- [ ] Corrigir as informações de conexão 
+- [ ] Corrigir as informações de interesse
 - [ ] Centralizar o Tracker com o mapa 
 - [ ] Embelezar o botão do tracker 
 - [ ] Corrigir as informações de hora com o mover do mapa 
