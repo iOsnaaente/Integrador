@@ -17,7 +17,7 @@
     
     MDCard:
         size_hint: None, None
-        size: dp(50), dp(50)
+        size: sp(50), sp(50)
         pos_hint: {'center_x': 0.50,'top': 1}
         md_bg_color: [0,0,0,0] 
         radius: self.parent.radius
@@ -41,7 +41,7 @@
     home_side_bar: home_side_bar
 
     size_hint: None, 1
-    size: dp(100), 1
+    size: sp(100), 1
     pos_hint: {'x': 0,'y': 0}
     md_bg_color: app.theme_cls.bg_darkest
     orientation: 'vertical'
@@ -55,7 +55,7 @@
     #
     MDCard:
         size_hint: None, None 
-        size: dp(90), dp(90)
+        size: sp(90), sp(90)
         pos_hint: {'center_x': 0.5,'center_y': 0.5}
         elevation: 3
         radius: 45    
@@ -81,7 +81,7 @@
     MDCard: 
         orientation: 'vertical'
         size_hint: None, None 
-        size: dp(90), dp(100)
+        size: sp(90), sp(100)
         pos_hint: {'center_x': 0.5 }
         md_bg_color: [0,0,0,0]
         MDLabel:
@@ -112,7 +112,7 @@
 
     MDBoxLayout:
         size_hint: 1, None 
-        size: 1, dp( 45 )
+        size: 1, sp( 45 )
 
     MDBoxLayout:
         id: home_side_bar 
@@ -123,5 +123,5 @@
     
     MDBoxLayout:
         size_hint: 1, None 
-        size: 1, dp( 45 )
+        size: 1, sp( 45 )
 

@@ -23,7 +23,7 @@ Window.top = monitor.y + 25
 Window.fullscreen = 'auto'
 
 # Debug 
-LOAD_SCREEN = 'serial screen'
+LOAD_SCREEN = 'login screen'
 #
 
 # Onde as informações devem ser compartilhadas 

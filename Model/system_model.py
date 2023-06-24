@@ -6,7 +6,7 @@ from libs.Uart import UART
 import os 
 PATH = os.path.dirname( __file__ )
 
-class SystemModel(BaseScreenModel):
+class SystemModel( BaseScreenModel ):
     """
     Implements the logic of the
     :class:`~View.home_screen.HomeScreen.HomeScreenView` class.
