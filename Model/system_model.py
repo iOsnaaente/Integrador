@@ -4,14 +4,19 @@ from libs.Sun import SunPosition
 from libs.Uart import UART 
 
 import os 
-PATH = os.path.dirname( __file__ )
+PATH = os.path.dirname( __file__ ).removesuffix('\\Model')
 
 class SystemModel( BaseScreenModel ):
     """
     Implements the logic of the
     :class:`~View.home_screen.HomeScreen.HomeScreenView` class.
     """
-
+    painel_solar        = PATH + '/assets/images/PainelSolar.png'
+    motor_vertical      = PATH + '/assets/images/motorVertical.png'
+    motor_horizontal    = PATH + '/assets/images/motorHorizontal.png'
+    sensor_motores      = PATH + '/assets/images/encoder.png'
+    background          = PATH + '/assets/images/background.png'
+    
     SunData : SunPosition = SunPosition( 
         latitude = -29.71332542661317, 
         longitude = -53.71766381408064, 

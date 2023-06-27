@@ -1,8 +1,6 @@
-import importlib
-
-import View.HomeScreen.home_screen
-
 from Model.shared_data import SharedData 
+import View.HomeScreen.home_screen
+import importlib
 
 # We have to manually reload the view module in order to apply the
 # changes made to the code on a subsequent hot reload.
@@ -20,8 +18,8 @@ class HomeScreenController:
 
     def __init__(self, model, shared_data : SharedData ):
         self.model = model  # Model.home_screen.HomeScreenModel
-        self.view = View.HomeScreen.home_screen.HomeScreenView(controller=self, model=self.model)
         __shared_data = shared_data 
+        self.view = View.HomeScreen.home_screen.HomeScreenView(controller=self, model=self.model)
 
     def get_view(self) -> View.HomeScreen.home_screen:
         return self.view

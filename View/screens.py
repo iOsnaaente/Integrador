@@ -8,6 +8,9 @@ from Controller.map_screen import MapScreenController
 from Model.system_model import SystemModel
 from Controller.serial_screen import SerialScreenController
 
+from Controller.diganosticos_screen import DiganosticosScreenController
+from Controller.sensor_screen import SensorScreen 
+
 screens = {
     'login screen': {
         'model': LoginModel,
@@ -27,10 +30,10 @@ screens = {
     },
     'sensor screen': {
         'model': SystemModel,
-        'controller': SerialScreenController,
+        'controller': SensorScreen,
     },
     'diagnosticos screen': {
         'model': SystemModel,
-        'controller': SerialScreenController,
+        'controller': DiganosticosScreenController,
     },   
 }

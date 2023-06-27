@@ -1,11 +1,9 @@
 from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.tools.hotreload.app import MDApp
-from kivy.utils import rgba, QueryDict 
-from kivy.metrics import sp, dp 
+from kivy.utils import rgba, QueryDict
 
 import importlib
 
-from System.tracker import Tracker
 
 # Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
 from screeninfo import get_monitors
@@ -23,13 +21,15 @@ Window.top = monitor.y + 25
 Window.fullscreen = 'auto'
 
 # Debug 
-LOAD_SCREEN = 'login screen'
+LOAD_SCREEN = 'sensor screen'
 #
 
 # Onde as informações devem ser compartilhadas 
 from Model.shared_data import SharedData 
 from Model.login_model import LoginModel 
 from Model.system_model import SystemModel 
+
+from System.tracker import Tracker as TrackerSerial
 
 import os
 class Tracker(MDApp):
@@ -67,12 +67,11 @@ class Tracker(MDApp):
             view.manager_screens = self.manager_screens
             view.name = name_screen
             self.manager_screens.add_widget(view)
-
+        
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Orange"
         self.theme_cls.primary_hue = "500"
         self.manager_screens.current = LOAD_SCREEN
-
         return self.manager_screens
 
     def on_keyboard_down(self, window, keyboard, keycode, text, modifiers) -> None:

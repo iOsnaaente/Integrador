@@ -28,7 +28,7 @@ lbls = [ 'Home'               ,
 
 lnks = [ 'home screen'        ,
          'map screen'         ,  
-         'serial screen'    ,
+         'serial screen'      ,
          'sensor screen'      ,
          'diagnosticos screen', 
         ]
@@ -51,8 +51,10 @@ class MyCardMenu( MDCard ):
         try: 
             print('Link to screen: ', self.screen_link  )
             manager_screen.current = self.screen_link 
+            print('OK - Current screen: ', manager_screen.current )
         except: 
             manager_screen.current = current 
+            print( 'Exception change screen ')
         return super().on_press()
 
     def hover_in(self):

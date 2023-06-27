@@ -1,27 +1,32 @@
-import pymodbus
+from pymodbus.client.sync import ModbusSerialClient
 import sqlite3 
 import serial 
 import os 
 
 DB_PATH = os.path.dirname( __file__ ) + '/tags.db' 
 
-class Tracker( serial.Serial ):
-    
+class Tracker:
     devices = {}
 
-    def __init__(self, port: str | None = None, baudrate: int = 9600, bytesize: int = 8, parity: str = "N", stopbits: float = 1, timeout: float | None = None, xonxoff: bool = False, rtscts: bool = False, write_timeout: float | None = None, dsrdtr: bool = False, inter_byte_timeout: float | None = None, exclusive: float | None = None, __debug : bool = False) -> None:
-        # Open data base 
-        self.__debug = __debug
-        self.con = sqlite3.connect( DB_PATH )
-        self.cursor = self.con.cursor()
-        self.create_tags() 
-        self.read_devices() 
-
+    def __init__(self, port : str, baudrate : int , parity : str = 'N', stop_bits : int = 1, byte_size : int = 8, timeout : int = 1, method = 'rtu', __debug : bool = False, **kwargs):
         # Open serial port
         try:
-            super().__init__(port, baudrate, bytesize, parity, stopbits, timeout, xonxoff, rtscts, write_timeout, dsrdtr, inter_byte_timeout, exclusive) 
+            self.client = ModbusSerialClient( method, port = port, baudrate = baudrate, parity = parity, bytesize = byte_size, stopbits = stop_bits, timeout = timeout, **kwargs)
         except:
-            print( 'cant connect serial application')
+            if __debug:
+                print( 'cant connect serial application')
+        try: 
+            self.con = sqlite3.connect( DB_PATH )
+            self.cursor = self.con.cursor()
+            self.create_tags() 
+            self.read_devices() 
+        except: 
+            if __debug:
+                print( 'Impossivel abrir o banco de dados'  )
+    
+        self.__debug = __debug
+        self.client.connect()
+
 
     def create_tags( self ):
         self.cursor.execute("""
@@ -225,7 +230,7 @@ class Tracker( serial.Serial ):
 
 
 if __name__ == '__main__':
-    tracker = Tracker( 'COM15', baudrate = 11560 )
+    tracker = Tracker( 'COM15', baudrate = 115200 )
     
     tracker.create_device( 
         name = 'Tracker',
@@ -302,7 +307,17 @@ if __name__ == '__main__':
     tracker.create_tag( 'coil_input', 0x12, 0x05, 'DISCRETE_LEVER2_L'   , 'r', '', 100, 1000 )
     tracker.create_tag( 'coil_input', 0x12, 0x06, 'DISCRETE_LEVER2_R'   , 'r', '', 100, 1000 )
     
-    print( tracker.read_tag( 0x12, 'holding_register', 0x31) )
-    print( tracker.read_tag( 0x12, 'analog_input', 0x07) )
-    print( tracker.read_tag( 0x12, 'coil_register', 0x05) )
-    print( tracker.read_tag( 0x12, 'coil_input', 0x03) )
+    # print( tracker.read_tag( 0x12, 'holding_register', 0x31) )
+    # print( tracker.read_tag( 0x12, 'analog_input', 0x07) )
+    # print( tracker.read_tag( 0x12, 'coil_register', 0x05) )
+    # print( tracker.read_tag( 0x12, 'coil_input', 0x03) )
+
+    import struct 
+    ans = tracker.client.read_holding_registers( address = 0x00, count = 1, unit = 0x12)  
+
+    if ans.isError():   
+        print("Erro ao ler registradores:", ans )
+    else:
+        print( f"Fora lido: {ans.registers}" )
+
+    
