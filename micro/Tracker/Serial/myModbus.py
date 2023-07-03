@@ -119,15 +119,15 @@ class myModbusCommunication:
     ADDR_SLAVE = 0
     NUM_BYTES  = 0
     DATA_BYTES = b''
-    DEBUG      = False  
+    DEBUG      = True  
     MSG_GOT    = b''
     CHK_GET    = 0 
     #-----------------------
 
-    DISCRETES : Registers = []  
-    COILS     : Registers = []  
-    INPUTS    : Registers = [] 
-    HOLDINGS  : Registers = []  
+    DISCRETES : Registers   
+    COILS     : Registers   
+    INPUTS    : Registers  
+    HOLDINGS  : Registers   
     #-----------------------
 
 
@@ -361,182 +361,181 @@ class myModbusCommunication:
             # RECEBIDO A MENSAGEM, DEVE-SE ESCREVER OU LER OS REGISTRADORES
             # E RESPONDER A MENSAGEM DE CONFIRMAÇÃO 
             if self.STATE == self.RESOLVE:
-                try: 
-                    ADDR_REG  = self.ADDR_REG 
-                    QNT_REG   = self.QNT_REG 
-                    
-
-                    # READ_COIL_REGISTER
-                    #     >>> QUERY 
-                    #     >>> 11 01 0013 0025 0E84
-                    #     >>> RESPONSE 
-                    #     >>> 11 01 05 CD6BB20E1B 45E6
-                    if  self.FUNCTION_CODE == self.READ_COIL_REGISTER:     
-                       
-                        # Vefica se não houve estouro de registradores 
-                        if (ADDR_REG + QNT_REG) > self.COILS.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        
-                        else: 
-                            # Contabiliza o número de bytes necessários para escrita 
-                            NUM_BYTES = math.ceil( QNT_REG / 8 )
-                            # Lê os registradores 
-                            DATA_REG = 0
-                            for reg in self.COILS.get_regs_bool( ADDR_REG, QNT_REG ):
-                                DATA_REG = ( DATA_REG << 1) | reg 
-                            
-                            DATA_REG = struct.pack( 'B'*NUM_BYTES, DATA_REG )
-                            
-                            # Monta o Frame de dados  
-                            DATA = struct.pack( 'B', NUM_BYTES) + DATA_REG
-
-
-                    # READ_DISCRETE_INPUT 
-                    #   >>> QUERY 
-                    #   >>> 11 02 00C4 0016 BAA9
-                    #   >>> RESPONSE 
-                    #   >>> 11 02 03 ACDB35 2018
-                    elif self.FUNCTION_CODE == self.READ_DISCRETE_INPUT:     
-
-                        # vefica se não houve estouro de registradores 
-                        if (ADDR_REG + QNT_REG) > self.DISCRETES.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        
-                        else:
-                            # Contabiliza o número de bytes necessários para escrita 
-                            NUM_BYTES = math.ceil( QNT_REG / 8 )
-                            # Lê os registradores 
-                            DATA_REG = 0
-                            for reg in self.DISCRETES.get_regs_bool( ADDR_REG, QNT_REG ):
-                                DATA_REG = ( DATA_REG << 1) | reg 
-                            
-                            DATA_REG = struct.pack( 'B'*NUM_BYTES, DATA_REG )
-                            
-                            # Monta o Frame de dados  
-                            DATA = struct.pack( 'B', NUM_BYTES) + DATA_REG
-
-
-                    # READ_HOLDING_REGISTER
-                    #   >>> QUERY 
-                    #   >>> 11 03 006B 0003 7687   
-                    #   >>> RESPONSE
-                    #   >>> 11 03 06 AE41 5652 4340 49AD
-                    elif self.FUNCTION_CODE == self.READ_HOLDING_REGISTER:
-                        # Vefica se não houve estouro de registradores 
-                        if (ADDR_REG + QNT_REG) > self.HOLDINGS.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        else:
-                            # Lê os registradores 
-                            DATA_REG = b''
-                            for byte in self.HOLDINGS.get_regs( ADDR_REG, QNT_REG ):
-                                DATA_REG += struct.pack( '>H', byte )
-                            # Monta o frame de dados 
-                            DATA = struct.pack('B', QNT_REG*2 ) + DATA_REG
-
-
-                    # READ_INPUT_REGISTER 
-                    #   >>> QUERY 
-                    #   >>> 11 04 0008 0001 B298
-                    #   >>> RESPONSE 
-                    #   >>> 11 04 02 000A F8F4
-                    elif self.FUNCTION_CODE == self.READ_INPUT_REGISTER:     
-                        # Vefica se não houve estouro de registradores 
-                        if (ADDR_REG + QNT_REG) > self.INPUTS.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        else:
-                            # Lê os registradores 
-                            DATA_REG = b''
-                            for byte in self.INPUTS.get_regs( ADDR_REG, QNT_REG ):
-                                DATA_REG += struct.pack( '>H', byte )
-                            # Monta o frame de dados 
-                            DATA = struct.pack('B', QNT_REG*2 ) + DATA_REG
-                    # --------------------------------------------------------------------
-
-
-                    # WRITE_COIL_REGISTER 
-                    #   >>> QUERY 
-                    #   >>> 11 05 00AC FF00 4E8B
-                    #   >>> RESPONSE  
-                    #   >>> 11 05 00AC FF00 4E8B
-                    #   >>> AN ECHO OF QUERY BUFFER
-                    elif self.FUNCTION_CODE == self.WRITE_COIL_REGISTER:
-                        if ADDR_REG > self.COILS.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        else: 
-                            DATA_BYTES = True if struct.unpack('>H', self.MSG_GOT[4:-2] )[0] == 0xff00 else False 
-                            status = self.COILS.set_reg_bool( ADDR_REG, DATA_BYTES )
-                            if status == True:
-                                self.has_message = True
-                            DATA = self.MSG_GOT[2:-2]
-                            if self.DEBUG: print( 'MSG_GOT: {} ADDR: {} BOOLEAN: {}\nSTACK: {}\nSTACK_MAX: {}'.format( self.MSG_GOT[4:-2], ADDR_REG, DATA_BYTES, self.COILS.STACK, len(self.COILS.STACK) ) )  
-                        
-                    # WRITE_HOLDING_REGISTER 
-                    #   >>> QUERY 
-                    #   >>> 11 06 0001 0003 9A9B
-                    #   >>> RESPONSE  
-                    #   >>> 11 06 0001 0003 9A9B
-                    #   >>> AN ECHO OF QUERY BUFFER 
-                    elif self.FUNCTION_CODE == self.WRITE_HOLDING_REGISTER:
-                        if ADDR_REG > self.HOLDING.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        else:                            
-                            DATA_BYTES = struct.unpack('>H', self.MSG_GOT[4:-2] )[0]
-                            
-                            status = self.HOLDINGS.set_reg( ADDR_REG, DATA_BYTES )  
-                            if status == True:
-                                self.has_message = True                            
-                            if self.DEBUG: print( "MSG_GOT: {} LEN: {} DATA_BYTE: {}\nHOLDINGS: {}".format( self.MSG_GOT[4:-2], len(self.MSG_GOT[4:-2]), DATA_BYTES, self.HOLDINGS.STACK) ) 
-                            DATA = self.MSG_GOT[2:-2]
-
-                    # WRITE_COIL_REGISTERS 
-                    #   >>> QUERY 
-                    #   >>> 11 0F 0013 000A 02 CD01 BF0B
-                    #   >>> RESPONSE  
-                    #   >>> 11 0F 0013 000A 2699
-                    #   >>> AN SEMI ECHO OF QUERY BUFFER
-                    elif self.FUNCTION_CODE == self.WRITE_COIL_REGISTERS:
-                        if (ADDR_REG + QNT_REG) > self.COILS.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        else:
-                            NUM_BYTES = self.MSG_GOT[6]
-                            ARRAY = [] 
-                            for i in range( NUM_BYTES ):  
-                                INT = self.MSG_GOT[7+i] << 8*i
-                                for n in range(8):
-                                    ARRAY.append( True if (INT >> n) & 1 else False )
-                                    
-                            status = self.COILS.set_regs_bool( ADDR_REG, ARRAY )
-                            if status == True :
-                                self.has_message = True
-                                
-                            if self.DEBUG: print( 'COILS STACK: ', self.COILS.STACK ) 
-                            DATA = self.MSG_GOT[2:6]
-
-
-                    # WRITE_HOLDING_REGISTERS 
-                    #   >>> QUERY 
-                    #   >>> 11 10 0001 0002 04 000A 0102 C6F0
-                    #   >>> RESPONSE  
-                    #   >>> 11 10 0001 0002 1298 
-                    #   >>> AN SEMI ECHO OF QUERY BUFFER
-                    elif self.FUNCTION_CODE == self.WRITE_HOLDING_REGISTERS: 
-                        if ADDR_REG > self.HOLDINGS.REGS:
-                            self.response( self.ILLEGAL_ADDR, None )
-                        else:
-                            NUM_BYTES = self.MSG_GOT[6]
-                            ARRAY = struct.unpack( '>'+'H'*QNT_REG, self.DATA_BYTES )  
-                            status = self.HOLDINGS.set_regs( ADDR_REG, ARRAY )  
-                            if status == True:
-                                self.has_message = True                            
-                            if self.DEBUG: print( "MSG_GOT: {} LEN: {} DATA_BYTE: {}\nHOLDINGS: {}".format( self.MSG_GOT[4:-2], len(self.MSG_GOT[4:-2]), self.DATA_BYTES, self.HOLDINGS.STACK) ) 
-                            DATA = self.MSG_GOT[2:6]
-                                          
-
-                    # PARTE COMUM DESDE QUE MANTENHA A ESTRUTURA 
-                    self.response( self.FUNCTION_CODE, DATA )
+                # try: 
+                ADDR_REG  = self.ADDR_REG 
+                QNT_REG   = self.QNT_REG 
                 
-                except:
-                   self.response( self.ILLEGAL_ADDR, None ) 
+
+                # READ_COIL_REGISTER
+                #     >>> QUERY 
+                #     >>> 11 01 0013 0025 0E84
+                #     >>> RESPONSE 
+                #     >>> 11 01 05 CD6BB20E1B 45E6
+                if  self.FUNCTION_CODE == self.READ_COIL_REGISTER:     
+                    
+                    # Vefica se não houve estouro de registradores 
+                    if (ADDR_REG + QNT_REG) > self.COILS.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    
+                    else: 
+                        # Contabiliza o número de bytes necessários para escrita 
+                        NUM_BYTES = math.ceil( QNT_REG / 8 )
+                        # Lê os registradores 
+                        DATA_REG = 0
+                        for reg in self.COILS.get_regs_bool( ADDR_REG, QNT_REG ):
+                            DATA_REG = ( DATA_REG << 1) | reg 
+                        
+                        DATA_REG = struct.pack( 'B'*NUM_BYTES, DATA_REG )
+                        
+                        # Monta o Frame de dados  
+                        DATA = struct.pack( 'B', NUM_BYTES) + DATA_REG
+
+
+                # READ_DISCRETE_INPUT 
+                #   >>> QUERY 
+                #   >>> 11 02 00C4 0016 BAA9
+                #   >>> RESPONSE 
+                #   >>> 11 02 03 ACDB35 2018
+                elif self.FUNCTION_CODE == self.READ_DISCRETE_INPUT:     
+
+                    # vefica se não houve estouro de registradores 
+                    if (ADDR_REG + QNT_REG) > self.DISCRETES.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    
+                    else:
+                        # Contabiliza o número de bytes necessários para escrita 
+                        NUM_BYTES = math.ceil( QNT_REG / 8 )
+                        # Lê os registradores 
+                        DATA_REG = 0
+                        for reg in self.DISCRETES.get_regs_bool( ADDR_REG, QNT_REG ):
+                            DATA_REG = ( DATA_REG << 1) | reg 
+                        
+                        DATA_REG = struct.pack( 'B'*NUM_BYTES, DATA_REG )
+                        
+                        # Monta o Frame de dados  
+                        DATA = struct.pack( 'B', NUM_BYTES) + DATA_REG
+
+
+                # READ_HOLDING_REGISTER
+                #   >>> QUERY 
+                #   >>> 11 03 006B 0003 7687   
+                #   >>> RESPONSE
+                #   >>> 11 03 06 AE41 5652 4340 49AD
+                elif self.FUNCTION_CODE == self.READ_HOLDING_REGISTER:
+                    # Vefica se não houve estouro de registradores 
+                    if (ADDR_REG + QNT_REG) > self.HOLDINGS.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    else:
+                        # Lê os registradores 
+                        DATA_REG = b''
+                        for byte in self.HOLDINGS.get_regs( ADDR_REG, QNT_REG ):
+                            DATA_REG += struct.pack( '>H', byte )
+                        # Monta o frame de dados 
+                        DATA = struct.pack('B', QNT_REG*2 ) + DATA_REG
+
+
+                # READ_INPUT_REGISTER 
+                #   >>> QUERY 
+                #   >>> 11 04 0008 0001 B298
+                #   >>> RESPONSE 
+                #   >>> 11 04 02 000A F8F4
+                elif self.FUNCTION_CODE == self.READ_INPUT_REGISTER:     
+                    # Vefica se não houve estouro de registradores 
+                    if (ADDR_REG + QNT_REG) > self.INPUTS.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    else:
+                        # Lê os registradores 
+                        DATA_REG = b''
+                        for byte in self.INPUTS.get_regs( ADDR_REG, QNT_REG ):
+                            DATA_REG += struct.pack( '>H', byte )
+                        # Monta o frame de dados 
+                        DATA = struct.pack('B', QNT_REG*2 ) + DATA_REG
+                # --------------------------------------------------------------------
+
+
+                # WRITE_COIL_REGISTER 
+                #   >>> QUERY 
+                #   >>> 11 05 00AC FF00 4E8B
+                #   >>> RESPONSE  
+                #   >>> 11 05 00AC FF00 4E8B
+                #   >>> AN ECHO OF QUERY BUFFER
+                elif self.FUNCTION_CODE == self.WRITE_COIL_REGISTER:
+                    if ADDR_REG > self.COILS.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    else: 
+                        DATA_BYTES = True if struct.unpack('>H', self.MSG_GOT[4:-2] )[0] == 0xff00 else False 
+                        status = self.COILS.set_reg_bool( ADDR_REG, DATA_BYTES )
+                        if status == True:
+                            self.has_message = True
+                        DATA = self.MSG_GOT[2:-2]
+                        if self.DEBUG: print( 'MSG_GOT: {} ADDR: {} BOOLEAN: {}\nSTACK: {}\nSTACK_MAX: {}'.format( self.MSG_GOT[4:-2], ADDR_REG, DATA_BYTES, self.COILS.STACK, len(self.COILS.STACK) ) )  
+                    
+                # WRITE_HOLDING_REGISTER 
+                #   >>> QUERY 
+                #   >>> 11 06 0001 0003 9A9B
+                #   >>> RESPONSE  
+                #   >>> 11 06 0001 0003 9A9B
+                #   >>> AN ECHO OF QUERY BUFFER 
+                elif self.FUNCTION_CODE == self.WRITE_HOLDING_REGISTER:
+                    if ADDR_REG > self.HOLDINGS.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    else:                            
+                        DATA_BYTES = struct.unpack('>H', self.MSG_GOT[4:-2] )[0]
+                        status = self.HOLDINGS.set_reg( ADDR_REG, DATA_BYTES )  
+                        if status == True:
+                            self.has_message = True                            
+                        if self.DEBUG: print( "MSG_GOT: {} LEN: {} DATA_BYTE: {}\nHOLDINGS: {}".format( self.MSG_GOT[4:-2], len(self.MSG_GOT[4:-2]), DATA_BYTES, self.HOLDINGS.STACK) ) 
+                        DATA = self.MSG_GOT[2:-2]
+
+                # WRITE_COIL_REGISTERS 
+                #   >>> QUERY 
+                #   >>> 11 0F 0013 000A 02 CD01 BF0B
+                #   >>> RESPONSE  
+                #   >>> 11 0F 0013 000A 2699
+                #   >>> AN SEMI ECHO OF QUERY BUFFER
+                elif self.FUNCTION_CODE == self.WRITE_COIL_REGISTERS:
+                    if (ADDR_REG + QNT_REG) > self.COILS.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    else:
+                        NUM_BYTES = self.MSG_GOT[6]
+                        ARRAY = [] 
+                        for i in range( NUM_BYTES ):  
+                            INT = self.MSG_GOT[7+i] << 8*i
+                            for n in range(8):
+                                ARRAY.append( True if (INT >> n) & 1 else False )
+                                
+                        status = self.COILS.set_regs_bool( ADDR_REG, ARRAY )
+                        if status == True :
+                            self.has_message = True
+                            
+                        if self.DEBUG: print( 'COILS STACK: ', self.COILS.STACK ) 
+                        DATA = self.MSG_GOT[2:6]
+
+
+                # WRITE_HOLDING_REGISTERS 
+                #   >>> QUERY 
+                #   >>> 11 10 0001 0002 04 000A 0102 C6F0
+                #   >>> RESPONSE  
+                #   >>> 11 10 0001 0002 1298 
+                #   >>> AN SEMI ECHO OF QUERY BUFFER
+                elif self.FUNCTION_CODE == self.WRITE_HOLDING_REGISTERS: 
+                    if ADDR_REG > self.HOLDINGS.REGS:
+                        self.response( self.ILLEGAL_ADDR, None )
+                    else:
+                        NUM_BYTES = self.MSG_GOT[6]
+                        ARRAY = list(struct.unpack( '>'+'H'*QNT_REG, self.MSG_GOT[7:-2] ))
+                        status = self.HOLDINGS.set_regs(ADDR_REG, ARRAY)
+                        if status == True:
+                            self.has_message = True                            
+                        if self.DEBUG: print( "MSG_GOT: {} LEN: {} DATA_BYTE: {}\nHOLDINGS: {}".format( self.MSG_GOT[4:-2], len(self.MSG_GOT[4:-2]), self.DATA_BYTES, self.HOLDINGS.STACK) ) 
+                        DATA = self.MSG_GOT[2:6]
+                                        
+
+                # PARTE COMUM DESDE QUE MANTENHA A ESTRUTURA 
+                self.response( self.FUNCTION_CODE, DATA )
+            
+                # except:
+                #    self.response( self.ILLEGAL_ADDR, None ) 
                                          
                 self.STATE = self.SLAVE
                 self.MSG_GOT = b''
@@ -681,6 +680,7 @@ if __name__ == '__main__':
         
         
         
+
 
 
 

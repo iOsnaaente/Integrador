@@ -1,5 +1,4 @@
 from cryptography.fernet import Fernet
-from _thread import *
 import hashlib
 import socket
 import pickle
@@ -8,24 +7,25 @@ import hmac
 UNIKEY = Fernet.generate_key() 
 
 # Codifica os dados para um byte-array contendo o HASH e os dados binários 
-def encode_object( obj : object, encrypted : bool = True, UNIKEY : bytearray = b'', __debug : bool = False ) -> bytes: 
+def encode_object( obj : object, encrypted : bool = True, UNIKEY : bytes = b'', __debug : bool = False ) -> bytes: 
     data = pickle.dumps( obj )
     digest = hmac.new( UNIKEY, data, hashlib.blake2b ).hexdigest()
     if encrypted:
         if UNIKEY != b'':
             f = Fernet( UNIKEY )
-            encrypt = f.encrypt( digest.encode() + data )
+            encrypt = f.encrypt(digest.encode() + data)
+        else: 
+            encrypt = b''
+    else: 
+        encrypt = digest.encode() + data 
     if __debug:
         print( f'Encoded {data} with key {UNIKEY}. Hash {digest}' )
         if encrypted:
             print( f'Encrypted { encrypt }' )
-    if not encrypted:
-        return digest.encode() + data
-    else: 
-        return encrypt
+    return encrypt
 
 # Verifica recebimento dos dados 
-def decode_object( data : bytearray, signature_len : int = 128, encrypted : bool = True, UNIKEY : bytearray = b'', __debug : bool = False ) -> object:
+def decode_object( data : bytes, signature_len : int = 128, encrypted : bool = True, UNIKEY : bytes = b'', __debug : bool = False ) -> bytes:
     if encrypted:
         if UNIKEY != b'':
             f = Fernet( UNIKEY )
@@ -36,14 +36,14 @@ def decode_object( data : bytearray, signature_len : int = 128, encrypted : bool
     if not secrets.compare_digest( digest, expected_digest.encode() ):
         if __debug: 
             print('Invalid signature')
-        return False 
+        return b'error' 
     else: 
         if __debug:
             print( 'Right signatures')
         return pickle.loads( data )
 
 # Sincroniza a chave de criptografia 
-def sync_unikey( sock : socket.socket, IP : str, LOGIN_PORT : int , UNIKEY : bytearray, timeout : float = 1, __debug : bool = False ):
+def sync_unikey( sock : socket.socket, IP : str, LOGIN_PORT : int , UNIKEY : bytes, timeout : float = 1, __debug : bool = False ):
     if __debug: 
         print( 'Unique key based in Fernet', UNIKEY, type(UNIKEY), len(UNIKEY) )
     sock.settimeout( timeout )

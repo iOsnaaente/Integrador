@@ -4,7 +4,6 @@ from kivy.utils import rgba, QueryDict
 
 import importlib
 
-
 # Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
 from screeninfo import get_monitors
 try: 
@@ -21,7 +20,7 @@ Window.top = monitor.y + 25
 Window.fullscreen = 'auto'
 
 # Debug 
-LOAD_SCREEN = 'sensor screen'
+LOAD_SCREEN = 'login screen'
 #
 
 # Onde as informações devem ser compartilhadas 
@@ -29,7 +28,7 @@ from Model.shared_data import SharedData
 from Model.login_model import LoginModel 
 from Model.system_model import SystemModel 
 
-from System.tracker import Tracker as TrackerSerial
+# from System.tracker import Tracker as TrackerSerial
 
 import os
 class Tracker(MDApp):
@@ -58,7 +57,7 @@ class Tracker(MDApp):
 
         importlib.reload(View.screens)
         screens = View.screens.screens   
-        for i, name_screen in enumerate(screens.keys()):
+        for _, name_screen in enumerate(screens.keys()):
             if name_screen == 'login screen':
                 controller = screens[name_screen]["controller"]( model = self.login_model, shared_data = self.shared_data)
             else:

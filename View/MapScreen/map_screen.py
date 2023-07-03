@@ -1,9 +1,8 @@
+from libs.kivy_garden.mapview import MapView, MapMarkerPopup
 from View.Widgets.SideBar.side_bar import SideBar 
-from kivy_garden.mapview import MapMarkerPopup
-from kivy_garden.mapview import MapView 
+from kivymd.uix.button import MDFlatButton
 from kivymd.uix.widget import MDWidget 
 from kivymd.uix.label import MDLabel 
-from kivymd.uix.button import MDFlatButton
 from kivy.graphics import *
 from kivy.clock import Clock 
 

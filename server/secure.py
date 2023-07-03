@@ -6,7 +6,7 @@ import pickle
 import hmac
 
 # Verifica recebimento dos dados 
-def decode_obj( data : bytearray, signature_len : int = 128, encrypted : bool = True, UNIKEY : bytearray = b'', __debug : bool = False ) -> object:
+def decode_obj( data : bytes, signature_len : int = 128, encrypted : bool = True, UNIKEY : bytes = b'', __debug : bool = False ) -> object:
     if encrypted:
         if UNIKEY != b'':
             f = Fernet( UNIKEY )

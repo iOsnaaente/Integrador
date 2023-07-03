@@ -4,7 +4,7 @@ from libs.Security import encode_object, decode_object, sync_unikey
 from cryptography.fernet import Fernet 
 from Model.db.database import Database 
 from Model.shared_data import SharedData
-
+from typing import Union 
 import threading
 import socket
 import json 
@@ -35,7 +35,7 @@ class LoginModel( BaseScreenModel ):
     KEY = Fernet.generate_key()
     connection : bool = False 
 
-    def __init__( self, shared_data : SharedData = None ): 
+    def __init__( self, shared_data : Union[SharedData, None] = None ): 
         self.__shared_data = shared_data 
 
     ''' Conectar ao servidor '''
@@ -59,7 +59,7 @@ class LoginModel( BaseScreenModel ):
             self.connection = False 
             return False
 
-    def keep_connection_alive( self, d_time : int = None ):
+    def keep_connection_alive( self, d_time = None ):
         thr = threading.Thread( target = self.__keep_connection_alive, args = () )
         thr.start() 
     
@@ -67,6 +67,7 @@ class LoginModel( BaseScreenModel ):
         if not self.connection:
             self.connect_server()
         else:
+            ans = None
             try: 
                 ping_pong_data = { 'type' : 'PING' }
                 self.__login_client.settimeout( PING_TIMEOUT )
@@ -114,14 +115,17 @@ class LoginModel( BaseScreenModel ):
             except: 
                 print( ans, ans.decode() ) 
                 return False 
-            self.shared_data.login_index = ans['id'] 
-            self.shared_data.username = ans['username'] 
-            self.shared_data.last_access = ans['last_access'] 
-            self.shared_data.level_access = ans['level_access'] 
-            self.shared_data.photo = ans['photo']
-            if self.__debug:    
-                print( f'Login index {self.shared_data.login_index}' ) 
-            return True 
+            if self.shared_data is not None:
+                self.shared_data.login_index = ans['id'] 
+                self.shared_data.username = ans['username'] 
+                self.shared_data.last_access = ans['last_access'] 
+                self.shared_data.level_access = ans['level_access'] 
+                self.shared_data.photo = ans['photo']
+                if self.__debug:    
+                    print( f'Login index {self.shared_data.login_index}' ) 
+                return True 
+            else: 
+                return False 
 
     # Criar novo usuário 
     def create_new_user( self, user : str, password : str, manager_group : str, manager_psd : str  ) -> bool:
@@ -130,7 +134,6 @@ class LoginModel( BaseScreenModel ):
             se o servidor mudar, deve ser mudado aqui também 
         '''
         create_user_data = {'type' : 'NEW_USER', 'username': user, 'password': password, 'manager_group' : manager_group, 'manager_psd' : manager_psd    }
-        
         if user and password:
             try: 
                 data = encode_object( create_user_data, UNIKEY = self.KEY )
@@ -140,16 +143,16 @@ class LoginModel( BaseScreenModel ):
                 ans = decode_object( ANS, UNIKEY = self.KEY )        
             except socket.error as e:
                 ans = e 
-
             if self.__debug:    
-                print( f'Socket creat new user connection OK\nSend {data}\nReceived {ans}' ) 
-            
+                print( f'Socket creat new user connection OK\nSend {create_user_data}\nReceived {ans}' ) 
             if ans == b'FAILED' or type(ans) == socket.error :
                 return False 
             elif ans == b'SUCCESS': 
                 return True 
             else:
                 return False
+        else: 
+            return False 
 
     ''' Getter and Setter DB properties '''  
     def get_table(self):

@@ -1,4 +1,4 @@
-from extensions.kivy_garden.graph import Graph, MeshLinePlot 
+from libs.kivy_garden.graph import Graph, MeshLinePlot 
 from kivymd.uix.behaviors import HoverBehavior
 from kivymd.uix.card import MDCard
 
