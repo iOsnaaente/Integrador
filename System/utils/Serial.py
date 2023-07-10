@@ -34,10 +34,10 @@ class ModbusRTU:
             self.connected = True 
             if debug:
                 print('Modbus connection OK')
-        except:
+        except Exception as err:
             self.client = None 
             if debug:
-                print("Can't connect to serial Modbus application" )
+                print('Serial Modbus Exception: ', err )
                 
     def update_connection(self, port: str, baudrate: int , parity: str = 'N', stop_bits: int = 1, byte_size: int = 8, timeout: int = 1, __debug: bool=False, **kwargs):
         back = self.client
@@ -63,7 +63,7 @@ class ModbusRTU:
                 print( f'cant connect serial application. Error: {err}')
             return False 
 
-    def read_register( self, register_type: str, address: int, length: int, var_type: str ):
+    def read_register( self, register_type: str, address: int, length: int, var_type: str ) -> None | list[ int | float ]:
         try:
             # Verifica se o cliente esta conectado 
             if self.client is None:

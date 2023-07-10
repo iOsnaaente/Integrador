@@ -2,25 +2,69 @@ from View.Widgets.SideBar.side_bar import SideBar
 from View.base_screen import BaseScreenView
 from kivy.graphics import *
 
+from View.Widgets.Serial.serial_conf import SerialConfiguration 
+from libs.kivy_garden.graph import SmoothLinePlot
+
 from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 
-from View.Widgets.Serial.serial_conf import SerialConfiguration 
-from View.Widgets.Graphs.graph_area import Azimute, Zenite 
+import math 
 
 class SerialScreenView(BaseScreenView):
 
     Serial  = ObjectProperty()
+    
     Azimute = ObjectProperty()
-    Zenite = ObjectProperty() 
+    azimute_motor = None 
+    azimute_sensor = None 
 
-    serial = ObjectProperty() 
+    Zenite = ObjectProperty() 
+    zenite_motor = None 
+    zenite_sensor = None 
 
     already_draw = False 
-
+    
+    MAX_POINTS_GRAPH_CANVAS = 1000  
+    _x = [0]
 
     def __init__(self, **kw):
         super().__init__(**kw)
+
+
+    def on_kv_post(self, base_widget):
+        # Side bar 
+        self.side_bar = SideBar( model = self.model ) 
+        self.ids.float_content.add_widget   ( self.side_bar )
+        # Serial configuration 
+        self.Serial = SerialConfiguration()
+        self.ids.serial.add_widget          ( self.Serial   )
+        # Zenite
+        self.zenite_motor = SmoothLinePlot(color=[ 0, 0, 1, 1 ])
+        self.zenite_sensor = SmoothLinePlot(color=[ 1, 0, 0, 1 ])
+        self.ids.zenith_graph.add_plot( self.zenite_motor )
+        self.ids.zenith_graph.add_plot( self.zenite_sensor )
+        # Azimute 
+        self.azimute_motor = SmoothLinePlot(color=[ 0, 0, 1, 1 ])
+        self.azimute_sensor = SmoothLinePlot(color=[ 1, 0, 0, 1 ])
+        self.ids.azimuth_graph.add_plot( self.azimute_motor )
+        self.ids.azimuth_graph.add_plot( self.azimute_sensor )
+
+        #Clock.schedule_interval( self.render, 0.1 )
+        
+        BaseScreenView.on_kv_post(self, base_widget)
+    
+    def render( self, clk_event ):
+        self._x.append( self._x[-1] + clk_event )
+        self.ids.zenith_graph.xmin  = math.ceil( self._x[ 0 ] )
+        self.ids.zenith_graph.xmax  = math.ceil( self._x[-1 ] )
+        self.ids.azimuth_graph.xmin = math.ceil( self._x[ 0 ] )
+        self.ids.azimuth_graph.xmax = math.ceil( self._x[-1 ] )
+        if len(self._x) > self.MAX_POINTS_GRAPH_CANVAS: 
+            self._x.pop(0)
+        self.azimute_motor.points  = [ ( x, 180*math.sin( x / 100.0 ) ) for x in self._x ]
+        self.azimute_sensor.points = [ ( x, 180*math.cos( x / 100.0 ) ) for x in self._x ]
+        self.zenite_motor.points  = [ ( x, 90*math.cos( x / 10.0 )**2 ) for x in self._x ]
+        self.zenite_sensor.points = [ ( x, 90*math.sin( x / 10.0 )**2 ) for x in self._x ]
 
 
     def model_is_changed(self) -> None:
@@ -29,29 +73,3 @@ class SerialScreenView(BaseScreenView):
         The view in this method tracks these changes and updates the UI
         according to these changes.
         """
-
-    def on_enter (self, *args):    
-        if not self.already_draw:
-            self.side_bar = SideBar( model = self.model ) 
-            self.Serial = SerialConfiguration()
-            self.Azimute =  Azimute(
-                                size_hint = [0.3, 1],
-                                pos_hint = {'center_x': 0.5,'top': 1 },
-                                md_bg_color = [0.25,0.25,0.25,0.5]
-                            )
-            self.Zenite =   Zenite(
-                                size_hint = [0.3, 1],
-                                pos_hint = {'center_x': 0.5,'top': 1 },
-                                md_bg_color = [0.25,0.25,0.25,0.5]
-                            )
-
-            Clock.schedule_interval( self.Azimute.update_graph, 0.1 )
-            Clock.schedule_interval( self.Zenite.update_graph, 0.1  )
-            
-            self.ids.float_content.add_widget   ( self.side_bar )
-            self.ids.serial.add_widget          ( self.Serial   )
-            self.ids.azimute.add_widget         ( self.Azimute  )
-            self.ids.zenite.add_widget          ( self.Zenite   )
-
-            self.already_draw = True 
-        return super().on_enter(*args)

@@ -1,5 +1,6 @@
 from View.Widgets.SideBar.side_bar import SideBar 
 from View.base_screen import BaseScreenView
+from kivymd.uix.label import MDLabel 
 import os
 
 from kivy.clock import Clock
@@ -35,6 +36,20 @@ class SensorScreenView(BaseScreenView):
                 'label_geracao',
         ]
 
+
         return super().on_enter(*args)
 
-        
+    
+    def on_enter(self, *args):
+        # Atualiza as tagas do sistema 
+        if self.controller.is_connected():
+            for tag in self.controller.get_tags():
+                print( tag )
+        else: 
+            # Retira a Label de sistema não conectado
+            pass 
+
+        self.side_bar = SideBar( model = self.model ) 
+        BaseScreenView.on_enter(self, *args)
+    
+    

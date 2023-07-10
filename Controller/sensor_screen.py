@@ -15,3 +15,12 @@ class SensorScreen:
 
     def get_view(self):
         return self.view
+    
+    def is_connected( self ): 
+        return None if self.model.system == None else self.model.system.is_connected()
+
+    def get_tags( self, device: int = 0x12 ):
+        if self.model.system == None:
+            return None 
+        else: 
+            return self.model.system.DB.read_tags_by_device( device )

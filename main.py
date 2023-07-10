@@ -36,7 +36,7 @@ class Tracker(MDApp):
     KV_DIRS = [os.path.join(os.getcwd(), "View")]
     shared_data : SharedData 
     DEBUG = 0
-   
+
     colors = QueryDict() 
     # Cores 
     colors.background    = rgba( '#444444FF' )
@@ -69,6 +69,7 @@ class Tracker(MDApp):
         
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Orange"
+        self.theme_cls.material_style = "M3"
         self.theme_cls.primary_hue = "500"
         self.manager_screens.current = LOAD_SCREEN
         return self.manager_screens

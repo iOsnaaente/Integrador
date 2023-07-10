@@ -17,6 +17,9 @@
             spacing: sp(10)
             radius: sp(15) 
         
+            #
+            # Tela de visualização do sisteam 
+            #
             MDFloatLayout: 
                 size_hint: 1, 0.7
                 pos_hint: {'center_x': 0.5,'top': 1.0}
@@ -35,7 +38,7 @@
                 
                 MDBoxLayout:
                     orientation: 'vertical'
-                    size_hint: 0.3, 0.25
+                    size_hint: 0.3, 0.20
                     pos_hint: {'center_x': 0.20,'center_y': 0.75}
                     padding: sp(10), 0, 0, 0
                     spacing: sp(5)
@@ -53,7 +56,7 @@
                             source: root.model.motor_vertical
                         MDLabel:
                             id: label_motor_vertical 
-                            text: 'VELOCIDADE TAL'
+                            text: 'Vel: --.--rad/s'
                             
                     MDBoxLayout:    
                         Image: 
@@ -61,12 +64,12 @@
                             source: root.model.sensor_motores
                         MDLabel:
                             id: label_encoder_vertical 
-                            text: 'POSICAO TAL'
+                            text: 'Pos: --.--º'
             
                 MDBoxLayout:
                     orientation: 'vertical'
-                    size_hint: 0.3, 0.25
-                    pos_hint: {'center_x': 0.20,'center_y': 0.45}
+                    size_hint: 0.3, 0.2
+                    pos_hint: {'center_x': 0.20,'top': 0.35}
                     padding: sp(10), 0, 0, 0
                     spacing: sp(5)
                     radius: sp(5)
@@ -83,14 +86,14 @@
                             source: root.model.motor_horizontal
                         MDLabel:
                             id: label_motor_horizontal 
-                            text: 'VELOCIDADE TAL'
+                            text: 'Vel: --.-- rad/s'
                     MDBoxLayout:    
                         Image: 
                             size_hint: 0.3, 1
                             source: root.model.sensor_motores
                         MDLabel:
                             id: label_encoder_horizontal
-                            text: 'POSICAO TAL'
+                            text: 'Pos: --.--º'
                 
                 MDBoxLayout:
                     size_hint: 0.2, 0.075
@@ -122,17 +125,19 @@
                         size_hint: 0.1, 1
                         pos_hint: {'rigth': 0.05,'center_y': 0.5}
                         theme_icon_color: 'Custom'
-                        icon_color: 'yellow' 
+                        icon_color: 'gray' 
                     MDLabel:
                         id: label_geracao
                         pos_hint: {'rigth': 0.3,'center_y': 0.5}
-                        text: 'Gerando energia'
+                        text: 'Sem informações'
                         bold: True 
                         font_size: sp(16)
                         halign: 'left'
                         valign: 'center'
 
-
+            #
+            # Tela do CMD do sistema 
+            #
             MDCard: 
                 size_hint: 1, 0.3
                 md_bg_color: 0.5, 0.5, 0.5, 0.5 
@@ -151,18 +156,27 @@
                     size_hint: 0.95, 0.9
                     pos_hint: {'center_x': 0.50,'center_y': 0.45 }
                     MDLabel:
-                        text: 'QULAUERE COISA'
+                        text: '...'
                         font_size: sp(12)
                         color: 'white'
                         valign:'bottom'
-
+        #
+        # Tela das Tags 
+        #
         MDCard: 
+            id: tag_space
             md_bg_color: 0.5, 0.5, 0.5, 0.5 
             size_hint: 0.25, 1 
             pos_hint: {'right': 0.975,'top': 1.0}
             orientation: 'vertical'
             radius: sp(15)
-
+            MDLabel:
+                text: 'Sistema não conectado'
+                valign: 'center'
+                halign: 'center'
+    #
+    # float content 
+    #
     MDFloatLayout:
         id: float_content 
         size_hint: 1, 1    

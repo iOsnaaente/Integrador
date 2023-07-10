@@ -25,6 +25,15 @@ class MapScreenController:
         
     def get_view(self) -> View.MapScreen.map_screen:
         return self.view
+        
+    def is_connected(self) -> bool:
+        return self.model.is_connected() 
 
+    def get_time(self):
+        return self.model.shared_data.time
 
+    def get_date(self):
+        return self.model.shared_data.date
     
+    def get_sundata(self):
+        return self.model.SunData

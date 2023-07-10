@@ -6,7 +6,6 @@ from kivymd.uix.behaviors   import HoverBehavior
 from kivymd.theming         import ThemableBehavior
 
 from libs.sweetalert.sweetalert import SweetAlert
-import libs.kivygo.kivygo.uix.frostedglass
 
 import os 
 IMAGE_PATH = os.path.dirname( __file__ ).removesuffix('\\View\\LoginScreen') + '/images'
@@ -69,7 +68,6 @@ class LoginScreenView( BaseScreenView ):
     # Faz o login 
     def login ( self ):
         # Primeiro verifica o status da conexão 
-        print( self.model.connection_status() )
         if not self.model.connection_status():
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "Sistema de login indisponível" )
             return 
@@ -85,6 +83,7 @@ class LoginScreenView( BaseScreenView ):
                 # Se o login foi estabelecido, entra na aplicação 
                 self.manager_screens.current = 'home screen'
                 Clock.unschedule( self.ping_pong )
+                self.model.shared_data.connected = True
                 if self.__debug: 
                     print( 'Logado com \nUsuário: {}\nSenha: {}'.format( self.username.text, self.password.text ) )
                     print( 'Keep data state : ', self.ids.checkbox_keep_login.state )

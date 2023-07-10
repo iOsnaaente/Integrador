@@ -86,7 +86,7 @@ class SideBar( MDBoxLayout ):
         if self.model.shared_data.photo: 
             self.user_photo.source = self.model.shared_data.photo
         else: 
-            self.user_photo.source = PATH.removesuffix('\\View\\commom_components\\SideBar') + '/assets/images/me.png'
+            self.user_photo.source = PATH.removesuffix('\\View\\commom_components\\SideBar') + '/assets/images/usernophoto.png'
             
         self.username.text = str(self.model.shared_data.username)
 

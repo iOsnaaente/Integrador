@@ -19,21 +19,22 @@ class ModbusDatabase:
     """
     devices = {}
 
-    def __init__( self, DB_PATH : str, debug : bool = False, **kwargs ):    
+    def __init__( self, DB_PATH : str, init_registers : bool = False, debug : bool = False, **kwargs ):    
         self.db_path = DB_PATH 
         self.__debug = debug
         try: 
             self.con = sqlite3.connect( DB_PATH )
             self.cursor = self.con.cursor()
             self.create_db() 
-            self.initialize_tags()
+            if init_registers:
+                self.initialize_tags()
             self.read_devices() 
             if self.__debug:
                 print( 'DB Modbus inicializado com sucesso.' )
-        except: 
+        except Exception as err: 
             if self.__debug:
-                print( 'Não foi possível abrir o DB Modbus'  )
-    
+                print( 'DB Exception: ', err )
+
     def create_db( self ) -> None:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS device (
@@ -255,7 +256,7 @@ class ModbusDatabase:
         }
         return tag_info
 
-    def write_tag( self, device_address : int, tag_type : str, address : int, new_values ) -> bool:
+    def write_tag( self, device_address : int, tag_type : str, address : int, new_value ) -> bool:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:
             if self.__debug:
@@ -274,7 +275,7 @@ class ModbusDatabase:
                 query = f""" UPDATE {tag_type} SET value = ?, last_update = ? WHERE id = ? """
                 current_time = datetime.datetime.now(pytz.timezone('America/Sao_Paulo'))
 
-                self.cursor.execute(query, (new_values, current_time, tag_id[0] ) )
+                self.cursor.execute(query, (new_value, current_time, tag_id[0] ) )
                 self.con.commit()
 
                 if self.__debug:

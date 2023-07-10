@@ -7,7 +7,7 @@ from kivy.graphics import *
 from kivy.clock import Clock 
 
 from View.base_screen import BaseScreenView
-from View.Widgets.Graphs.graph_all_day import AzimuteAllDay, ZeniteAllDay 
+from View.Widgets.Graphs.graph_sun_path import AzimuteAllDay, ZeniteAllDay 
 
 #####################################
 from libs.Sun import SunPosition 
@@ -19,17 +19,21 @@ MAP_SOURCE_ICON = os.path.dirname(__file__).removesuffix('\\View\\MapScreen') + 
 
 class Ecliptica( MDWidget ):
 
-    SUN_DATA : SunPosition 
+    SUN_DATA: SunPosition 
+    latitude: float 
+    longitude: float 
 
-    Norte = MDLabel( text = 'N', color = [0,0,1,1], bold = True, font_size = 16, size_hint =  [None, None] )
-    Lest  = MDLabel( text = 'L', color = [0,1,0,1], bold = True, font_size = 16, size_hint =  [None, None] )
-    Oeste = MDLabel( text = 'O', color = [1,0,0,1], bold = True, font_size = 16, size_hint =  [None, None] )
+    # Norte = MDLabel( text = 'N', color = [0,0,1,1], bold = True, font_size = 16, size_hint =  [None, None] )
+    # Lest  = MDLabel( text = 'L', color = [0,1,0,1], bold = True, font_size = 16, size_hint =  [None, None] )
+    # Oeste = MDLabel( text = 'O', color = [1,0,0,1], bold = True, font_size = 16, size_hint =  [None, None] )
     
     def __init__(self, sun_data, size, pos, **kwargs):
         super().__init__(**kwargs)
         self.size_hint = size
         self.pos_hint = pos 
         self.SUN_DATA = sun_data
+        self.latitude  = sun_data.latitude
+        self.longitude = sun_data.longitude
         self.bind( pos  = self.update_canvas )
         self.bind( size = self.update_canvas )
 
@@ -45,7 +49,8 @@ class Ecliptica( MDWidget ):
         center        = [ width//2, height//2 ]
         r             = width//2 - 20 if width+20 <= height else height//2 - 20
         
-        # Atualiza a hora 
+        # Atualiza os valores de lat, lon e hora 
+        self.SUN_DATA.set_parameters( self.latitude, self.longitude, 300 )
         self.SUN_DATA.update_date()
 
         # DESENHO DA LINHA DE NASCER DO SOL E POR DO SOL 
@@ -61,9 +66,9 @@ class Ecliptica( MDWidget ):
             dots.extend( dot )
 
         # Labels 
-        self.Norte.pos = [center[0] - (r + 20), center[1] -10 ]    # Oeste -> pos    = [center[0] - (r + 20), center[1] -10 ]   )  
-        self.Lest.pos  = [center[0] + (r +  5), center[1] -10 ]    # Leste -> pos    = [center[0] + (r +  5), center[1] -10 ]   )  
-        self.Oeste.pos = [center[0] - 10 , center[1] - (r + 25) ]  # Norte -> pos    = [center[0] - 10 , center[1] - (r + 25) ] ) 
+        # self.Norte.pos = [center[0] - (r + 20), center[1] -10 ]    # Oeste -> pos    = [center[0] - (r + 20), center[1] -10 ]   )  
+        # self.Lest.pos  = [center[0] + (r +  5), center[1] -10 ]    # Leste -> pos    = [center[0] + (r +  5), center[1] -10 ]   )  
+        # self.Oeste.pos = [center[0] - 10 , center[1] - (r + 25) ]  # Norte -> pos    = [center[0] - 10 , center[1] - (r + 25) ] ) 
             
         # DESENHO DO SOL NA SUA POSIÇÃO 
         sun = [  self.SUN_DATA.azi - math.pi/2, self.SUN_DATA.alt ] 
@@ -133,7 +138,7 @@ class MapScreenView(BaseScreenView):
     azimute_all_day : AzimuteAllDay
     zenite_all_day : ZeniteAllDay
 
-    render_clock : Clock.schedule_interval 
+    render_clock = None 
 
     def model_is_changed(self) -> None:
         """
@@ -149,17 +154,17 @@ class MapScreenView(BaseScreenView):
             self.map_view = MapView(size_hint = [0.99, 0.99], 
                     pos_hint = {'center_x': 0.50, 'center_y': 0.5 }, 
                     zoom = 25 , 
-                    lon = self.markers[0].lon, 
+                    lon = self.markers[0].lon-0.00005, 
                     lat = self.markers[0].lat 
                 )
             self.ids.float_content.add_widget( self.map_view  )
             #
             # Ecliptica draw 
             self.ecliptica = Ecliptica( 
-                    sun_data = self.model.SunData, 
+                    sun_data = self.controller.get_sundata(), 
                     size = [1, 1], 
                     pos = {'center_x': 0.5,'center_y': 0.5} 
-                ) 
+                )
             self.ids.float_content.add_widget( self.ecliptica ) 
             #
             # Graphs Zenite and Azimute 
@@ -187,8 +192,8 @@ class MapScreenView(BaseScreenView):
             # Flag already draw
             self.already_draw = True
             # Já atualiza a página
-            self.render_clock = Clock.schedule_once( self.render_page )
-            self.render_clock = Clock.schedule_once( self.att_graphs )
+            Clock.schedule_once( self.render_page )
+            Clock.schedule_once( self.att_graphs )
 
         # Quando entrar na página, executa o timer de 1 em 1 segundo 
         self.render_clock = Clock.schedule_interval( self.render_page, 1 )
@@ -208,17 +213,20 @@ class MapScreenView(BaseScreenView):
         self.ids.latitude.text  = str( round(lat, 10) )
         self.ids.longitude.text = str( round(lon, 10) ) 
         self.ids.altitude.text = '325m'
+        self.ecliptica.latitude = lat 
+        self.ecliptica.longitude = lon 
         return super().on_touch_move(touch)
 
 
     def render_page( self, clock_event ):
+        # Atualiza a posição da ecliptica 
         self.ecliptica.update_canvas() 
-
-        self.ids.hora_att.text = self.model.shared_data.date
-        self.ids.dia_att.text = self.model.shared_data.time
+        # Atualiza a hora correta
+        self.ids.hora_att.text = self.controller.get_time() 
+        self.ids.dia_att.text = self.controller.get_date()
         self.ids.hora_att_sun_progress.value = 100-(self.ecliptica.SUN_DATA.total_seconds/(24*3600))*-100
-
-        if not self.model.shared_data.connected:
+        # Atualiza a hora medida 
+        if not self.controller.is_connected():
             self.ids.hora_sys.text = 'Not connected'
             self.ids.dia_sys.text = 'Not connected'
             self.ids.dia_sys_sun_progress.value = 0
@@ -226,9 +234,9 @@ class MapScreenView(BaseScreenView):
             self.ids.hora_sys.text = self.model.shared_data.sys_time
             self.ids.dia_sys.text = self.model.shared_data.sys_date
             self.ids.dia_sys_sun_progress.value = self.model.shared_data.sys_count
-         
+        
+        # Atualiza as informações do sistema 
         self.ids.daylight.text = str(self.ecliptica.SUN_DATA.get_sunlight_hours()).split('.')[0]
-
         self.ids.rising.text = str(self.ecliptica.SUN_DATA.rising.strftime('%H:%M:%S') )
         self.ids.culminant.text = str(self.ecliptica.SUN_DATA.transit.strftime('%H:%M:%S') )
         self.ids.sunset.text = str( self.ecliptica.SUN_DATA.sunset.strftime('%H:%M:%S') )

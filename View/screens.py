@@ -1,15 +1,12 @@
-from Model.login_model import LoginModel
-from Controller.login_screen import LoginScreenController
+from Model.login_model              import LoginModel
+from Model.system_model             import SystemModel
 
-from Model.system_model import SystemModel
-from Controller.home_screen import HomeScreenController
-from Controller.map_screen import MapScreenController
-
-from Model.system_model import SystemModel
-from Controller.serial_screen import SerialScreenController
-
+from Controller.login_screen        import LoginScreenController
+from Controller.home_screen         import HomeScreenController
+from Controller.map_screen          import MapScreenController
+from Controller.serial_screen       import SerialScreenController
+from Controller.sensor_screen       import SensorScreen 
 from Controller.diganosticos_screen import DiganosticosScreenController
-from Controller.sensor_screen import SensorScreen 
 
 screens = {
     'login screen': {

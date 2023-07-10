@@ -1,10 +1,13 @@
+#:import BarPlot libs.kivy_garden.graph.BarPlot
 
 #
 # Main Screen
 #
 <HomeScreenView>
-    on_enter: progress_relative.current_percent = 20
-
+    on_enter: 
+        circular_month_generation.current_percent = (1.75/2.153)*100
+        circular_mean_generation.current_percent = (4.45/5.235)*100
+        
     MDFloatLayout:
         id: box_content 
         size_hint: 1, 1
@@ -30,32 +33,9 @@
                 spacing: self.parent.spacing
                 size_hint: 1, 0.5
                 #
-                # Sistema 
-                MDCard: 
-                    size_hint: 0.25, 1
-                    orientation: 'vertical'
-                    radius: 5
-                    MDBoxLayout:
-                        size_hint: 1, 0.1
-                        md_bg_color: [226/255, 141/255, 0, 1 ]
-                        padding: 10 
-                        radius: 5, 5, 0, 0
-                        MDLabel:
-                            text: 'Visualização do Sistema'
-                            color: 'white'
-                            bold: True 
-                            elevation: 2
-                        MDIconButton:
-                            icon: 'weather-sunny'
-                            size_hint: 0.1, 1
-                    MDBoxLayout:
-                        id: system_content
-                        size_hint: 1, 0.9
-                        radius: [0,0,10,10]
-                #
                 # Mapa loc
                 MDCard:
-                    size_hint: 0.25, 1
+                    size_hint: 0.4, 1
                     orientation: 'vertical'
                     MDBoxLayout:
                         size_hint: 1, 0.1
@@ -78,38 +58,182 @@
                 #
                 # Posição dos motores 
                 MDCard: 
-                    size_hint: 0.5, 1              
+                    size_hint: 0.6, 1              
                     orientation: 'vertical'
-                    MDBoxLayout:
-                        size_hint: 1, 0.1
-                        md_bg_color: [226/255, 141/255, 0, 1 ]
-                        padding: 10 
-                        radius: 5, 5, 0, 0
-                        MDLabel:
-                            text: 'Posição dos motores'
-                            color: 'white'
-                            bold: True 
-                            elevation: 2
-                        MDIconButton:
-                            icon: 'engine'
-                            size_hint: 0.1, 1
-                    MDBoxLayout:
-                        id: motors_content
-                        size_hint: 1, 0.9
-                        radius: [0,0,10,10]
+                    spacing: sp(10)
+                    radius: sp(15) 
+                
+                    MDFloatLayout: 
+                        size_hint: 1, 0.7
+                        pos_hint: {'center_x': 0.5,'top': 1.0}
+
+                        FitImage: 
+                            size_hint: 1, 1
+                            source: root.model.background 
+                            pos_hint: { 'center_x': 0.5,'center_y': 0.5 }
+                            radius: sp(15) 
+
+                        FitImage: 
+                            source: root.model.painel_solar
+                            color: 0.5,0.5,0.8,1
+                            size_hint: 0.75, 0.75
+                            pos_hint: {'center_x': 0.65,'center_y': 0.375}
+                        
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint: 0.3, 0.30
+                            pos_hint: {'center_x': 0.20,'top': 0.95}
+                            padding: sp(10), 0, 0, 0
+                            spacing: sp(5)
+                            radius: sp(5)
+                            md_bg_color: 0.5, 0.5, 0.5, 0.5
+                            MDLabel:
+                                text: "Atuador de Azimute"
+                                color: 'white'
+                                font_size: sp(16) 
+                                halign: 'center'
+                                bold: True 
+                            MDBoxLayout:    
+                                Image: 
+                                    size_hint: 0.3, 1
+                                    source: root.model.motor_vertical
+                                MDLabel:
+                                    id: label_motor_vertical 
+                                    text: 'Vel: --.--rad/s'
+                                    
+                            MDBoxLayout:    
+                                Image: 
+                                    size_hint: 0.3, 1
+                                    source: root.model.sensor_motores
+                                MDLabel:
+                                    id: label_encoder_vertical 
+                                    text: 'Pos: --.--º'
+                    
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            size_hint: 0.3, 0.30
+                            pos_hint: {'center_x': 0.20,'top': 0.35}
+                            padding: sp(10), 0, 0, 0
+                            spacing: sp(5)
+                            radius: sp(5)
+                            md_bg_color: 0.5, 0.5, 0.5, 0.5
+                            MDLabel:
+                                text: "Atuador de Zenite"
+                                color: 'white'
+                                font_size: sp(16)  
+                                halign: 'center'
+                                bold: True 
+                            MDBoxLayout:    
+                                Image: 
+                                    size_hint: 0.3, 1
+                                    source: root.model.motor_horizontal
+                                MDLabel:
+                                    id: label_motor_horizontal 
+                                    text: 'Vel: --.-- rad/s'
+                            MDBoxLayout:    
+                                Image: 
+                                    size_hint: 0.3, 1
+                                    source: root.model.sensor_motores
+                                MDLabel:
+                                    id: label_encoder_horizontal
+                                    text: 'Pos: --.--º'
+                        
+                        MDBoxLayout:
+                            size_hint: 0.2, None
+                            pos_hint: {'right': 0.95,'top': 0.95}
+                            md_bg_color: 0.5,0.5,0.5,0.5
+                            height: sp(35)
+                            radius: sp(5)
+                            MDIconButton:
+                                id: icon_system_status
+                                pos_hint: {'center_y': 0.5}
+                                icon: 'circle'
+                                theme_icon_color: 'Custom'
+                                icon_color: 'red' 
+                            MDLabel:
+                                id: label_system_status
+                                text: 'Sistema offline'
+                                font_size: sp(16) 
+                                halign: 'center'
+
+                        MDBoxLayout:
+                            orientation: 'horizontal'
+                            size_hint: 0.2, None
+                            pos_hint: {'center_x': 0.85,'top': 0.15}
+                            height: sp(45)
+                            padding: sp(20)
+                            spacing: sp(20)
+                            radius: sp(5)
+                            md_bg_color: 0.5, 0.5, 0.5, 0.5
+                            MDIconButton:
+                                id: icon_geracao
+                                icon:'lightbulb-on'
+                                size_hint: 0.1, 1
+                                pos_hint: {'rigth': 0.05,'center_y': 0.5}
+                                theme_icon_color: 'Custom'
+                                icon_color: 'gray' 
+                            MDLabel:
+                                id: label_geracao
+                                pos_hint: {'rigth': 0.3,'center_y': 0.5}
+                                text: 'Sem geração'
+                                font_size: sp(16)
+                                halign: 'left'
+                                valign: 'center'
+
                         MDCard: 
-                            id: azimute_content
-                            size_hint: 0.5, 1
-                            radius: 5
-                        MDCard: 
-                            id: zenite_content
-                            size_hint: 0.5, 1
-                            radius: 5
+                            id: graph_system_off 
+                            md_bg_color: [1,1,1,0.5]
+                            size_hint: 1, 0.20
+                            pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                            radius: 0 
+                            MDLabel:
+                                size_hint: 1, 1
+                                pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                text: "SISTEMA NÃO CONECTADO"
+                                color: [ 0, 0, 0, 1 ]
+                                font_size: sp(18)
+                                halign: 'center'
+                                bold: True
+
+                    # MDFloatLayout:
+                    #     size_hint: 1, 1
+                        
+                    #     MDBoxLayout:
+                    #         size_hint: 1, 0.1
+                    #         pos_hint: {'center_x': 0.5,'top': 1.0}
+                    #         md_bg_color: [226/255, 141/255, 0, 1 ]
+                    #         padding: 10 
+                    #         radius: 5, 5, 0, 0
+                    #         MDLabel:
+                    #             text: 'Posição dos motores'
+                    #             color: 'white'
+                    #             bold: True 
+                    #             elevation: 2
+                    #         MDIconButton:
+                    #             icon: 'engine'
+                    #             size_hint: 0.1, 1
+                    #     MDBoxLayout:
+                    #         id: motors_content
+                    #         size_hint: 1, 0.9
+                    #         pos_hint: {'center_x': 0.5,'top': 0.90}
+                    #         radius: [0,0,10,10]
+                    #         MDCard: 
+                    #             id: azimute_content
+                    #             size_hint: 0.5, 1
+                    #             radius: 5
+                    #         MDCard: 
+                    #             id: zenite_content
+                    #             size_hint: 0.5, 1
+                    #             radius: 5
+                        
+
+                                
             #
             # Geração / Histórico de geração  
             MDBoxLayout:
                 spacing: self.parent.spacing
                 size_hint: 1, 0.5
+                
                 #
                 # Geração solar 
                 MDCard: 
@@ -130,21 +254,86 @@
                             size_hint: 0.1, 1
                     MDBoxLayout:
                         id: power_content
+                        pos_hint: {"center_x": .5, "center_y": .5}                     
                         size_hint: 1, 0.9
-                        radius: [0,0,10,10]                        
-                        AKCircularProgress:
-                            id: progress_relative
-                            pos_hint: {"center_x": .5, "center_y": .5}
-                            size_hint: None, None
-                            size: dp(100), dp(100)
-                            percent_type: "percent"
-                            start_deg: 240
-                            end_deg: 480
-                            percent_type: "relative"
-                            line_width: 6
-                            background_circle_color: [1,1,1,1]
-                            background_line_width: 5
-                            max_percent: 25
+                        radius: [ 0, 0, 10, 10 ]  
+                        orientation: 'vertical' 
+                        spacing: sp(10)
+                        padding: sp(20)
+                        MDLabel:
+                            size_hint: 0.9, None
+                            height: sp(50)
+                            pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                            text: 
+                                'Dados de geração solar coletados pelo LABREN - Laboratório de Modelagem e Estudos de Recursos Renováveis de Energia'
+                            color: 'white'
+                            font_size: sp(14)
+                            halign: 'center'
+                        #
+                        # 1º AKCircular
+                        #
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            AKCircularProgress:
+                                id: circular_month_generation
+                                pos_hint: { "center_x": 0.5 }
+                                size_hint: None, None
+                                size: dp(100), dp(100)
+                                percent_type: "percent"
+                                start_deg: 240
+                                end_deg: 480
+                                line_width: 6
+                                background_circle_color: [1,1,1,1]
+                                background_line_width: 5
+                                max_percent: 100
+                            MDBoxLayout:
+                                orientation: 'vertical'
+                                pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                                size_hint: 0.8, 0.4
+                                MDLabel:
+                                    text: "Geração mensal média para o RS:"
+                                    halign: 'center'
+                                    font_size: sp(12)
+                                MDLabel:
+                                    id: month_generation
+                                    text: "2.152 Wh/m².dia"
+                                    bold: True                                     
+                                    halign: 'center'
+                                    font_size: sp(14)
+
+                        #
+                        # 2º AKCircular
+                        #
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            AKCircularProgress:
+                                id: circular_mean_generation
+                                pos_hint: { "center_x": 0.5 }
+                                size_hint: None, None
+                                size: dp(100), dp(100)
+                                percent_type: "percent"
+                                start_deg: 240
+                                end_deg: 480
+                                line_width: 6
+                                background_circle_color: [1,1,1,1]
+                                background_line_width: 5
+                                max_percent: 100
+                            MDBoxLayout:
+                                orientation: 'vertical'
+                                pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                                size_hint: 0.8, 0.4
+                                MDLabel:
+                                    text: "Geração anual média para o RS:"
+                                    halign: 'center'
+                                    font_size: sp(12)
+                                MDLabel:
+                                    id: mean_generation
+                                    text: "5.235 Wh/m².dia"
+                                    bold: True                                     
+                                    halign: 'center'
+                                    font_size: sp(16)
+
+                
                 #
                 # Histórico de geração 
                 MDCard:
@@ -167,16 +356,6 @@
                         id: log_content
                         size_hint: 1, 0.9
                         radius: [0,0,10,10]
-
-                # MDRaisedButton: on_release: progress_relative.current_percent = 0
-
-            # Graph:
-            #     size_hint: 0.5, 1
-            #     pos_hint: {'center_x': 0.5,'top': 1 }
-            #     md_bg_color: 'gray'
-            #     orientation: 'vertical'
-            # Graph:                       
-            #     size_hint: 0.5, 1
-            #     pos_hint: {'center_x': 0.5,'top': 1 }
-            #     md_bg_color: 'gray'
-            #     orientation: 'vertical'
+                        on_size: 
+                            root.on_size() 
+    

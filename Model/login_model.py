@@ -155,7 +155,7 @@ class LoginModel( BaseScreenModel ):
             return False 
 
     ''' Getter and Setter DB properties '''  
-    def get_table(self):
+    def get_table(self) -> list:
         return self.db.login[0]
     
     def set_table(self, state, user, psd ):

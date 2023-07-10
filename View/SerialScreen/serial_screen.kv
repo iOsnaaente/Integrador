@@ -1,5 +1,3 @@
-#:import MapView kivy.garden.mapview.MapView 
-
 <SerialScreenView>
     md_bg_color: app.theme_cls.bg_darkest
     #
@@ -35,18 +33,232 @@
                 # Serial config 
                 MDBoxLayout:
                     id: serial
-                    size_hint: 0.33, 1                
+                    size_hint: 0.2, 1     
+
                 #
-                # Azimute Graph 
-                MDBoxLayout:
-                    id: azimute
-                    size_hint: 0.30, 1                
-                #
-                # Zenite Graph 
-                MDBoxLayout:
-                    id: zenite
-                    size_hint: 0.30, 1
-            
+                # Ploters 
+                FloatLayout:
+                    id: graph_zone
+                    size_hint: 0.75, 1 
+                    MDBoxLayout:
+                        size_hint: 1, 1
+                        spacing: 10
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                        #
+                        # Azimute Graph 
+                        MDFloatLayout:
+                            size_hint: 0.5, 1
+                            MDCard:    
+                                orientation: 'vertical'
+                                pos_hint: {'center_x': 0.5,'top': 1.0 }
+                                #
+                                # Azimute titel 
+                                MDLabel: 
+                                    size_hint: 1, 0.1
+                                    text: 'Azimute'
+                                    font_style: 'H3'
+                                    font_size: 18
+                                    bold: True
+                                    halign: 'center'
+                                #
+                                # Azimute graph 
+                                MDBoxLayout:
+                                    size_hint: 0.9, 0.9
+                                    pos_hint: { 'center_x' : 0.5, 'top' : 0.9 }
+                                    md_bg_color: [0,0,0,0]
+                                    Graph:
+                                        id: azimuth_graph
+                                        xlabel: 'Tempo (s)'
+                                        ylabel: 'Azimute (º)' 
+                                        x_ticks_minor: 10
+                                        x_ticks_major: 25
+                                        y_ticks_major: 60
+                                        y_grid_label: True
+                                        x_grid_label: True
+                                        padding: 5
+                                        x_grid: True
+                                        y_grid: True
+                                        xmin: -0
+                                        xmax: 100
+                                        ymin: -180
+                                        ymax: 180
+                                #
+                                # Azimute Slider 
+                                MDBoxLayout:
+                                    size_hint: 1, 0.10 
+                                    orientation: 'horizontal'
+                                    padding: sp(50), sp(10), sp(25), sp(10)
+                                    MDIcon:
+                                        icon: 'arrow-left'
+                                        color: 'gray'
+                                        size_hint: 0.1, 1
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                    MDSlider:
+                                        size_hint: 0.8, 1
+                                        hint: True
+                                        disabled: True
+                                        thumb_color_disabled: "gray"
+                                        thumb_color_inactive: 'gray'
+                                        track_color_active: "gray"
+                                        track_color_inactive: "gray"
+
+                                        # thumb_color_active: app.theme_cls.primary 
+                                    MDIcon:
+                                        icon: 'arrow-right'
+                                        color: 'gray'
+                                        size_hint: 0.1, 1
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+
+                            #
+                            # Azimute Legenda
+                            MDCard: 
+                                size_hint: 0.25, 0.15
+                                pos_hint: {'right': 0.45,'top': 0.875}
+                                orientation: 'vertical'
+                                padding: sp(5)
+                                radius: sp(5)
+                                md_bg_color: [0,0,0,0]
+                                MDBoxLayout:
+                                    orientation: 'horizontal'
+                                    MDIcon:
+                                        size_hint: 0.1, None
+                                        height: self.width 
+                                        icon: 'circle'
+                                        color: 'red'
+                                    MDLabel:
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        valign: 'center'
+                                        text: "Pos. Motor"
+                                        color: 'white'
+                                        font_size: sp(12)
+                                MDBoxLayout:
+                                    orientation: 'horizontal'
+                                    MDIcon:
+                                        size_hint: 0.1, None
+                                        height: self.width 
+                                        icon: 'circle'
+                                        color: 'blue'
+                                    MDLabel:
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        valign: 'center'
+                                        text: "Pos. Sensor"
+                                        color: 'white'
+                                        font_size: sp(12)
+                        #
+                        # Zenite Graph 
+                        MDFloatLayout:
+                            size_hint: 0.5, 1
+                            MDCard:
+                                pos_hint: {'center_x': 0.5,'top': 1.0 }
+                                orientation: 'vertical'
+                                #
+                                # Title label 
+                                MDLabel: 
+                                    size_hint: 1, 0.1
+                                    text: 'Zenite'
+                                    font_style: 'H3'
+                                    font_size: 18
+                                    bold: True
+                                    halign: 'center'
+                                #
+                                # Graph box     
+                                MDBoxLayout:
+                                    size_hint: 1, 0.8
+                                    pos_hint: { 'rigth' : 1, 'top' : 1 }
+                                    md_bg_color: [0,0,0,0]
+                                    Graph:
+                                        id: zenith_graph
+                                        xlabel: 'Time (s)'
+                                        ylabel: 'Zenite (º)' 
+                                        x_ticks_minor: 10
+                                        x_ticks_major: 25
+                                        y_ticks_major: 15
+                                        y_grid_label: True
+                                        x_grid_label: True
+                                        padding: 5
+                                        x_grid: False
+                                        y_grid: True
+                                        xmin: -0
+                                        xmax: 100
+                                        ymin: 0
+                                        ymax: 95
+                                #
+                                # Zenite Slider 
+                                MDBoxLayout:
+                                    size_hint: 1, 0.10 
+                                    orientation: 'horizontal'
+                                    padding: sp(50), sp(10), sp(25), sp(10)
+                                    MDIcon:
+                                        icon: 'arrow-down'
+                                        color: 'gray'
+                                        size_hint: 0.1, 1
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                    MDSlider:
+                                        size_hint: 0.8, 1
+                                        hint: True
+                                        disabled: True
+                                        thumb_color_disabled: "gray"
+                                        thumb_color_inactive: 'gray'
+                                        track_color_active: "gray"
+                                        track_color_inactive: "gray"
+                                    MDIcon:
+                                        icon: 'arrow-up'
+                                        color: 'gray'
+                                        size_hint: 0.1, 1
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                            #
+                            # Zenite Legenda
+                            MDCard: 
+                                size_hint: 0.25, 0.15
+                                pos_hint: {'right': 0.375,'top': 0.875}
+                                orientation: 'vertical'
+                                padding: sp(5)
+                                radius: sp(5)
+                                md_bg_color: [0,0,0,0]
+                                MDBoxLayout:
+                                    orientation: 'horizontal'
+                                    MDIcon:
+                                        size_hint: 0.1, None
+                                        height: self.width 
+                                        icon: 'circle'
+                                        color: 'red'
+                                    MDLabel:
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        valign: 'center'
+                                        text: "Pos. Motor"
+                                        color: 'white'
+                                        font_size: sp(12)
+                                MDBoxLayout:
+                                    orientation: 'horizontal'
+                                    MDIcon:
+                                        size_hint: 0.1, None
+                                        height: self.width 
+                                        icon: 'circle'
+                                        color: 'blue'
+                                    MDLabel:
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        valign: 'center'
+                                        text: "Pos. Sensor"
+                                        color: 'white'
+                                        font_size: sp(12)
+
+
+                    # Sistema não conectado
+                    #
+                    MDCard: 
+                        id: graph_system_off 
+                        size_hint: 1.0, 0.20
+                        pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                        md_bg_color: [1,1,1,0.35]
+                        radius: 0 
+                        MDLabel:
+                            size_hint: 1, 1
+                            pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                            text: "SISTEMA NÃO CONECTADO"
+                            color: [ 0, 0, 0, 1 ]
+                            font_size: sp(18)
+                            halign: 'center'
+                            bold: True            
             #
             # #
             # # Connection logs and commands content
@@ -60,19 +272,19 @@
                 #
                 # Dummy 
                 MDLabel:
-                    size_hint: None, None
-                    size: dp(90), dp(100)
+                    size_hint: None, 1
+                    width: sp(90)
+
                     md_bg_color:'white'
                     text: "Dummy label"
-                
                 #
                 # #
-                # # Comandos seriais 
+                # # Painel de comandos
                 # #
                 #
                 MDCard:
                     orientation: 'vertical'
-                    size_hint: 0.33, 1
+                    size_hint: 0.2, 1
                     md_bg_color: [0.25,0.25,0.25,0.5]
                     spacing: 10 
                     padding: 10 
@@ -90,15 +302,149 @@
                             orientation: 'vertical'
                             size_hint: 1, None
                             adaptive_height: True
-                            spacing: 15
-
+                            spacing: sp(10)
+                            padding: sp(10)
+                            #
+                            # Modo de operação 
+                            MDCard:
+                                orientation: 'vertical'
+                                size_hint: 1, None
+                                height: sp(100)
+                                MDLabel:
+                                    text: "Modo de operação:"
+                                    halign: 'left'
+                                    color: 'white'                                    
+                                    bold: True 
+                                MDCard:
+                                    size_hint: 1, None 
+                                    height: sp(25)
+                                    orientation: 'horizontal'
+                                    MDCheckbox:
+                                        group: 'mode'
+                                        pos_hint: {'center_x': 0.15 }
+                                        size_hint: None, None
+                                        size: sp(35), sp(35)
+                                        active: True
+                                    MDLabel:
+                                        text: "Automatico"
+                                        color: 'white'
+                                        valign: 'center'
+                                MDCard:
+                                    size_hint: 1, None 
+                                    height: sp(25)
+                                    orientation: 'horizontal'
+                                    MDCheckbox:
+                                        group: 'mode'
+                                        pos_hint: {'center_x': 0.15 }
+                                        size_hint: None, None
+                                        size: sp(35), sp(35)
+                                        active: False
+                                    MDLabel:
+                                        text: "Manual"
+                                        color: 'white'
+                                        valign: 'center'
+                            #
+                            # Estado dos motores  
+                            MDCard:
+                                orientation: 'vertical'
+                                size_hint: 1, None
+                                height: sp(75)
+                                MDLabel:
+                                    text: "Ligar/Desligar motores:"
+                                    halign: 'left'
+                                    color: 'white'
+                                    bold: True 
+                                MDSwitch:
+                                    active: True
+                                    icon_inactive: "close"
+                                    icon_active: "check"
+                                    thumb_color_active: "green"
+                                    thumb_color_inactive: "red"
+                                    track_color_active: [0.2,1,0.2, 0.6]
+                                    track_color_inactive:  [1,0.1,0.1, 0.45]
+                                    on_active: print( 'on_active')
+                            #
+                            # Indicações  
+                            MDCard:
+                                orientation: 'vertical'
+                                size_hint: 1, None
+                                height: sp(50)
+                                MDLabel:
+                                    text: "Motores movendo:"
+                                    halign: 'left'
+                                    color: 'white'                                    
+                                    bold: True 
+                                MDCard: 
+                                    size_hint: 1, None 
+                                    orientation: 'horizontal'
+                                    height: sp(25)
+                                    MDCard:
+                                        size_hint: 1, 1
+                                        orientation: 'horizontal'
+                                        spacing: sp(5)
+                                        padding: sp(10),0,0,0
+                                        MDIcon:
+                                            pos_hint: {'center_x': 0.15 }
+                                            size_hint: None, None
+                                            size: sp(35), sp(35)
+                                            icon: 'circle'
+                                            color: 'gray'
+                                        MDLabel:
+                                            text: "Azimute"
+                                            valign: 'center'
+                                            color: 'gray'
+                                    MDCard:
+                                        size_hint: 1, None 
+                                        height: sp(25)
+                                        orientation: 'horizontal'
+                                        spacing: sp(5)
+                                        MDIcon:
+                                            pos_hint: {'center_x': 0.15 }
+                                            size_hint: None, None
+                                            size: sp(35), sp(35)
+                                            icon: 'circle'
+                                            color: 'gray'
+                                        MDLabel:
+                                            text: "Zenite"
+                                            valign: 'center'
+                                            color: 'gray'
+                            #
+                            # Home  
+                            MDCard:
+                                orientation: 'vertical'
+                                size_hint: 1, None
+                                height: sp(50)
+                                padding: 0, sp(10), 0, 0    
+                                MDLabel:
+                                    text: "Mover para casa:"
+                                    halign: 'left'
+                                    color: 'white'                                    
+                                    bold: True 
+                                MDCard: 
+                                    size_hint: 1, None 
+                                    height: sp(25)
+                                    orientation: 'horizontal'
+                                    spacing: sp(5)
+                                    padding: sp(10),0,0,0
+                                    MDIconButton:
+                                        pos_hint: {'center_x': 0.1, 'center_y': 0.5 }
+                                        size_hint: 0.1, None
+                                        height: self.width 
+                                        icon: 'home'
+                                        theme_icon_color: 'Custom'
+                                        icon_color: [0.1, 1, 0.1, 0.8 ]
+                                    MDLabel:
+                                        text: "Go home"
+                                        valign: 'center'
+                                        color: 'white'
+                #
                 #
                 # #
                 # # Log da serial 
                 # #
                 #
                 MDStackLayout:
-                    size_hint: 0.6, 1
+                    size_hint: 0.75, 1
                     md_bg_color: [0.25,0.25,0.25,0.5]
                     radius: 10
                     spacing: 10 
@@ -115,9 +461,20 @@
                             size_hint: 1, 0.1
                             text: 'Serial monitor:'
                         MDCard:
-                            id: serial_monitor
                             size_hint: 1, 0.9 
                             md_bg_color: 0.1, 0.1, 0.1, 0.5
+                            MDScrollView:
+                                size_hint: 1, 1
+                                md_bg_color: 0.1, 0.1, 0.1, 0.5
+                                radius: self.parent.radius
+                                MDCard:
+                                    id: serial_monitor
+                                    size_hint: 1, None
+                                    height: dp( 500 )
+                                    orientation: 'vertical'
+                                    pos_hint: {'center_x': 0.5,'top': 1.0}
+                                    padding: sp(10) 
+                                    spacing: sp(25)
  
 
                     #
@@ -130,25 +487,107 @@
                         MDLabel:
                             size_hint: 1, 0.1
                             text: 'Lista de comandos:'
-                        MDCard:
-                            id: command_hint
+                        MDScrollView:
                             size_hint: 1, 0.9 
+                            radius: self.parent.radius
                             md_bg_color: 0.1, 0.1, 0.1, 0.5
-                    
+                            MDCard:
+                                size_hint: 1, None
+                                height: dp( 350 )
+                                orientation: 'vertical'
+                                pos_hint: {'center_x': 0.5,'top': 1.0}
+                                padding: sp(10) 
+                                spacing: sp(25)
+                                MDLabel:
+                                    text: "Comandos de leitura:"
+                                    color: 'white'
+                                    bold: True
+                                MDLabel:
+                                    text: "Para ler Discrete Input use:"
+                                    markup: True
+                                    color: 'gray'
+                                MDLabel:
+                                    text: "[ref=DISC][u]RD  ID  DISC  REG  QNT[/u][/ref]"
+                                    on_ref_press: prompt_commandos.text = 'RD  ID  DISC  REG  QNT'
+                                    haling: 'center'
+                                    font_size: sp(12)
+                                    color: 'gray'
+                                    markup: True
+                                MDLabel:
+                                    text: "Para ler Coil Register use:"
+                                    color: 'gray'
+                                    markup: True
+                                MDLabel:
+                                    text: "[ref=COIL][u]RD  ID  COIL  REG  QNT[/u][/ref]"
+                                    on_ref_press: prompt_commandos.text = 'RD  ID  COIL  REG  QNT'
+                                    haling: 'center'
+                                    font_size: sp(12)
+                                    color: 'gray'
+                                    markup: True
+                                MDLabel:
+                                    text: "Para ler Holding Register use:"
+                                    color: 'gray'
+                                    markup: True
+                                MDLabel:
+                                    text: "[ref=HOLD][u]RD  ID  HOLD  REG  QNT[/u][/ref]"
+                                    on_ref_press: prompt_commandos.text = 'RD  ID  HOLD  REG  QNT'
+                                    haling: 'center'
+                                    font_size: sp(12)
+                                    color: 'gray'
+                                    markup: True                              
+                                MDLabel:
+                                    text: "Para ler Analog Input use:"
+                                    color: 'gray'
+                                    markup: True
+                                MDLabel:
+                                    text: "[ref=ANAG][u]RD  ID  ANAG  REG  QNT[/u][/ref]"
+                                    on_ref_press: prompt_commandos.text = 'RD  ID  ANAG  REG  QNT'
+                                    haling: 'center'
+                                    font_size: sp(12)
+                                    color: 'gray'
+                                    markup: True                                
+                                
+                                MDLabel:
+                                    text: "Comandos de escrita:"
+                                    color: 'white'
+                                    bold: True
+                                MDLabel:
+                                    text: "Para ler Coil Register use:"
+                                    markup: True
+                                    color: 'gray'
+                                MDLabel:
+                                    text: "[ref=COIL][u]WR  ID  COIL  REG  VALUE[/u][/ref]"
+                                    on_ref_press: prompt_commandos.text = 'WR  ID  COIL  REG  QNT'
+                                    haling: 'center'
+                                    font_size: sp(12)
+                                    color: 'gray'
+                                    markup: True                                
+                                MDLabel:
+                                    text: "Para escrever Holding Register use:"
+                                    markup: True
+                                    color: 'gray'
+                                MDLabel:
+                                    text: "[ref=HOLD][u]WR  ID  HOLD  REG  VALUE[/u][/ref]"
+                                    on_ref_press: prompt_commandos.text = 'WR  ID  HOLD  REG  QNT'
+                                    haling: 'center'
+                                    font_size: sp(12)
+                                    color: 'gray'
+                                    markup: True
                     #
                     # Serial monitor
                     MDCard:
                         orientation: 'horizontal'
                         size_hint: 1, 0.1
                         MDLabel:
-                            size_hint: 0.175, 1 
+                            size_hint: 0.15, 1 
                             text: 'Enviar Comandos:'
                         MDTextField:
                             id: prompt_commandos
-                            size_hint: 0.725, 1.5
+                            size_hint: 0.75, 1.5
                         MDIconButton:
                             size_hint: 0.1, 1 
                             icon: 'send'
+                            on_press: print( 'press aquii oh')
 
                         
                         

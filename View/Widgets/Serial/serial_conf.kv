@@ -49,10 +49,12 @@
                 #
                 # Serial comport
                 MDLabel:
-                    size_hint_x: 0.25
+                    size_hint_x: 0.3
                     text: 'Comport'
+                    font_size: sp(12)
+                    bold: True
                 MDBoxLayout:
-                    size_hint_x: 0.75
+                    size_hint_x: 0.7
                     orientation: 'horizontal'
                     MDCard:
                         # items: ['COMP3', 'COMP4', 'COMP5', 'COMP10', 'COMP15']
@@ -63,9 +65,10 @@
                         MDLabel:
                             id: comport_label 
                             size_hint: 0.8, 1
-                            md_bg_color: [0,0,0,0]
-                            text: "    Comport"
                             pos_hint: {"center_x": .5, "center_y": .5}
+                            md_bg_color: [0,0,0,0]
+                            text: "Comport"
+                            font_size: sp(14)
                         MDIconButton:
                             id: comport_icon 
                             icon:'chevron-down'
@@ -80,7 +83,9 @@
                 # Serial Baudrate
                 MDLabel:
                     size_hint_x: 0.25
+                    font_size: sp(12)
                     text: 'Baudrate'
+                    bold: True
                 MDBoxLayout:
                     size_hint_x: 0.75
                     MDCard:
@@ -92,9 +97,10 @@
                         MDLabel:
                             id: baudrate_label
                             size_hint: 0.8, 1
-                            md_bg_color: [0,0,0,0]
-                            text: "    Baudrate"
                             pos_hint: {"center_x": .5, "center_y": .5}
+                            md_bg_color: [0,0,0,0]
+                            text: "Baudrate"
+                            font_size: sp(14)
                         MDIconButton:
                             id: baudrate_icon
                             icon:'chevron-down'
@@ -105,7 +111,9 @@
                 # Serial Timeout
                 MDLabel:
                     size_hint_x: 0.25
+                    font_size: sp(12)
                     text: 'Timeout'
+                    bold: True
                 MDBoxLayout:
                     size_hint_x: 0.75
                     MDCard:
@@ -118,8 +126,9 @@
                             id: timeout_label 
                             size_hint: 0.8, 1
                             md_bg_color: [0,0,0,0]
-                            text: "    Timeout"
                             pos_hint: {"center_x": .5, "center_y": .5}
+                            text: "Timeout"
+                            font_size: sp(14)
                         MDIconButton:
                             id: timeout_icon 
                             icon:'chevron-down'
@@ -131,6 +140,7 @@
                 id: connection_button
                 size_hint: 1, 0.15
                 md_bg_color: 'green'
+                radius: sp(10)
                 text: 'Iniciar conexão' 
     #
     # Serial Status connection 

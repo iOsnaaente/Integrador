@@ -6,6 +6,25 @@
         size_hint: 1, 1    
         orientation: 'horizontal'
     
-    MDLabel: 
-        text: 'Diagnostico Screen'
-        color: 1, 1, 1, 1
+        MDBoxLayout:
+            size_hint: 0.5,0.5
+            pos_hint: {'center_x': 0.5,'center_y': 0.5}
+            orientation: 'vertical'
+            MDLabel: 
+                pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                size_hint: 1.0, 0.8
+                text: 'Gerar relatório'
+                font_size: sp(32)
+                bold: True 
+                halign: 'center'
+                valign: 'center'
+            MDRectangleFlatIconButton:
+                pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                size_hint: 1.0, 0.2
+                icon: 'database'
+                text: 'Gerar'
+                theme_text_color: "Custom"
+                text_color: "white"
+                line_color: "white"
+                theme_icon_color: "Custom"
+                icon_color: "white"

@@ -111,6 +111,7 @@ class SerialConfiguration( MDCard ):
         if self.connection_keep.active == True:
             self.__db.set_serial( 'T', comp, baud, time )
             print( comp, baud, time, 'check True' )
+            
         else:
             print( comp, baud, time, 'check False' )
         print( 'Implementar a conexão serial em Views/commom_components/serial_conf')

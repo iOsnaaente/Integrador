@@ -19,8 +19,6 @@ class SharedData:
     def update_date( self, dt = None ):
         self.datetime =  datetime.now().strftime("%H:%M:%S %d/%m/%Y")
 
-
-
     @property
     def datetime( self ): 
         return self._date 
@@ -37,10 +35,13 @@ class SharedData:
         return self._date.split(' ')[1]
     @property
     def connected(self):
-        return self._connected
+        return self._connected    
+    @connected.setter
+    def connected(self, value : bool ) -> None:
+        self._connected = value 
     @property
     def username( self ):
-        return self._username 
+            return self._username 
     @username.setter
     def username( self, value ): 
         self._username = value 

@@ -1,4 +1,4 @@
-from libs.kivy_garden.graph import Graph, MeshLinePlot 
+from libs.kivy_garden.graph import Graph, SmoothLinePlot
 from kivymd.uix.behaviors import HoverBehavior
 from kivymd.uix.card import MDCard
 
@@ -32,7 +32,7 @@ class AzimuteAllDay( MDCard, HoverBehavior ):
         
         self.graph_x = [ 0 ]
 
-        self.azimute = MeshLinePlot( color = [1, 0, 0, 1] )
+        self.azimute = SmoothLinePlot( color = [1, 0, 0, 1] )
         self.graph.add_plot( self.azimute )
         self.ids.graph.add_widget( self.graph )
 
@@ -79,7 +79,7 @@ class ZeniteAllDay( MDCard, HoverBehavior ):
                     y_grid = True,
         )
         self.graph_x = [ 0 ]
-        self.zenite = MeshLinePlot( color = [1, 0, 0, 1] )
+        self.zenite = SmoothLinePlot( color = [1, 0, 0, 1] )
         self.graph.add_plot( self.zenite )
         self.ids.graph.add_widget( self.graph )
 
