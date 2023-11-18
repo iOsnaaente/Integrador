@@ -128,8 +128,8 @@ class LoginModel( BaseScreenModel ):
                 return False 
 
     # Criar novo usuário 
-    def create_new_user( self, user : str, password : str, manager_group : str, manager_psd : str  ) -> bool:
-        '''
+    def create_new_user( self, user : str, password : str, manager_group : str, manager_psd : str  ) -> str:
+        ''' 
             Estrutura do login esta nessa linha
             se o servidor mudar, deve ser mudado aqui também 
         '''
@@ -145,14 +145,18 @@ class LoginModel( BaseScreenModel ):
                 ans = e 
             if self.__debug:    
                 print( f'Socket creat new user connection OK\nSend {create_user_data}\nReceived {ans}' ) 
-            if ans == b'FAILED' or type(ans) == socket.error :
-                return False 
-            elif ans == b'SUCCESS': 
-                return True 
+            if type(ans) == socket.error :
+                return 'FAIL' 
+            elif ans == b'ALREADY REGISTERED':
+                return 'ALREADY REGISTERED' 
+            elif ans == b'MANAGER NOT FOUND': 
+                return 'MANAGER NOT FOUND' 
+            elif ans == b'NEW USER CREATED':
+                return 'NEW USER CREATED'
             else:
-                return False
+                return 'FAIL'
         else: 
-            return False 
+            return 'FAIL' 
 
     ''' Getter and Setter DB properties '''  
     def get_table(self) -> list:

@@ -1,13 +1,13 @@
 from Model.base_model import BaseScreenModel
-
-
 from Model.shared_data  import SharedData 
 from Model.db.database  import Database
 from System.tracker     import Device 
+from System.Tags        import * 
 from libs.Sun           import SunPosition 
 
 import os 
 PATH = os.path.dirname( __file__ ).removesuffix('\\Model')
+
 
 
 class SystemModel( BaseScreenModel ):
@@ -42,11 +42,11 @@ class SystemModel( BaseScreenModel ):
     # # 
     _system: Device | None = None 
 
-
     def __init__( self, shared_data : SharedData ) -> None:
+        super().__init__() 
         self._shared_data = shared_data
         self._database = Database()
-        super().__init__() 
+
 
     @property 
     def shared_data( self ):
@@ -57,6 +57,9 @@ class SystemModel( BaseScreenModel ):
     @property 
     def system( self ):
         return self._system 
+    @system.setter 
+    def system( self, value ):
+        self._system = value  
 
 
     def auto_connect( self ):
@@ -65,19 +68,41 @@ class SystemModel( BaseScreenModel ):
     def serial( self ): 
         return self.database.serial 
     
+    def tags(self):
+        return 
+    
     def is_connected(self): 
         if self.system is None:
             return False 
         else:      
-            return self.system.connected
+            try:
+                return self.system.is_open()
+            except:
+                return False
+             
+    def disconnect( self ):
+        try:
+            self.system.close()
+        except:
+            pass 
 
     def connect_device( self, slave: int, port: str, baudrate : int, timeout : int = 1 ) -> bool:
         try:
-            self.system.__init__( slave, port, baudrate, timeout = timeout )
-            self.system.connected = True 
+            self.system =  Device( slave, port, baudrate, timeout = int(timeout) )
             return True 
         except:
             return False 
-    
 
-        
+    def get_motor_pos( self ) -> list | None:
+        if self.system is not None:
+            # read_tag ( self, device_address : int, tag_type : str, addr : int ) -> dict:  
+            return [ 
+                    self.system.DB.read_tag( 0x12, 'analog_input', INPUT_POS_ELE )['value'],
+                    self.system.DB.read_tag( 0x12, 'analog_input', INPUT_POS_GIR )['value']
+            ]
+        else:
+            return None
+    
+    def get_system_generation( self ) -> float: 
+        return self.system.DB.read_tag( 0x12, 'analog_input', INPUT_TEMP )['value']
+    

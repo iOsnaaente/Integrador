@@ -10,7 +10,18 @@ class DiganosticosScreenView(BaseScreenView):
         according to these changes.
         """
     
-    def on_kv_post (self, *args):    
-        self.side_bar = SideBar( model = self.model ) 
-        self.ids.float_content.add_widget( self.side_bar  )
+    def on_kv_post (self, *args):
+        return super().on_kv_post(*args)
+
+
+    # Callback para entrar na tela
+    def on_enter(self, *args):
+        # Coloca o side bar no lugar 
+        self.side_bar = SideBar( model = self.model) 
+        self.ids.float_content.add_widget( self.side_bar )
         return super().on_enter(*args)
+
+    # Callback qundo sair da tela
+    def on_leave( self, *args ):
+        self.ids.float_content.remove_widget( self.side_bar )
+        return super().on_leave(*args)

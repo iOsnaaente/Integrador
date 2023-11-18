@@ -140,6 +140,11 @@ class MapScreenView(BaseScreenView):
 
     render_clock = None 
 
+    def on_kv_post( self, *args ):
+        self.side_bar = SideBar( model = self.model ) 
+        self.ids.float_content.add_widget( self.side_bar )
+        BaseScreenView.on_kv_post(self, *args )
+
     def model_is_changed(self) -> None:
         """
         Called whenever any change has occurred in the data model.
@@ -172,12 +177,13 @@ class MapScreenView(BaseScreenView):
             self.ids.zenite_graph.add_widget( self.zenite_graph )
             self.azimute_graph = AzimuteAllDay( hover = True ) 
             self.ids.azimute_graph.add_widget( self.azimute_graph )
+            
             #
             # Side bar 
-            self.side_bar = SideBar(
-                    model = self.model 
-                ) 
+            self.ids.float_content.remove_widget( self.side_bar )
+            self.side_bar = SideBar( model = self.model ) 
             self.ids.float_content.add_widget( self.side_bar )
+            
             #
             # Markers popup
             for marker in self.markers:
@@ -188,6 +194,7 @@ class MapScreenView(BaseScreenView):
                 else: 
                     marker.parent.remove_widget(marker)
                     self.map_view.add_widget( marker )
+            
             #
             # Flag already draw
             self.already_draw = True
@@ -197,14 +204,14 @@ class MapScreenView(BaseScreenView):
 
         # Quando entrar na página, executa o timer de 1 em 1 segundo 
         self.render_clock = Clock.schedule_interval( self.render_page, 1 )
-        return super().on_enter(*args)
+        BaseScreenView.on_enter( self, *args)
     
 
     def on_leave(self, *args):
         # Quando sair da página, verifique se o timer esta ativo e desative-o
         if self.render_clock and self.render_clock in Clock.get_events():
             Clock.unschedule(self.render_clock)
-        return super().on_leave(*args)
+        BaseScreenView.on_leave(self, *args)
 
 
     def on_touch_move(self, touch):
@@ -215,7 +222,7 @@ class MapScreenView(BaseScreenView):
         self.ids.altitude.text = '325m'
         self.ecliptica.latitude = lat 
         self.ecliptica.longitude = lon 
-        return super().on_touch_move(touch)
+        BaseScreenView.on_touch_move(self, touch)
 
 
     def render_page( self, clock_event ):

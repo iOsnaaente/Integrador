@@ -17,6 +17,11 @@ class HomeScreenController:
     the view to control its actions.
     """
 
+    last_pos : list = [0,0]
+    motor_vel : list = [0,0]
+    generation: float = 0.0
+    sudently_disconected: bool = False 
+
     def __init__(self, model, shared_data : SharedData ):
         self.model = model  # Model.home_screen.HomeScreenModel
         __shared_data = shared_data 
@@ -24,28 +29,43 @@ class HomeScreenController:
 
     def get_view(self) -> MDScreen:
         return self.view
-
-    def system_connected( self ):
-        return self.model.is_connected()
     
     def auto_connect(self):
-        return self.model.auto_connect()
-    
         if self.model.auto_connect():
             try: 
                 keep, _, comp, baudrate, timeout = self.model.serial()[0]
-                print( 'Serial confi', keep, comp, baudrate, timeout )
+                # print( 'Serial confi', keep, comp, baudrate, timeout )
                 status = self.model.connect_device( 0x12, comp, baudrate, timeout )
                 return status 
             except Exception as err: 
                 print( 'init_system error:', err  )
                 return False
-            
 
-    def already_connected( self ):
-        print( 'already connected in home.controller')
-        return False 
-    
-    def connect_system( self ): 
-        print( 'Connect system in home.controller')
-        return True 
+    def get_motor_pos( self ):
+        try:
+            actual_pos = self.model.get_motor_pos()
+            if actual_pos == [ None, None ]:
+                self.model.disconnect()
+                self.sudently_disconected = True
+                return [0, 0] 
+            else:
+                self.motor_vel = [ 
+                    actual_pos[0] - self.last_pos[0],
+                    actual_pos[1] - self.last_pos[1] 
+                ]
+                self.last_pos = actual_pos 
+                self.sudently_disconected = False 
+                return actual_pos  
+        except:
+            self.model.disconnect( )
+            self.sudently_disconected = True
+            return [0, 0]
+        
+    def get_motor_vel( self ):
+        return self.motor_vel 
+
+    def get_generation( self ):
+        return self.model.get_system_generation() 
+
+    def get_status( self ):
+        return self.model.is_connected() 

@@ -49,7 +49,13 @@ class SensorScreenView(BaseScreenView):
             # Retira a Label de sistema não conectado
             pass 
 
-        self.side_bar = SideBar( model = self.model ) 
-        BaseScreenView.on_enter(self, *args)
-    
-    
+        # Atualiza o side bar 
+        self.side_bar = SideBar( model = self.model) 
+        self.ids.float_content.add_widget( self.side_bar )
+        BaseScreenView.on_enter(self, *args)    
+
+
+    # Callback quando sair da tela
+    def on_leave( self, *args ):
+        self.ids.float_content.remove_widget( self.side_bar )
+        BaseScreenView.on_leave(self, *args)

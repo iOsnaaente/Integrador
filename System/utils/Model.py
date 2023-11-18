@@ -2,7 +2,7 @@ import datetime
 import sqlite3 
 import pytz 
 
-class ModbusDatabase:
+class ModbusDatabase: 
     """
         Implementa as funções básicas para se manipular as tags em um banco de dados
         Os atributos são: 
@@ -256,6 +256,41 @@ class ModbusDatabase:
         }
         return tag_info
 
+
+    def read_tags(self, device_address: int, tag_type: str, start_address: int, count: int) -> list[dict]:
+        # Verifica o tipo de tag e a tabela correspondente
+        if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:
+            if self.__debug:
+                print(f"Invalid tag type: '{tag_type}'")
+            return []
+        
+        # Consulta as tags no banco de dados
+        query = f"""SELECT * FROM {tag_type} WHERE device_address = ? AND address BETWEEN ? AND ?"""
+        params = (device_address, start_address, start_address + count - 1)
+        self.cursor.execute(query, params)
+        tags = self.cursor.fetchall()
+        # Retorna as informações das tags
+        tag_list = []
+        for tag in tags:
+            tag_info = {
+                'id': tag[0],
+                'device_address': tag[1],
+                'address': tag[2],
+                'len': tag[3],
+                'type': tag[4],
+                'value': tag[5],
+                'last_update': tag[6],
+                'name': tag[7],
+                'description': tag[8],
+                'read_write': tag[9],
+                'timeout': tag[10],
+                'periodic': tag[11]
+            }
+            tag_list.append(tag_info)
+
+        return tag_list
+
+
     def write_tag( self, device_address : int, tag_type : str, address : int, new_value ) -> bool:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:
@@ -285,68 +320,54 @@ class ModbusDatabase:
     # type,  device_address, address, length, var_type,  name, read_write, description
     def initialize_tags( self ) -> None:
         # Cria o sistema caso ele não exista
-        self.create_device( name = 'Tracker', address = 0x12, description = 'Sistema de rastreamento solar', version = '2.1.0' )
-    
+        self.create_device( name = 'Tracker', address = 0x12, description = 'Sistema de rastreamento solar', version = '2.2.0' )
         # HOLDING REGISTERS
-        self.create_tag( 'holding_register', 0x12, 0x00, 1, 'INT'   , 'HR_STATE'       , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x01, 2, 'FLOAT' , 'HR_AZIMUTE'     , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x03, 2, 'FLOAT' , 'HR_ALTITUDE'    , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x05, 2, 'FLOAT' , 'HR_PV_MOTOR_GIR', 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x07, 2, 'FLOAT' , 'HR_PV_MOTOR_ELE', 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x09, 2, 'FLOAT' , 'HR_KP_GIR'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x0B, 2, 'FLOAT' , 'HR_KI_GIR'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x0D, 2, 'FLOAT' , 'HR_KD_GIR'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x0F, 2, 'FLOAT' , 'HR_KP_ELE'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x11, 2, 'FLOAT' , 'HR_KI_ELE'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x13, 2, 'FLOAT' , 'HR_KD_ELE'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x15, 2, 'FLOAT' , 'HR_GIR_STEP'    , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x17, 2, 'FLOAT' , 'HR_GIR_USTEP'   , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x19, 2, 'FLOAT' , 'HR_GIR_RATIO'   , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x1B, 2, 'FLOAT' , 'HR_ELE_STEP'    , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x1D, 2, 'FLOAT' , 'HR_ELE_USTEP'   , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x1F, 2, 'FLOAT' , 'HR_ELE_RATIO'   , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x21, 1, 'INT'   , 'HR_YEAR'        , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x22, 1, 'INT'   , 'HR_MONTH'       , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x23, 1, 'INT'   , 'HR_DAY'         , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x24, 1, 'INT'   , 'HR_HOUR'        , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x25, 1, 'INT'   , 'HR_MINUTE'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x26, 1, 'INT'   , 'HR_SECOND'      , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x27, 2, 'FLOAT' , 'HR_POS_MGIR'    , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x29, 2, 'FLOAT' , 'HR_POS_MELE'    , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x31, 2, 'FLOAT' , 'HR_LATITUDE'    , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x33, 2, 'FLOAT' , 'HR_LONGITUDE'   , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x35, 2, 'FLOAT' , 'HR_TEMPERATURE' , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x37, 2, 'FLOAT' , 'HR_PRESSURE'    , 'rw', '', 100, 1000 )
-        self.create_tag( 'holding_register', 0x12, 0x39, 2, 'FLOAT' , 'HR_ALTURA'      , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x00, 2, 'FLOAT' , 'HR_PV_GIR'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x02, 2, 'FLOAT' , 'HR_KP_GIR'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x04, 2, 'FLOAT' , 'HR_KI_GIR'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x06, 2, 'FLOAT' , 'HR_KD_GIR'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x08, 2, 'FLOAT' , 'HR_AZIMUTE'      , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x0A, 2, 'FLOAT' , 'HR_PV_ELE'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x0C, 2, 'FLOAT' , 'HR_KP_ELE'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x0E, 2, 'FLOAT' , 'HR_KI_ELE'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x10, 2, 'FLOAT' , 'HR_KD_ELE'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x12, 2, 'FLOAT' , 'HR_ALTITUDE'     , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x14, 2, 'FLOAT' , 'HR_LATITUDE'     , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x16, 2, 'FLOAT' , 'HR_LONGITUDE'    , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x18, 1, 'INT'   , 'HR_STATE'        , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x19, 1, 'INT'   , 'HR_YEAR'         , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x1A, 1, 'INT'   , 'HR_MONTH'        , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x1B, 1, 'INT'   , 'HR_DAY'          , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x1C, 1, 'INT'   , 'HR_HOUR'         , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x1D, 1, 'INT'   , 'HR_MINUTE'       , 'rw', '', 100, 1000 )
+        self.create_tag( 'holding_register', 0x12, 0x1E, 1, 'INT'   , 'HR_SECOND'       , 'rw', '', 100, 1000 )
         # ANALOG INPUTS
-        self.create_tag( 'analog_input', 0x12, 0x00, 2, 'FLOAT', 'INPUT_SENS_GIR'     , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x02, 2, 'FLOAT', 'INPUT_SENS_ELE'     , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x04, 2, 'FLOAT', 'INPUT_AZIMUTE'      , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x06, 2, 'FLOAT', 'INPUT_ALTITUDE'     , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x08, 1, 'INT'  , 'INPUT_YEAR'         , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x09, 1, 'INT'  , 'INPUT_MONTH'        , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x0A, 1, 'INT'  , 'INPUT_DAY'          , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x0B, 1, 'INT'  , 'INPUT_HOUR'         , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x0C, 1, 'INT'  , 'INPUT_MINUTE'       , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x0D, 1, 'INT'  , 'INPUT_SECOND'       , 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x0E, 2, 'FLOAT', 'INPUT_SENS_CONF_GIR', 'r', '', 100, 1000 )
-        self.create_tag( 'analog_input', 0x12, 0x10, 2, 'FLOAT', 'INPUT_SENS_CONF_ELE', 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x00, 2, 'FLOAT', 'INPUT_POS_GIR'        , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x02, 2, 'FLOAT', 'INPUT_POS_ELE'        , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x04, 2, 'FLOAT', 'INPUT_AZIMUTE'        , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x06, 2, 'FLOAT', 'INPUT_ZENITE'         , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x08, 2, 'FLOAT', 'INPUT_GENERATION'     , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x0A, 2, 'FLOAT', 'INPUT_TEMP'           , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x0C, 2, 'FLOAT', 'INPUT_PRESURE'        , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x0E, 2, 'FLOAT', 'INPUT_SENS_CONF_GIR'  , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x10, 2, 'FLOAT', 'INPUT_SENS_CONF_ELE'  , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x12, 1, 'INT'  , 'INPUT_YEAR'           , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x13, 1, 'INT'  , 'INPUT_MONTH'          , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x14, 1, 'INT'  , 'INPUT_DAY'            , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x15, 1, 'INT'  , 'INPUT_HOUR'           , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x16, 1, 'INT'  , 'INPUT_MINUTE'         , 'r', '', 100, 1000 )
+        self.create_tag( 'analog_input', 0x12, 0x17, 1, 'INT'  , 'INPUT_SECOND'         , 'r', '', 100, 1000 )
         # COIL REGISTERS
-        self.create_tag( 'coil_register', 0x12, 0X00, 1, 'BIT', 'COIL_POWER'         , 'wr', '', 100, 1000 )
-        self.create_tag( 'coil_register', 0x12, 0x01, 1, 'BIT', 'COIL_LED1_BLUE'     , 'wr', '', 100, 1000 )
-        self.create_tag( 'coil_register', 0x12, 0x02, 1, 'BIT', 'COIL_LED1_RED'      , 'wr', '', 100, 1000 )
-        self.create_tag( 'coil_register', 0x12, 0x03, 1, 'BIT', 'COIL_LED2_BLUE'     , 'wr', '', 100, 1000 )
-        self.create_tag( 'coil_register', 0x12, 0x04, 1, 'BIT', 'COIL_LED2_RED'      , 'wr', '', 100, 1000 )
-        self.create_tag( 'coil_register', 0x12, 0x05, 1, 'BIT', 'COIL_PRINT'         , 'wr', '', 100, 1000 )
-        self.create_tag( 'coil_register', 0x12, 0x06, 1, 'BIT', 'COIL_DATETIME_SYNC' , 'wr', '', 100, 1000 )
-        self.create_tag( 'coil_register', 0x12, 0x07, 1, 'BIT', 'COIL_FORCE_DATETIME', 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0X00, 1, 'BIT', 'COIL_POWER'    , 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0x01, 1, 'BIT', 'COIL_LED'      , 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0x02, 1, 'BIT', 'COIL_M_GIR'    , 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0x03, 1, 'BIT', 'COIL_M_ELE'    , 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0x04, 1, 'BIT', 'COIL_LEDR'     , 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0x05, 1, 'BIT', 'COIL_LEDG'     , 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0x06, 1, 'BIT', 'COIL_LEDB'     , 'wr', '', 100, 1000 )
+        self.create_tag( 'coil_register', 0x12, 0x07, 1, 'BIT', 'COIL_SYNC_DATE', 'wr', '', 100, 1000 )
         # COIL INPUTS 
-        self.create_tag( 'coil_input', 0x12, 0x00, 1, 'BIT', 'DISCRETE_POWERC_L'   , 'r', '', 100, 1000 )
-        self.create_tag( 'coil_input', 0x12, 0x01, 1, 'BIT', 'DISCRETE_WAITING'    , 'r', '', 100, 1000 )
-        self.create_tag( 'coil_input', 0x12, 0x02, 1, 'BIT', 'DISCRETE_TIME_STATUS', 'r', '', 100, 1000 )
-        self.create_tag( 'coil_input', 0x12, 0x03, 1, 'BIT', 'DISCRETE_LEVER1_L'   , 'r', '', 100, 1000 )
-        self.create_tag( 'coil_input', 0x12, 0x04, 1, 'BIT', 'DISCRETE_LEVER1_R'   , 'r', '', 100, 1000 )
-        self.create_tag( 'coil_input', 0x12, 0x05, 1, 'BIT', 'DISCRETE_LEVER2_L'   , 'r', '', 100, 1000 )
-        self.create_tag( 'coil_input', 0x12, 0x06, 1, 'BIT', 'DISCRETE_LEVER2_R'   , 'r', '', 100, 1000 )
-
-
+        self.create_tag( 'coil_input', 0x12, 0x00, 1, 'BIT', 'DISCRETE_FAIL'    , 'r', '', 100, 1000 )
+        self.create_tag( 'coil_input', 0x12, 0x01, 1, 'BIT', 'DISCRETE_POWER'   , 'r', '', 100, 1000 )
+        self.create_tag( 'coil_input', 0x12, 0x02, 1, 'BIT', 'DISCRETE_TIME'    , 'r', '', 100, 1000 )
+        self.create_tag( 'coil_input', 0x12, 0x03, 1, 'BIT', 'DISCRETE_GPS'     , 'r', '', 100, 1000 )

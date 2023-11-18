@@ -94,14 +94,16 @@ class LoginScreenView( BaseScreenView ):
                 SweetAlert( timer = 0.5 ).fire( 'Usuário e senha incorretos', type = 'failure' )
 
     # Criar novo usuário 
-    def create_new_user( self, user, password, super, super_psd ):
+    def create_new_user( self, user, password, sup, sup_psd ):
         # Primeiro verifica o status da conexão 
         if not self.model.connection_status():
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "Sistema de registro indisponível" )
             return 
         else: 
-            ans = self.model.create_new_user( user, password, super, super_psd )
-            if ans:
+            ans = self.model.create_new_user( user, password, sup, sup_psd )
+            if ans == 'NEW USER CREATED':
+                # Lançar o sweetAlert de usuário registrado com sucesso 
+                SweetAlert( timer = 2 ).fire( 'Usuário registrado com sucesso', type = 'success' )
                 # Salva os nomes na tela de login
                 self.ids.login_user_field.text = user 
                 self.ids.login_password_field.text = password
@@ -109,11 +111,12 @@ class LoginScreenView( BaseScreenView ):
                 self.controller.close_widget( )
                 # Abre o navigationDrawer de login  
                 self.ids.drawer_login.state = 'open'
-                # Lançar o sweetAlert de usuário registrado com sucesso 
-                SweetAlert( timer = 1 ).fire( 'Usuário registrado com sucesso', type = 'success' )
+            elif ans == 'ALREADY REGISTERED':
+                # Lançar o erro de usuário já registrado  
+                SweetAlert( timer = 2 ).fire( f'Usuário {user} já registrado\nPor favor registre outro usuário', type = 'failure' )
             else:
-                # Lançar o sweetAlert de erro  
-                SweetAlert( timer = 1 ).fire( 'Erro ao registrar usuário\nChame o supervisor', type = 'failure' )
+                # Supervisor não encontrado ou erro desconhecido
+                SweetAlert( timer = 2 ).fire( 'Erro ao registrar usuário\nChame o supervisor', type = 'failure' )
 
 
     # Observador

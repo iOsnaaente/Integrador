@@ -63,7 +63,7 @@ class ModbusRTU:
                 print( f'cant connect serial application. Error: {err}')
             return False 
 
-    def read_register( self, register_type: str, address: int, length: int, var_type: str ) -> None | list[ int | float ]:
+    def read_registers( self, register_type: str, address: int, length: int, var_type: str ) -> None | list[ int | float ]:
         try:
             # Verifica se o cliente esta conectado 
             if self.client is None:
@@ -127,7 +127,7 @@ class ModbusRTU:
                 return None
             else: 
                 # Obtém os valores lidos das bobinas
-                return response
+                return response[::-1]
         except Exception as err:
             if self.__debug:
                 print(f"Erro ao ler as bobinas do dispositivo Modbus. Erro: {err}")
@@ -202,14 +202,16 @@ class ModbusRTU:
 
 if __name__ == '__main__':
     # Teste da classe ModbusRTU
-    modbus = ModbusRTU( 0x12, 'COM5', 19200, debug = True  )
+    modbus = ModbusRTU( 0x12, 'COM18', 57600, debug = True, parity = 'E'  )
     
-    # print( modbus.write_registers( 0x00, [ i/10 for i in range(10)] ))
-    print(modbus.write_coils( 0x00, [True, True, False, False, True ]) )
+    print( modbus.write_registers( 0x00, 0.5 ) )
+    print( modbus.write_registers( 0x0A, 0.5 ) )
+    print( modbus.write_coils( 0x00, [False, True, True, True ]) )
+
      
-    # print( modbus.read_register( 'analog_input', 0x00, 10, var_type = 'INT' )  ) 
+    # print( modbus.read_register( 'analog_input', 0x00, 10, var_type = 'FLOAT' )  ) 
     # print( modbus.read_register( 'holding_register', 0x00, 10, var_type = 'INT' )  ) 
-    print( modbus.read_coils( 'coil_input', 0x00, 10 )  ) 
-    print( modbus.read_coils( 'coil_register', 0x00, 10 )  ) 
+    # print( modbus.read_coils( 'coil_input', 0x00, 10 )  ) 
+    # print( modbus.read_coils( 'coil_register', 0x00, 10 )  ) 
 
     # print( modbus.read_register( 'analog_input', 0x00,  10, var_type = 'INT'   ) )

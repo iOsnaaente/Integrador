@@ -12,6 +12,8 @@ import math
 
 class SerialScreenView(BaseScreenView):
 
+    side_bar : SideBar
+
     Serial  = ObjectProperty()
     
     Azimute = ObjectProperty()
@@ -35,14 +37,17 @@ class SerialScreenView(BaseScreenView):
         # Side bar 
         self.side_bar = SideBar( model = self.model ) 
         self.ids.float_content.add_widget   ( self.side_bar )
+        
         # Serial configuration 
         self.Serial = SerialConfiguration()
         self.ids.serial.add_widget          ( self.Serial   )
+        
         # Zenite
         self.zenite_motor = SmoothLinePlot(color=[ 0, 0, 1, 1 ])
         self.zenite_sensor = SmoothLinePlot(color=[ 1, 0, 0, 1 ])
         self.ids.zenith_graph.add_plot( self.zenite_motor )
         self.ids.zenith_graph.add_plot( self.zenite_sensor )
+        
         # Azimute 
         self.azimute_motor = SmoothLinePlot(color=[ 0, 0, 1, 1 ])
         self.azimute_sensor = SmoothLinePlot(color=[ 1, 0, 0, 1 ])
@@ -50,9 +55,22 @@ class SerialScreenView(BaseScreenView):
         self.ids.azimuth_graph.add_plot( self.azimute_sensor )
 
         #Clock.schedule_interval( self.render, 0.1 )
-        
         BaseScreenView.on_kv_post(self, base_widget)
     
+
+    # Callback para entrar na tela
+    def on_enter(self, *args):
+        # Coloca o side bar no lugar 
+        self.side_bar = SideBar( model = self.model) 
+        self.ids.float_content.add_widget( self.side_bar )
+        BaseScreenView.on_enter(self, *args)
+    
+    # Callback qundo sair da tela
+    def on_leave( self, *args ):
+        self.ids.float_content.remove_widget( self.side_bar )
+        BaseScreenView.on_leave(self, *args)
+
+
     def render( self, clk_event ):
         self._x.append( self._x[-1] + clk_event )
         self.ids.zenith_graph.xmin  = math.ceil( self._x[ 0 ] )

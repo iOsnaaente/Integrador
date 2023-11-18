@@ -1,59 +1,43 @@
-# TOP VIEW  -  VARIÁVEIS USADAS NAS GPIOs DO RASPICO 
+# VARIÁVEIS USADAS NAS GPIOs DO RASPICO 
+
+# TOP VIEW
 
 # LEFT SIDE 
-#----------------
-STEP_GIR    = 0 
-STEP_ELE    = 1 
-STEP_GEN    = 2
+POWER_LED     = 0
+POWER_MOTOR   = 1
 
-DIR_GIR     = 3
-DIR_ELE     = 4
-DIR_GEN     = 5 
+MOTOR_GIR_ENB = 2 
+MOTOR_GIR_INA = 3 
+MOTOR_GIR_INB = 4
 
-BUTTON_GP   = 6 
-BUTTON_GM   = 7
+MOTOR_ELE_INA = 5 
+MOTOR_ELE_INB = 6
+MOTOR_ELE_ENB = 7
 
-BUTTON_EP   = 8
-BUTTON_EM   = 9
+GPIO_AUX_6    = 6 
+GPIO_AUX_7    = 7
+GPIO_AUX_8    = 8
+GPIO_AUX_9    = 9
 
-LED1_RED    = 10
-LED1_BLUE   = 11
-LED2_RED    = 12
-LED2_BLUE   = 13
-
-ENABLE_MTS  = 14
-
-POWER       = 15
-#-----------------
-
-# RIGTH SIDE
-#----------------
-SDA_DS      = 16 
-SCL_DS      = 17
-
-SDA_AS      = 18
-SCL_AS      = 19 
-
-UART_TX     = 20 
-UART_RX     = 21
-
-LED_BUILTIN = 25
-
-NONE_22     = 22 
-NONE_23     = 23 
-NONE_24     = 24 
-NONE_26     = 26 
-NONE_27     = 27 
-NONE_28     = 28 
+I2C_SDA1      = 10
+I2C_SCL1      = 11
+I2C_SDA0      = 12
+I2C_SCL0      = 13
 
 
-#-----------------
+# RIGTH SIDE 
+UART_TXD0     = 16 
+UART_RXD0     = 17
 
-import machine
+GPIO_AUX_18   = 18
+GPIO_AUX_19   = 19
+GPIO_AUX_20   = 20
+GPIO_AUX_21   = 21
 
-LED1_RED_PIN  = machine.Pin( LED1_RED , machine.Pin.OUT)
-LED2_RED_PIN  = machine.Pin( LED2_RED , machine.Pin.OUT)
-LED1_BLUE_PIN = machine.Pin( LED1_BLUE, machine.Pin.OUT)
-LED2_BLUE_PIN = machine.Pin( LED2_BLUE, machine.Pin.OUT)
+GPIO_AUX_22   = 22 
+GPIO_AUX_26   = 26 
+GPIO_AUX_27   = 27 
 
+GPIO_AUX_28   = 28
 
+LED_BUILTIN   = 25

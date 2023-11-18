@@ -1,434 +1,128 @@
-# importações de repositórios locais
-import Tracker.Time.Timanager       as tm
-import Tracker.Sun.mySunposition    as sun 
-import Tracker.Files.fileStatements as fs
-import Tracker.Motor.myStepmotor    as stp
-import Tracker.Time.myDatetime      as dt
-import Tracker.Sensor.myAS5600      as sn
-import Tracker.Serial.myModbus      as mmb
-import Tracker.Controle.myPID       as mp
-import Tracker.Manual.myLevers      as ml
+from Tracker.Sensor.myAS5600   import AS5600
+from Tracker.Time.myDatetime   import DS3231
+from Tracker.Serial.myModbus   import Modbus
+from Tracker.Sun.mySunposition import compute 
+from L298N import Motor
 
-# Variáveis constantes ou globais do PICO 
-from constants import *
+from constants import * 
+from pinout import *
 
-# Pinout das GPIOs do PICO 
-from pinout    import *
+import machine
+import time 
 
-# importação de repositórios padrões do sistema PICO 
-import machine 
-import time
-import sys 
+machine.freq()          # get the current frequency of the CPU
+machine.freq(240000000) # set the CPU frequency to 240 MHz
 
+generation = machine.ADC(26)
+power_gen = generation.read_u16()
 
-# Inicio da criação do objeto motores. Responsável pelo controle 
-# de posição dos motores e controle automático quando os sensores
-# falharem, por isso, as configurações de STEP, uSTEP e Ratio devem
-# ser configuradas de acordo para evitar problemas de FAIL STATE 
-Motors = stp.Motors( STEP_GIR, DIR_GIR, STEP_ELE, DIR_ELE, ENABLE_MTS, POWER      )
-Motors.configure   ( Motors.GIR, pos = 0.0, step = 1.8, micro_step = 8, ratio = 1 )
-Motors.configure   ( Motors.ELE, pos = 0.0, step = 1.8, micro_step = 8, ratio = 1 )
-Motors.set_torque  ( True )
+''' Watchdog de 5000ms '''
+#wdt = machine.WDT( timeout = 8000 )
 
-HOLDINGS.set_regs_float( HR_GIR_STEP, [ 1.8, 8, 1 ] ) 
-HOLDINGS.set_regs_float( HR_ELE_STEP, [ 1.8, 8, 1 ] )
+print( f'Motor de giro: INA={MOTOR_GIR_INA} / INB={MOTOR_GIR_INB} / ENB={MOTOR_GIR_ENB}')
+print( f'Motor de elevação: INA={MOTOR_ELE_INA} / INB={MOTOR_ELE_INB} / ENB={MOTOR_ELE_ENB}')
+GIR = Motor( machine.Pin( MOTOR_GIR_INA, machine.Pin.OUT ), machine.Pin( MOTOR_GIR_INB, machine.Pin.OUT ), machine.PWM( machine.Pin( MOTOR_GIR_ENB, machine.Pin.OUT ) ) )
+ELE = Motor( machine.Pin( MOTOR_ELE_INA, machine.Pin.OUT ), machine.Pin( MOTOR_ELE_INB, machine.Pin.OUT ), machine.PWM( machine.Pin( MOTOR_ELE_ENB, machine.Pin.OUT ) ) )
 
 
-# Inicializando o protocolo de comunicação Modbus
-Modbus = mmb.myModbusCommunication( 1, 115200, 0x12, tx  = machine.Pin(UART_TX) , rx  = machine.Pin(UART_RX), parity = 'even' )
-print( 'Utilizando modo de comunicação Modbus:  ')
-print( Modbus.myUART ,'\nSLAVE ADDRESS: ', Modbus.ADDR_SLAVE, "\nFunction code available: ", Modbus.FUNCTIONS_CODE_AVAILABLE )
+''' Prevent a long loop to reset'''
+#wdt.feed() 
+print( 'Iniciando o barramento I2C' ) 
+I2C0 = machine.I2C ( 0, freq = 100000, sda = machine.Pin( I2C_SDA0 ), scl = machine.Pin( I2C_SCL0 ) )
+I2C1 = machine.I2C ( 1, freq = 100000, sda = machine.Pin( I2C_SDA1 ), scl = machine.Pin( I2C_SCL1 ) ) 
+print( f"Barramento I2C0: {I2C0} Endereços no barramento: {I2C0.scan()}\n" )
+print( f"Barramento I2C1: {I2C1} Endereços no barramento: {I2C1.scan()}\n" ) 
 
-# CADASTRA OS REGISTRADORES
-Modbus.set_registers( DISCRETES, COILS, INPUTS, HOLDINGS )
+
+''' Prevent a long loop to reset'''
+#wdt.feed() 
+print( 'Iniciando o sensor angular AS5600 de ELEVAÇÃO' )
+print( 'Iniciando o sensor angular AS5600 de GIRO' )
+SELE = AS5600( I2C1 ) 
+SGIR = AS5600( I2C0 )
+   
+   
+''' Prevent a long loop to reset'''
+#wdt.feed() 
+print( f'Iniciando RTC DS3231: {I2C0.scan()}' )
+DS = DS3231( I2C0 )
+
+
+''' Prevent a long loop to reset'''
+#wdt.feed() 
+print( f'Iniciando Modbus na UART {UART_NUM} com o baudrate {UART_BAUD} no endereço {MODBUS_ID}' )
+MODBUS = Modbus( UART_NUM, UART_BAUD, 0x12, tx  = machine.Pin( UART_TXD0 ) , rx  = machine.Pin( UART_RXD0 ) )
+MODBUS.set_registers( DISCRETES, COILS, INPUTS, HOLDINGS )
+
+print( MODBUS.myUART ,'\nSLAVE ADDRESS: ', MODBUS.ADDR_SLAVE, "\nFunction code available: ", Modbus.FUNCTIONS_CODE_AVAILABLE )
 print( 'Registradores cadastrados\n' )
-print( 'Holdings  - Type: {} Len: {} {}'.format( Modbus.HOLDINGS.TYPE , Modbus.HOLDINGS.REGS , Modbus.HOLDINGS.STACK  )  )
-print( 'Inputs    - Type: {} Len: {} {}'.format( Modbus.INPUTS.TYPE   , Modbus.INPUTS.REGS   , Modbus.INPUTS.STACK    )  )
-print( 'Coils     - Type: {} Len: {} {}'.format( Modbus.COILS.TYPE    , Modbus.COILS.REGS    , Modbus.COILS.STACK     )  )
-print( 'Discretes - Type: {} Len: {} {}'.format( Modbus.DISCRETES.TYPE, Modbus.DISCRETES.REGS, Modbus.DISCRETES.STACK )  , end = '\n\n' )
-     
-
-# Criação dos barramentos i2c usados para os sensores AS5600 e DS3231 
-isc0   = machine.I2C ( 0, freq = 100000, sda = machine.Pin( SDA_DS  ), scl = machine.Pin( SCL_DS  ) ) 
-isc1   = machine.I2C ( 1, freq = 100000, sda = machine.Pin( SDA_AS  ), scl = machine.Pin( SCL_AS  ) )
-print( "Barramento I2C0: ", isc0, "Endereços no barramento: ", isc0.scan() )
-print( 'Barramento I2C1: {} Endereços no barramento: {}\n'.format(isc1, isc1.scan()) ) 
-
-
-# Criação do objeto TIME que esta atrelado ao relógio RTC
-# Responsável pela administração do tempo e temporizadores 
-# de alarmes para Wake-up 
-try:
-    Time = dt.Datetime( isc0  )
-    INPUTS.set_regs      ( INPUT_YEAR        , Time.DS.get_datetime()[:-1]      )
-    HOLDINGS.set_regs    ( HR_YEAR           , Time.RTC.get_datetime()          )
-    COILS.set_reg_bool   ( COIL_DATETIME_SYNC, Time.SYNC                        )
+print( 'Holdings  - Type: {} Len: {} {}'.format( MODBUS.HOLDINGS.TYPE , MODBUS.HOLDINGS.REGS , MODBUS.HOLDINGS.STACK  )  )
+print( 'Inputs    - Type: {} Len: {} {}'.format( MODBUS.INPUTS.TYPE   , MODBUS.INPUTS.REGS   , MODBUS.INPUTS.STACK    )  )
+print( 'Coils     - Type: {} Len: {} {}'.format( MODBUS.COILS.TYPE    , MODBUS.COILS.REGS    , MODBUS.COILS.STACK     )  )
+print( 'Discretes - Type: {} Len: {} {}'.format( MODBUS.DISCRETES.TYPE, MODBUS.DISCRETES.REGS, MODBUS.DISCRETES.STACK )  , end = '\n\n' )
     
-    TIME     , TIME_STATUS = Time.get_datetime( )
-    FAKE_TIME              = TIME
-    AZIMUTE  , ALTITUDE    = sun.compute      ( LOCALIZATION,  TIME )
-    
-    print( "DS3231 e Relógio RTC inicializados.\nHora registrada no DS3231 ( [yy/mm/dd - hh:mn:ss] {} - Sync: {}\n".format( INPUTS.get_regs( INPUT_YEAR, 6), COILS.get_reg_bool(COIL_DATETIME_SYNC) ) )
-    
-# Se o DS3231 não estiver de acordo, não tem como o Tracker
-# entrar em operação e será obrigado a resetar 
-except:
-    print( "Relógio não inicializou, erro crítico.") 
-    print( "Entrando em modo de reinicialização!\n") 
-    machine.soft_reset() 
-    
+print( 'Atualizando os COILS registers' ) 
+POWER_MOTOR   = machine.Pin( POWER_MOTOR, machine.Pin.OUT )
+POWER_LED = machine.Pin( POWER_LED  , machine.Pin.OUT )
 
-# INICIA OS LEVERS PARA CONTROLE MANUAL 
-levers = ml.Lever_control( [BUTTON_GP, BUTTON_GM], [BUTTON_EP, BUTTON_EM], [LED1_RED, LED1_BLUE] )
-print( "Levers inicializados (Modo Manual)\n")
+print( 'Atualizando os DISCRETE registers' ) 
+LED_FAIL = machine.Pin( LED_BUILTIN, machine.Pin.OUT )
 
 
-# Tenta instanciar os sensores de posição AS5600 
-# Caso os sensores estejam vivos, seta-se as configurações de 
-# incialização ( escrita de 0 nos endereços [0:11] )
-# Caso os sensores não estejam funcionando, deve-se colocar 
-# o Tracker em modo FAIL-STATE 
-ASGIR  = sn.AS5600 ( isc0, startAngle =   0 )
-ASELE  = sn.AS5600 ( isc1, startAngle = 331 )
-
-
-if (ASGIR.set_config ( ) == True) and ( ASELE.set_config() == True ) :
-    SENS_GIR = ASGIR.degAngle()
-    INPUTS.set_reg_float(  INPUT_SENS_GIR , SENS_GIR if SENS_GIR != False else 0.0  )
-    INPUTS.set_reg_float  ( INPUT_SENS_CONF_GIR, ASGIR.get_config() )
-    
-    SENS_ELE = ASELE.degAngle()
-    INPUTS.set_reg_float  ( INPUT_SENS_ELE , SENS_ELE if SENS_ELE != False else 0.0 )
-    INPUTS.set_reg_float  ( INPUT_SENS_CONF_ELE, ASELE.get_config() )
-    
-    # Setar posição dos motores de passo para FAIL STATE
-    Motors.GIR.position = SENS_GIR if SENS_GIR != False else 0.0  
-    Motors.ELE.position = SENS_ELE if SENS_ELE != False else 0.0
-    
-    HOLDINGS.set_reg_float( HR_POS_MGIR, Motors.GIR.position ) 
-    HOLDINGS.set_reg_float( HR_POS_MELE, Motors.ELE.position )
-    
-    HOLDINGS.set_reg      ( HR_STATE, AUTOMATIC )
-    
-    print( "Sensores AS5600 de Giro e Elevação inicializados e configurados. Prontos para uso.")
-
-else:
-    HOLDINGS.set_reg( HR_STATE, FAIL_STATE )
-    print( 'Erro na inicialização do AS5600 de Giro. Verificar barramento I2C!')
-    
-
-# Cada motor possui um PID para correção da posição
-# Instanciamento dos PIDs de cada motor
-PID_GIR = mp.PID( PV = 100, Kp = 0.55, Kd = 0.25, Ki = 0.15 )
-PID_ELE = mp.PID( PV = 100, Kp = 0.55, Kd = 0.25, Ki = 0.15 )
-
-# Atualizaão do angulo para calculo de correção. Há diferenças 
-# entre a atualização e computação dos angulos de correção
-PID_GIR.att( INPUTS.get_reg_float( INPUT_SENS_GIR ) )
-PID_ELE.att( INPUTS.get_reg_float( INPUT_SENS_ELE ) )
-
-HOLDINGS.set_regs_float( HR_KP_GIR, [ PID_GIR.Kp, PID_GIR.Ki, PID_GIR.Kd] ) 
-HOLDINGS.set_regs_float( HR_KP_ELE, [ PID_ELE.Kp, PID_ELE.Ki, PID_ELE.Kd] )
-
-print( "PID do motor de GIR configurado: Kd Ki Kp: {} {} {} - PV_gir: {}  ".format( PID_GIR.Kd, PID_GIR.Ki, PID_GIR.Kp, PID_GIR.PV ) )
-print( "PID do motor de ELE configurado: Kd Ki Kp: {} {} {} - PV_ele: {}\n".format( PID_ELE.Kd, PID_ELE.Ki, PID_ELE.Kp, PID_ELE.PV ) )
-
-
-
-# AO CONTRARIO, TODA VEZ QUE FOR PRECISO USAR OS VALORES
-# DE REGISTRADORES, DEVE-SE PEGAR ESSES VALORES  
-def update_configurations():
-    # HOLDINGS
-    # Set the RTC datetime 
-    y,m,d,h,n,s = HOLDINGS.get_regs( HR_YEAR, 6 ) 
-    Time.set_RTC_datetime( y,m,d,h,n,s)
-    
-    if HOLDINGS.get_reg( HR_STATE ) == AUTOMATIC and COILS.get_reg_bool( COIL_FORCE_DATETIME) == True:
-        Time.set_DS_datetime( y,m,d,h,n,s )
-        COILS.set_reg_bool( COIL_DATETIME_SYNC, Time.SYNC )
-        COILS.set_reg_bool( COIL_FORCE_DATETIME, False ) 
-        
-    # Set the motors configuration
-    posGIR, posELE    = HOLDINGS.get_regs_float( HR_POS_MGIR, 2 )
-    
-    sGIR, usGIR, rGIR = HOLDINGS.get_regs_float( HR_GIR_STEP, 3 )
-    Motors.configure( Motors.GIR, posGIR, sGIR, usGIR, rGIR )
-    
-    sELE, usELE, rELE = HOLDINGS.get_regs_float( HR_ELE_STEP, 3 )
-    Motors.configure( Motors.ELE, posELE, sELE, usELE, rELE )
-    
-    # set the PID configs 
-    PID_GIR.Kp = HOLDINGS.get_reg_float( HR_KP_GIR )
-    PID_GIR.Kd = HOLDINGS.get_reg_float( HR_KD_GIR )
-    PID_GIR.Ki = HOLDINGS.get_reg_float( HR_KI_GIR )
-    PID_ELE.Kp = HOLDINGS.get_reg_float( HR_KP_ELE )
-    PID_ELE.Kd = HOLDINGS.get_reg_float( HR_KD_ELE )
-    PID_ELE.Ki = HOLDINGS.get_reg_float( HR_KI_ELE )
-    
-    
-    #COILS
-    LED1_BLUE_PIN.value( COILS.get_reg_bool( COIL_LED1_BLUE ) ) 
-    LED1_RED_PIN.value ( COILS.get_reg_bool( COIL_LED1_RED  ) ) 
-    LED2_BLUE_PIN.value( COILS.get_reg_bool( COIL_LED2_BLUE ) ) 
-    LED2_RED_PIN.value ( COILS.get_reg_bool( COIL_LED2_RED  ) )
-    Motors.set_torque  ( COILS.get_reg_bool( COIL_POWER     ) )
-
-
-'''# --------------------------------------- INICIO DO LOOP ---------------------------------------------------------------------------#'''
-last_print = time.ticks_ms()
-
-POS_ELE = 0.0 
-POS_GIR = 0.0 
-
-LAST_STATE = 0
-
-lever_time = 0.0 
-
-# Printa os parametros do processo
-COILS.set_reg_bool( COIL_PRINT, True )
+''' Prevent a long loop to reset'''
+#wdt.feed()
 
 while True:
-    time_spend_by_loop = time.ticks_ms()
+    loop_time = time.ticks_ms()
     
-    # Timmer via software para não usar interrupção de Timmer via hardware e conflitar com interrupção das mensagens Modbus 
-    if (time.ticks_ms() - last_print > 1000) and (COILS.get_reg_bool( COIL_PRINT) == True ):
-        LED1_RED_PIN(1)
-        MSG  = 'STATE:\t\t{}\n'.format( HOLDINGS.get_reg( HR_STATE ) ) 
-        MSG += 'Datetime:\t{}\n'.format( Time.get_datetime())
-        MSG += "Giro:\n"
-        MSG += "Kd Ki Kp:\t{}\t\t{}\t\t{}\n"   .format( PID_GIR.Kd, PID_GIR.Ki, PID_GIR.Kp )
-        MSG += "Sens:\t\t{}\tReg. read:\t{}\n" .format( ASGIR.degAngle(), INPUTS.get_reg_float( INPUT_SENS_GIR ) ) 
-        MSG += "PV(GIR):\t{}  \nError:\t\t{}\nPID:\t\t{}\n".format( PID_GIR.PV, PID_GIR.error_real, PID_GIR.compute( INPUTS.get_reg_float( INPUT_SENS_GIR ) ) )
-        MSG += "\nElevação:\n"
-        MSG += "Kd Ki Kp:\t{}\t\t{}\t\t{}\n"   .format( PID_ELE.Kd, PID_ELE.Ki, PID_ELE.Kp )
-        MSG += "Sens:\t\t{}\tReg. read:\t{} \n".format( ASELE.degAngle(), INPUTS.get_reg_float(INPUT_SENS_ELE)  )
-        MSG += "PV(ELE):\t{}  \nError:\t\t{}\nPID:\t\t{}\n".format( PID_ELE.PV, PID_ELE.error_real, PID_ELE.compute( INPUTS.get_reg_float( INPUT_SENS_ELE ) ) )
-        MSG += "\nAZIMUTE: \t{}  \tReg. read:\t{}\n".format( AZIMUTE , INPUTS.get_reg_float( INPUT_AZIMUTE  ) )
-        MSG += "ALTITUDE:\t{}  \tReg. read:\t{}\n".format( ALTITUDE, INPUTS.get_reg_float( INPUT_ALTITUDE ) )
-        
-        MSG += "FAIL STATE:\tGIR:{}\t\tELE:{}\n".format( HOLDINGS.get_reg_float( HR_POS_MGIR ), HOLDINGS.get_reg_float( HR_POS_MGIR ) ) 
-        
-        MSG += '\nHoldings  - Type: {} Len: {} {}\n'.format( HOLDINGS.TYPE , HOLDINGS.REGS , HOLDINGS.STACK  )   
-        MSG += 'Inputs    - Type: {} Len: {} {}\n'.format( INPUTS.TYPE   , INPUTS.REGS   , INPUTS.STACK    )  
-        MSG += 'Coils     - Type: {} Len: {} {}\n'.format( COILS.TYPE    , COILS.REGS    , COILS.STACK     )  
-        MSG += 'Discretes - Type: {} Len: {} {}\n\n'.format( DISCRETES.TYPE, DISCRETES.REGS, DISCRETES.STACK )  
-        sys.stdout.write( MSG )
-        last_print = time.ticks_ms() 
-        LED1_RED_PIN(0)
+    print( 'Atualizando os INPUTS registers' ) 
+    AZIMUTE, ALTITUDE = compute( LOCALIZATION,  DS.get_datetime() )
+    print( 'DS.get_datetime()=', DS.get_datetime() ) 
+    INPUTS.set_regs( INPUT_YEAR, DS.get_datetime() )
+    print( 'DS.get_temperature()=', DS.get_temperature() ) 
+    INPUTS.set_reg_float ( INPUT_TEMP, DS.get_temperature() ) 
+    print( 'SGIR.degAngle()=', SGIR.degAngle() ) 
+    INPUTS.set_reg_float ( INPUT_POS_GIR, SGIR.degAngle() ) 
+    print( 'SELE.degAngle()=', SELE.degAngle() ) 
+    INPUTS.set_reg_float ( INPUT_POS_ELE, SELE.degAngle() ) 
+    print( 'compute( LOCALIZATION,  TIME )=', AZIMUTE, ALTITUDE )
+    power_gen = generation.read_u16()
+    INPUTS.set_reg_float ( INPUT_GENERATION,  power_gen )
+    print( 'Generation =', power_gen )
+    INPUTS.set_reg_float ( INPUT_AZIMUTE, AZIMUTE ) 
+    INPUTS.set_reg_float ( INPUT_ZENITE, ALTITUDE ) 
     
-
-    # SETAR OS REGISTRADORES DE INPUTS
-    SENS_GIR = ASGIR.degAngle()
-    SENS_ELE = ASELE.degAngle()
     
-     
-    status = levers.check( )
-    if any( status ) == True:
-        lever_time = time.ticks_ms() 
-        HOLDINGS.set_reg( HR_STATE, MANUAL )
-
-
-    if SENS_ELE == False or SENS_GIR == False: 
-        HOLDINGS.set_reg      ( HR_STATE        , FAIL_STATE )
-        continue 
-    else: 
-        HOLDINGS.set_reg_float( HR_POS_MGIR, SENS_GIR )
-        HOLDINGS.set_reg_float( HR_POS_MELE, SENS_ELE )
-        INPUTS.set_reg_float  ( INPUT_SENS_GIR , SENS_GIR )
-        INPUTS.set_reg_float  ( INPUT_SENS_ELE , SENS_ELE )
-
-    # SETAR A DATA E HORA
-    TIME, TIME_STATUS = Time.get_datetime()
-    INPUTS.set_regs        ( INPUT_YEAR          , TIME[:-1]   )
-    DISCRETES.set_reg_bool ( DISCRETE_TIME_STATUS, TIME_STATUS )
+    print( 'Atualizando os DISCRETES registers' )
+    DISCRETES.set_reg_bool( DISCRETE_FAIL, False )
+    DISCRETES.set_reg_bool( DISCRETE_POWER, COILS.get_reg_bool( COIL_POWER ) )
+    DISCRETES.set_reg_bool( DISCRETE_TIME, False )
+    DISCRETES.set_reg_bool( DISCRETE_GPS, False )
+    
+    
+    print( 'Atualizando os COILS registers' )
+    POWER_LED.value( COILS.get_reg_bool( COIL_LED ) )
+    POWER_MOTOR.value( COILS.get_reg_bool( COIL_POWER ) )
+    if COILS.get_reg_bool( COIL_M_GIR ):
+        GIR.move( HOLDINGS.get_reg_float( HR_PV_GIR) )
+    else:
+        GIR.break_motor()
+    if COILS.get_reg_bool( COIL_M_ELE ):
+        ELE.move( HOLDINGS.get_reg_float( HR_PV_ELE) )
+    else:
+        ELE.break_motor()
+    if COILS.get_reg_bool( COIL_SYNC_DATE ):
+        print( 'Atualizando a hora do sistema' )
+        DS.set_datetime( HOLDINGS.get_reg( HR_YEAR ), HOLDINGS.get_reg( HR_MONTH ), HOLDINGS.get_reg( HR_DAY ), HOLDINGS.get_reg( HR_HOUR ), HOLDINGS.get_reg( HR_MINUTE ), HOLDINGS.get_reg( HR_SECOND ), 3 )
+    
+    LED_FAIL.value( True if HOLDINGS.get_reg( HR_STATE ) == FAIL_STATE else False )
+    
+    # Mantem o sincronismo de 1s para a rotina de atualização dos dados
+    time.sleep_ms( 1000 - (time.ticks_ms()-loop_time) if (time.ticks_ms()-loop_time) < 1000 else 0 )
+    
+    ''' Watchdog reset prevent'''
+    #wdt.feed()
+    
+    
     
 
-    # SETA O AZIMUTE E ALTITUDE DE INPUT COM O VALOR CALCULADO
-    AZIMUTE, ALTITUDE = sun.compute( LOCALIZATION,  TIME )
-    INPUTS.set_reg_float ( INPUT_AZIMUTE       , AZIMUTE     )
-    INPUTS.set_reg_float ( INPUT_ALTITUDE      , ALTITUDE    )
-    
-
-    # Confere se foi recebido alguma mensagem para atualização das variáveis  
-    if Modbus.has_message == True:
-        update_configurations(  )
-        Modbus.has_message = False 
-
-
-    # Entra nos estados de operação
-    STATE = HOLDINGS.get_reg( HR_STATE )
-    if STATE == AUTOMATIC:
-        # SETA O PV DO PID COM O AZIMUTE E ZENITE  
-        PID_GIR.set_PV( INPUTS.get_reg_float ( INPUT_AZIMUTE  ) ) 
-        PID_ELE.set_PV( INPUTS.get_reg_float ( INPUT_ALTITUDE ) )
-        
-        # SETA O PV DOS MOTORES PARA FUTUROS FAIL STATES 
-        HOLDINGS.set_reg_float ( HR_PV_MOTOR_GIR, PID_GIR.PV ) 
-        HOLDINGS.set_reg_float ( HR_PV_MOTOR_ELE, PID_ELE.PV )
-    
-        # Se a altitude for menor que 0 então o sol já se pôs e o tracker deve retornar
-        # para a posição inicial ( do novo dia ) e aguardar até o sol nascer.
-        if ALTITUDE < 0 :
-            HOLDINGS.set_reg( HR_STATE, PRE_RETURNING )
-            LAST_STATE = AUTOMATIC 
-            continue 
-        
-        # COMPUTA O MOVIMENTO NECESSÁRIO PARA CORREÇÃO DOS MOTORES 
-        POS_GIR = PID_GIR.compute( INPUTS.get_reg_float( INPUT_SENS_GIR ) ) 
-        POS_ELE = PID_ELE.compute( INPUTS.get_reg_float( INPUT_SENS_ELE ) )
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    
-    elif STATE == FAIL_STATE: 
-        if ASGIR.degAngle(): 
-            INPUTS.set_reg_float(  INPUT_SENS_GIR , SENS_GIR if SENS_GIR != False else INPUTS.get_reg_float(INPUT_SENS_GIR) )
-            HOLDINGS.set_reg( HR_STATE, AUTOMATIC )
-            continue
-        else: 
-            HOLDINGS.set_reg( HR_STATE, FAIL_STATE )
-        if ASELE.degAngle():
-            INPUTS.set_reg_float(  INPUT_SENS_ELE , SENS_ELE if SENS_ELE != False else INPUTS.get_reg_float(INPUT_SENS_ELE) )
-            HOLDINGS.set_reg( HR_STATE, AUTOMATIC )
-            continue
-        else: 
-            HOLDINGS.set_reg( HR_STATE, FAIL_STATE )
-        
-        # SETA O PV DO PID COM O AZIMUTE E ZENITE  
-        PID_GIR.set_PV( HOLDINGS.get_reg_float ( INPUT_AZIMUTE  ) ) 
-        PID_ELE.set_PV( HOLDINGS.get_reg_float ( INPUT_ALTITUDE ) )
-        
-        # Se a altitude for menor que 0 então o sol já se pôs e o tracker deve retornar
-        # para a posição inicial ( do novo dia ) e aguardar até o sol nascer.
-        if ALTITUDE < 0 :
-            HOLDINGS.set_reg( HR_STATE, PRE_RETURNING )
-            LAST_STATE = AUTOMATIC 
-            continue 
-        
-        # COMPUTA O MOVIMENTO NECESSÁRIO PARA CORREÇÃO DOS MOTORES 
-        POS_GIR = PID_GIR.compute( INPUTS.get_reg_float( HR_POS_MGIR ) ) 
-        POS_ELE = PID_ELE.compute( INPUTS.get_reg_float( HR_POS_MELE ) )
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-    elif STATE == PRE_RETURNING:
-        NEW_AZIMUTE    = sun.get_sunrising( LOCALIZATION, TIME        ) 
-        NEW_AZIMUTE, _ = sun.compute       ( LOCALIZATION, NEW_AZIMUTE )
-        HOLDINGS.set_reg_float             ( HR_AZIMUTE  , NEW_AZIMUTE )
-        HOLDINGS.set_reg                   ( HR_STATE    , RETURNING   )
-
-    elif STATE == RETURNING:
-        # Verifica a distancia do PV_NEW_DAY
-        DIFF = abs( INPUTS.get_reg_float( INPUT_SENS_GIR ) - HOLDINGS.get_reg_float( HR_AZIMUTE ) )
-        if DIFF > 10: 
-            POS_ELE = 0.0
-            POS_GIR = 1.5
-            
-        else: 
-            PID_GIR.set_PV( HOLDINGS.get_reg_float ( HR_AZIMUTE  ) ) 
-            PID_ELE.set_PV( 1 )
-            
-            # COMPUTA O MOVIMENTO NECESSÁRIO PARA CORREÇÃO DOS MOTORES 
-            POS_GIR = PID_GIR.compute( INPUTS.get_reg_float( INPUT_SENS_GIR ) ) 
-            POS_ELE = PID_ELE.compute( INPUTS.get_reg_float( INPUT_SENS_ELE ) )
-
-            if LAST_STATE == DEMO: HOLDINGS.set_reg( HR_STATE, DEMO      )
-            else:                  HOLDINGS.set_reg( HR_STATE, AUTOMATIC ) 
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    
-    elif STATE == MANUAL:
-        # PEGA O ESTADO DOS LEVERS 
-        status = levers.check( )
-        if   status[0] == True:            POS_ELE =  1
-        elif status[1] == True:            POS_ELE = -1
-        else:                              POS_ELE =  0
-        if   status[2] == True:            POS_GIR =  1
-        elif status[3] == True:            POS_GIR = -1
-        else:                              POS_GIR =  0
-
-        if any( status ): 
-            Motors.move( POS_ELE, POS_GIR )
-            HOLDINGS.set_reg_float( HR_PV_MOTOR_GIR, Motors.get_gir_position() ) 
-            HOLDINGS.set_reg_float( HR_PV_MOTOR_ELE, Motors.get_ele_position() )    
-        else: 
-            lever_time = time.ticks_ms() 
-        
-        if lever_time > 60 * 1000: 
-             HOLDINGS.set_reg( HR_STATE, AUTOMATIC ) 
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    
-    elif STATE == REMOTE:
-        # PEGA O AZIMUTE E ZENITE DOS HOLDINGS AO INVÉS DOS INPUTS 
-        PID_GIR.set_PV( HOLDINGS.get_reg_float( HR_AZIMUTE  )   )
-        PID_ELE.set_PV( HOLDINGS.get_reg_float( HR_ALTITUDE )   )
-        POS_GIR = PID_GIR.compute( INPUTS.get_reg_float( INPUT_SENS_GIR ) ) 
-        POS_ELE = PID_ELE.compute( INPUTS.get_reg_float( INPUT_SENS_ELE ) )
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    
-    elif STATE == IDLE:
-        continue
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    
-    elif STATE == SLEEPING:
-        if ALTITUDE > 0:
-            COILS.set_reg_bool( COIL_POWER, True      ) 
-            HOLDINGS.set_reg  ( HR_STATE  , AUTOMATIC )
-            Modbus.has_message = True 
-        else:
-            if COILS.get_reg_bool( COIL_POWER ) == True: 
-                COILS.set_reg_bool( COIL_POWER, False )
-                Modbus.has_message = True 
-        continue
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    
-    elif STATE == RESET:
-        machine.soft_reset()    
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    
-    elif STATE == DEMO:
-        
-        FAKE_TIME[4] += 1
-        if FAKE_TIME[4] >= 60:
-            FAKE_TIME[4] %= 60
-            FAKE_TIME[3] += 1
-            if FAKE_TIME[3] >= 24:
-                FAKE_TIME[3] = 0
-                FAKE_TIME[2] += 1
-                if FAKE_TIME[1] == 2: 
-                    if ANB(FAKE_TIME[0]) :  DOM[1] = 29 
-                    else:                        DOM[1] = 28 
-                if FAKE_TIME[2] > DOM[FAKE_TIME[1]]:
-                    FAKE_TIME[2] = 1 
-                    FAKE_TIME[1] += 1
-                    if FAKE_TIME[1] > 12: 
-                        FAKE_TIME[1] = 1
-                        FAKE_TIME[0] += 1
-        
-        AZIMUTE, ALTITUDE = sun.compute( LOCALIZATION,  FAKE_TIME )
-        
-        if LAST_STATE != DEMO or ALTITUDE < 0:
-            FAKE_TIME = TIME 
-            LAST_STATE = DEMO
-            FAKE_TIME[2] = FAKE_TIME[2]+1
-            SUNRISE, _ = sun.get_twilights( LOCALIZATION, FAKE_TIME )
-            FAKE_TIME = SUNRISE
-            HOLDINGS.set_reg( HR_STATE, PRE_RETURNING )
-            continue
-        
-
-        PID_GIR.set_PV( AZIMUTE  ) 
-        PID_ELE.set_PV( ALTITUDE ) 
-        
-        POS_GIR = PID_GIR.compute( INPUTS.get_reg_float( INPUT_SENS_GIR  ) )
-        POS_ELE = PID_ELE.compute( INPUTS.get_reg_float( INPUT_SENS_ELE ) )
-        ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-      
-    # MOVE OS MOTORES 
-    Motors.move( POS_ELE*0.05 if abs(POS_ELE*0.05) < 10 else 10, POS_GIR*0.05 if abs(POS_GIR*0.05) < 10 else 10 )
-
-    # SALVA A NOVA POSIÇÃO DOS MOTORES
-    HOLDINGS.set_reg_float( HR_POS_MGIR, Motors.GIR.position ) 
-    HOLDINGS.set_reg_float( HR_POS_MELE, Motors.ELE.position )
-
-
-    # Tempo de looping do Pico
-    dt = (time.ticks_ms() - time_spend_by_loop )
-    if dt <= 25:
-        time.sleep_ms( 25 - dt )

@@ -23,23 +23,22 @@ MAP_ICON = PATH.removesuffix('\\View\\HomeScreen') + '/assets/icons/marker_popup
 class HomeScreenView( BaseScreenView ):
 
     side_bar : SideBar
-    
     map_view : MapView 
-    
     graph : Graph 
     bar_plot: BarPlot
     line_plot: SmoothLinePlot 
-
-    render_event = None 
-
     graphs_active: bool = False 
+    render_event: bool | None = None 
 
 
     # Quando o arquivo KV já terminou de instanciar as classes dentro do arquivo
     #   
     def on_kv_post(self, *args):
+        
         # Side bar init 
         self.side_bar = SideBar( model = self.model ) 
+        self.ids.box_content.add_widget( self.side_bar )
+        
         # Map view init 
         self.map_view = MapView ( 
             lat = -29.71302542661317, 
@@ -47,6 +46,8 @@ class HomeScreenView( BaseScreenView ):
             zoom = 18,  
             pos_hint = {'center_x': 0.50, 'center_y': 0.5 } 
         ) 
+        self.ids.map_content.add_widget( self.map_view)
+        
         marker = MapMarkerPopup( 
             lat = -29.71332542661317, 
             lon = -53.71766381408064, 
@@ -54,8 +55,6 @@ class HomeScreenView( BaseScreenView ):
             popup_size = [25, 25]
         ) 
         self.map_view.add_widget( marker )
-        self.ids.box_content.add_widget     ( self.side_bar             )
-        self.ids.map_content.add_widget     ( self.map_view             )
         
         # Generation Ploter init 
         points = [  6461,  5963, 4967,  3891,  2809,  2333,  2563,  3323,  3774,  4927,  6275,  6809 ]
@@ -82,6 +81,7 @@ class HomeScreenView( BaseScreenView ):
             bar_width = 1, #self.ids.log_content.width//3,
             points = zip( [i for i in range(12)], [  6461,  5963, 4967,  3891,  2809,  2333,  2563,  3323,  3774,  4927,  6275,  6809 ] )
         ) 
+        
         self.line_plot = SmoothLinePlot( 
             color = [ 1, 0.25, 0.2, 0.85 ],
             points = zip( 
@@ -89,29 +89,28 @@ class HomeScreenView( BaseScreenView ):
                 [ 2*mean - i for i in [  6461,  5963, 4967,  3891,  2809,  2333,  2563,  3323,  3774,  4927,  6275,  6809 ]]
             )
         )
+        
         self.graph.add_plot( self.bar_plot )
         self.graph.add_plot( self.line_plot ) 
-        self.ids.log_content.add_widget( self.graph )
-        
-        self.render_event = Clock.schedule_interval(self.render, 0.1)        
-        return super().on_kv_post(*args)
+        self.ids.log_content.add_widget( self.graph )       
+        BaseScreenView.on_kv_post(self, *args)
 
 
     # Callback para entrar na tela
     def on_enter(self, *args):
-        # Inicia a conexão do sistema
-        if self.controller.auto_connect():
-            if not self.controller.already_connected():
-                self.controller.connect_system()
         # Coloca o side bar no lugar 
-        self.side_bar = SideBar(model=self.model) 
+        self.ids.box_content.remove_widget( self.side_bar )
+        self.side_bar = SideBar( model = self.model ) 
         self.ids.box_content.add_widget( self.side_bar )
-        self.render_event = Clock.schedule_interval(self.render, 0.1)
+        self.render_event = Clock.schedule_interval(self.render, 0.25 )
+        
         # Animação do plot bar 
         self.bar_plot.bar_width = 0
         Animation( bar_width =  self.ids.log_content.width//15, duration = 1 ).start( self.bar_plot )
-        return super().on_enter() 
-
+        
+        # Inicia a conexão do sistema
+        self.controller.auto_connect()
+        BaseScreenView.on_enter(self, *args) 
 
     # Quando sai da tela, deve desativar os schedules 
     def on_leave(self, *args):
@@ -126,16 +125,33 @@ class HomeScreenView( BaseScreenView ):
 
     # Render da página. Situações dinâmicas 
     def render( self, dt = None ):
-        if self.controller.system_connected():
-            # self.ids.icon_system_status.color = 
-            # self.ids.icon_geracao.color = 
-            # self.ids.label_geracao.
-            # self.ids.label_system_status.
-            print('Sistema conectado')
-            
+        if self.controller.get_status() == True:
+            self.ids.icon_system_status.icon_color = [ 0, 1, 0, 0.8 ]
+            self.ids.icon_geracao.icon_color = [ 1, 1, 0, 0.8 ]
+            self.ids.label_geracao.text = str(self.controller.get_generation())
+            self.ids.label_system_status.text = 'Sistema online '
+
+            vele, vgir = self.controller.get_motor_vel()
+            self.ids.label_motor_vertical.text = f'Vel: {vele:.2f} rad/s'
+            self.ids.label_motor_horizontal.text = f'Vel: {vgir:.2f} rad/s'
+
+            pele, pgir = self.controller.get_motor_pos()
+            self.ids.label_encoder_vertical.text = f'Pos: {pele:.2f} º'
+            self.ids.label_encoder_horizontal.text = f'Pos: {pgir:.2f} º'
+            self.ids.graph_system_off.pos_hint = {'x': 10.0,'y': 10.0}
+
         else: 
-            print('Sistema Não conectado')
-            
+            self.ids.icon_system_status.icon_color = [ 1, 0, 0, 0.8 ]
+            self.ids.icon_geracao.icon_color = [ 0.5, 0.5, 0.5, 0.8 ]      
+            self.ids.label_geracao.text = '--.--'
+            self.ids.label_system_status.text = 'Sistema offline'
+            self.ids.label_motor_vertical.text = 'Vel: --.--rad/s'
+            self.ids.label_encoder_vertical.text = 'Pos: --.--º'
+            self.ids.label_motor_horizontal.text = 'Vel: --.--rad/s'
+            self.ids.label_encoder_horizontal.text = 'Pos: --.--º'
+            self.ids.graph_system_off.pos_hint =  {'center_x': 0.50,'center_y': 0.50}
+            if self.controller.sudently_disconected:
+                self.controller.auto_connect()
 
     @property 
     def username( self ): 

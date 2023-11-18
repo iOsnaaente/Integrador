@@ -36,8 +36,6 @@ def multi_threaded_login( connection : socket.socket, __debug : bool = False ):
                             ''' Sistema de criação de novo usuário OK '''
                         elif obj['type'] == 'NEW_USER':
                             ans = db.create_new_user( obj['manager_group'], obj['manager_psd'], obj['username'], obj['password'], True)
-                            if ans:     ans = 'SUCCESS'
-                            else:       ans = 'FAILED'
                         
                             ''' Criação de novo manager''' 
                         elif obj['type'] == 'NEW_MAN': 
@@ -50,7 +48,7 @@ def multi_threaded_login( connection : socket.socket, __debug : bool = False ):
                         
                         elif obj['type'] == 'CHANGE': 
                             ans = 'UNKNOW'                    
-                        
+                
                         else:
                             ans = 'UNKNOW'
                     else:
@@ -90,3 +88,20 @@ def listen_login_connections( IP : str, PORT : str, MAX_CLIENT_CONNECTED : int =
             print( f'Connected {addr[0]} with IP {addr[1]}' )
             print('Thread Number: ' + str(loginCount))
         time.sleep(0.001)
+
+
+
+
+
+'''
+Recebido pacote encriptado - Credenciais corretas
+Recebido: {
+    'type': 'NEW_USER', 
+    'username': 'Teste', 
+    'password': 'Registro', 
+    'manager_group': 'sup', 
+    'manager_psd': 'sup123'
+    } 
+    do tipo <class 'dict'>
+Resposta b'NEW USER CREATED'
+'''

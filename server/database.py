@@ -46,7 +46,8 @@ class Database:
         if not manager_id:
             if __debug:
                 print( 'Manager not found or password incorrect' )
-            return False 
+            return 'MANAGER NOT FOUND'
+        
         else: 
             # Procura o ID de um usuário com o mesmo username 
             self.cursor.execute( 'SELECT id FROM user WHERE username = ?', ( username, ) )
@@ -55,7 +56,8 @@ class Database:
             if has_user:
                 if __debug:
                     print( f'Username already registered at { username }')
-                return False
+                return 'ALREADY REGISTERED'
+            
             # Caso contrário deve criar um novo
             else:  
                 last_access = self.get_date_now() 
@@ -64,7 +66,7 @@ class Database:
                 self.con.commit()
                 if __debug:
                     print(f'Username {username} registered.')
-                return True 
+                return 'NEW USER CREATED'
             
     def create_new_manager( self, group : str, password : str, level_access : int, __debug : bool = False ):
         # Procura o ID de um usuário com o mesmo username 
@@ -114,6 +116,7 @@ class Database:
 
         if __debug:
             print(f"User {username} logged in successfully")
+        
         # Retorna o Json 
         return json.dumps(user_dict)
 
@@ -172,11 +175,13 @@ class Database:
 if __name__ == '__main__':
     db = Database( os.path.dirname(__file__) + '/db/database.db') 
     db.create_new_manager( 'sup', 'sup123', 10, True )
-    db.create_new_user( 'sup', 'sup123', 'iosnaaente', '1205', True )
-    db.get_user_level_access( 'iosnaaente', True )
-    print( db.login( 'iosnaaente', '1205', True ) )
-    
     db.create_new_manager( 'adm', 'adm123',  1, True )
-    db.create_new_user( 'adm', 'adm123', 'iOsnaaenteAdm', '1205', True )
+    
+    db.create_new_user( 'sup', 'sup123', 'iosup', '1205', True )
+    db.create_new_user( 'adm', 'adm123', 'iosnadm', '1205', True )
+    
+    db.get_user_level_access( 'iosnaaente', True )
     db.get_user_level_access( 'iOsnaaenteAdm', True )
-    print( db.login( 'iOsnaaenteAdm', '1205', True ) )
+
+    print( db.login( 'iosnadm', '1205', True ) )
+    print( db.login( 'iosup', '1205', True ) )
