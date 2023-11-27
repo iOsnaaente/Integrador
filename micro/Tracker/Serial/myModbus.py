@@ -9,7 +9,7 @@ import time
 import math 
 
 
-class myModbusCommunication:
+class Modbus:
     CRC16_TABLE = (
     0x0000,0xC0C1,0xC181,0x0140,0xC301,0x03C0,0x0280,0xC241,0xC601,
     0x06C0,0x0780,0xC741,0x0500,0xC5C1,0xC481,0x0440,0xCC01,0x0CC0,
@@ -119,7 +119,7 @@ class myModbusCommunication:
     ADDR_SLAVE = 0
     NUM_BYTES  = 0
     DATA_BYTES = b''
-    DEBUG      = True  
+    DEBUG      = False  
     MSG_GOT    = b''
     CHK_GET    = 0 
     #-----------------------
@@ -226,7 +226,6 @@ class myModbusCommunication:
             
             # IDENTIFICA AS FUNÇÕES DISPONÍVEIS 
             elif self.STATE == self.FC:
-
                 # DISCRETES
                 if read == self.READ_DISCRETE_INPUT:
                     if self.DEBUG:  print( 'FC = 2: READ_DISCRETE_INPUT' )
@@ -646,7 +645,7 @@ class myModbusCommunication:
 from pinout import * 
 
 def serial_main():
-    com = myModbusCommunication( 1, 115200, addr = 0x12, tx = machine.Pin(20), rx = machine.Pin(21), debug = True, parity = 'even' ) 
+    com = Modbus( 0, 57600, addr = 0x12, tx = machine.Pin(16), rx = machine.Pin(17), debug = False ) 
     print( com.myUART )
     
     com.DEBUG = True
@@ -663,16 +662,7 @@ def serial_main():
 
     while True:
         if com.has_message:      
-        #    print( com.DISCRETES.STACK , com.DISCRETES.REGS )
-        #    print( com.COILS.STACK     , com.COILS.REGS     )
-        #    print( com.INPUTS.STACK    , com.INPUTS.REGS    )
-        #    print( com.HOLDINGS.STACK  , com.HOLDINGS.REGS  )
             com.has_message = False
-            LED1_BLUE_PIN.value( COILS.get_reg_bool( COIL_LED1_BLUE ) ) 
-            LED1_RED_PIN.value ( COILS.get_reg_bool( COIL_LED1_RED  ) ) 
-            LED2_BLUE_PIN.value( COILS.get_reg_bool( COIL_LED2_BLUE ) ) 
-            LED2_RED_PIN.value ( COILS.get_reg_bool( COIL_LED2_RED  ) )
-
         time.sleep(0.15)
 
 if __name__ == '__main__':

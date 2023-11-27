@@ -202,11 +202,11 @@ class ModbusRTU:
 
 if __name__ == '__main__':
     # Teste da classe ModbusRTU
-    modbus = ModbusRTU( 0x12, 'COM18', 57600, debug = True, parity = 'E'  )
+    modbus = ModbusRTU( 0x12, 'COM18', 115200, debug = True, parity = 'E'  )
     
     print( modbus.write_registers( 0x00, 0.5 ) )
     print( modbus.write_registers( 0x0A, 0.5 ) )
-    print( modbus.write_coils( 0x00, [False, True, True, True ]) )
+    print( modbus.write_coils( 0x00, [True, True, True, True ]) )
 
      
     # print( modbus.read_register( 'analog_input', 0x00, 10, var_type = 'FLOAT' )  ) 

@@ -12,9 +12,6 @@ __status__     = "Prototype"
     garantindo mais geração elétrica a partir de painéis
     fotovoltáicos.
     
-    Versão 3.1.0::
-        >>> Correção de bugs
-
     Versão 2.1.0:: 
         >>> Correção de bugs
         >>> Exclusão do RenameMainDotPy  

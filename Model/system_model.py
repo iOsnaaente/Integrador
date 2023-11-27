@@ -8,7 +8,7 @@ from libs.Sun           import SunPosition
 import os 
 PATH = os.path.dirname( __file__ ).removesuffix('\\Model')
 
-
+from System.Tags import *
 
 class SystemModel( BaseScreenModel ):
     """
@@ -42,8 +42,9 @@ class SystemModel( BaseScreenModel ):
     # # 
     _system: Device | None = None 
 
-    def __init__( self, shared_data : SharedData ) -> None:
-        super().__init__() 
+    def __init__( self, shared_data : SharedData, _debug: bool = False  ) -> None:
+        super().__init__()
+        self._debug = _debug 
         self._shared_data = shared_data
         self._database = Database()
 
@@ -62,23 +63,19 @@ class SystemModel( BaseScreenModel ):
         self._system = value  
 
 
+    def get_sys_time( self ) -> list[ int ]:
+        return str(self.shared_data.SYSTEM_TABLE['INPUT_HOUR'])+':'+str(self.shared_data.SYSTEM_TABLE['INPUT_MINUTE'])+':'+str(self.shared_data.SYSTEM_TABLE['INPUT_SECOND'])
+    def get_sys_date( self ) -> list[ int ]:
+        return str(self.shared_data.SYSTEM_TABLE['INPUT_YEAR'])+':'+str(self.shared_data.SYSTEM_TABLE['INPUT_MONTH'])+':'+str(self.shared_data.SYSTEM_TABLE['INPUT_DAY'])
+
     def auto_connect( self ):
         return self.database.serial[0]
     
     def serial( self ): 
         return self.database.serial 
     
-    def tags(self):
-        return 
-    
     def is_connected(self): 
-        if self.system is None:
-            return False 
-        else:      
-            try:
-                return self.system.is_open()
-            except:
-                return False
+        return self.shared_data.connected 
              
     def disconnect( self ):
         try:
@@ -88,21 +85,30 @@ class SystemModel( BaseScreenModel ):
 
     def connect_device( self, slave: int, port: str, baudrate : int, timeout : int = 1 ) -> bool:
         try:
-            self.system =  Device( slave, port, baudrate, timeout = int(timeout) )
+            self.system = Device( slave, port, baudrate, timeout = int(timeout), debug = self._debug )
+            self.shared_data.connected = True 
             return True 
-        except:
+        except Exception as err :
+            if self._debug:
+                print( 'System Model error:', err )
+            self.shared_data.connected = False 
             return False 
 
+    # Retorna os valores de posição dos motores 
     def get_motor_pos( self ) -> list | None:
         if self.system is not None:
-            # read_tag ( self, device_address : int, tag_type : str, addr : int ) -> dict:  
-            return [ 
-                    self.system.DB.read_tag( 0x12, 'analog_input', INPUT_POS_ELE )['value'],
-                    self.system.DB.read_tag( 0x12, 'analog_input', INPUT_POS_GIR )['value']
-            ]
+            return [ self.shared_data.SYSTEM_TABLE['INPUT_POS_GIR'], self.shared_data.SYSTEM_TABLE['INPUT_POS_ELE'] ]
         else:
             return None
     
+    # Retorna o valor de medição do sensor LDR 
     def get_system_generation( self ) -> float: 
-        return self.system.DB.read_tag( 0x12, 'analog_input', INPUT_TEMP )['value']
+        return ( ( ((2**16)-1) - self.shared_data.SYSTEM_TABLE['INPUT_GENERATION'] )/((2**16)-1) )*100
     
+    def get_azimute_zenite_data( self ) -> list:
+        return [
+            self.shared_data.SYSTEM_TABLE['INPUT_POS_GIR'], 
+            self.shared_data.SYSTEM_TABLE['INPUT_AZIMUTE'],
+            self.shared_data.SYSTEM_TABLE['INPUT_POS_ELE'], 
+            self.shared_data.SYSTEM_TABLE['INPUT_ZENITE']
+        ]

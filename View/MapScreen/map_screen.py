@@ -232,15 +232,16 @@ class MapScreenView(BaseScreenView):
         self.ids.hora_att.text = self.controller.get_time() 
         self.ids.dia_att.text = self.controller.get_date()
         self.ids.hora_att_sun_progress.value = 100-(self.ecliptica.SUN_DATA.total_seconds/(24*3600))*-100
+        
         # Atualiza a hora medida 
         if not self.controller.is_connected():
             self.ids.hora_sys.text = 'Not connected'
             self.ids.dia_sys.text = 'Not connected'
             self.ids.dia_sys_sun_progress.value = 0
         else: 
-            self.ids.hora_sys.text = self.model.shared_data.sys_time
-            self.ids.dia_sys.text = self.model.shared_data.sys_date
-            self.ids.dia_sys_sun_progress.value = self.model.shared_data.sys_count
+            self.ids.hora_sys.text = self.controller.get_sys_time()
+            self.ids.dia_sys.text = self.controller.get_sys_date()
+            self.ids.dia_sys_sun_progress.value = self.controller.get_sys_count()
         
         # Atualiza as informações do sistema 
         self.ids.daylight.text = str(self.ecliptica.SUN_DATA.get_sunlight_hours()).split('.')[0]

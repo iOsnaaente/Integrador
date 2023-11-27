@@ -26,7 +26,7 @@ class SerialScreenView(BaseScreenView):
 
     already_draw = False 
     
-    MAX_POINTS_GRAPH_CANVAS = 1000  
+    MAX_POINTS_GRAPH_CANVAS = 250
     _x = [0]
 
     def __init__(self, **kw):
@@ -39,8 +39,8 @@ class SerialScreenView(BaseScreenView):
         self.ids.float_content.add_widget   ( self.side_bar )
         
         # Serial configuration 
-        self.Serial = SerialConfiguration()
-        self.ids.serial.add_widget          ( self.Serial   )
+        self.Serial = SerialConfiguration(  )
+        self.ids.serial.add_widget       ( self.Serial   )
         
         # Zenite
         self.zenite_motor = SmoothLinePlot(color=[ 0, 0, 1, 1 ])
@@ -54,7 +54,7 @@ class SerialScreenView(BaseScreenView):
         self.ids.azimuth_graph.add_plot( self.azimute_motor )
         self.ids.azimuth_graph.add_plot( self.azimute_sensor )
 
-        #Clock.schedule_interval( self.render, 0.1 )
+        Clock.schedule_interval( self.render, 0.1 )
         BaseScreenView.on_kv_post(self, base_widget)
     
 
@@ -72,17 +72,35 @@ class SerialScreenView(BaseScreenView):
 
 
     def render( self, clk_event ):
+        if self.controller.is_connected():  
+            # Se o sistema estiver conectado, ele remove a marca d'agua 
+            self.ids.graph_system_off.pos_hint = {'center_x': 50.0 }
+            self.ids.power_widget_switch.active = self.controller.get_power_motors()
+        else:                               
+            # Se não estiver conectado, ele não atualiza os valores do gráfico
+            self.ids.graph_system_off.pos_hint = {'center_x': 0.50 }
+            return 
+        
+        
         self._x.append( self._x[-1] + clk_event )
+        
         self.ids.zenith_graph.xmin  = math.ceil( self._x[ 0 ] )
         self.ids.zenith_graph.xmax  = math.ceil( self._x[-1 ] )
         self.ids.azimuth_graph.xmin = math.ceil( self._x[ 0 ] )
         self.ids.azimuth_graph.xmax = math.ceil( self._x[-1 ] )
+        
+        self.controller.update_values()
+        self.azimute_motor.points.append ( (self._x[-1], self.controller.get_azimute_motor()    ) )
+        self.azimute_sensor.points.append( (self._x[-1], self.controller.get_azimute_sensor()   ) )
+        self.zenite_motor.points.append  ( (self._x[-1], self.controller.get_zenite_motor()     ) )
+        self.zenite_sensor.points.append ( (self._x[-1], self.controller.get_zenite_sensor()    ) )
+
         if len(self._x) > self.MAX_POINTS_GRAPH_CANVAS: 
+            self.azimute_motor.points.pop(0)
+            self.azimute_sensor.points.pop(0)
+            self.zenite_motor.points.pop(0)
+            self.zenite_sensor.points.pop(0)
             self._x.pop(0)
-        self.azimute_motor.points  = [ ( x, 180*math.sin( x / 100.0 ) ) for x in self._x ]
-        self.azimute_sensor.points = [ ( x, 180*math.cos( x / 100.0 ) ) for x in self._x ]
-        self.zenite_motor.points  = [ ( x, 90*math.cos( x / 10.0 )**2 ) for x in self._x ]
-        self.zenite_sensor.points = [ ( x, 90*math.sin( x / 10.0 )**2 ) for x in self._x ]
 
 
     def model_is_changed(self) -> None:

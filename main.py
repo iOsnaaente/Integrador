@@ -52,7 +52,7 @@ class Tracker(MDApp):
         self.manager_screens = MDScreenManager()
         self.shared_data = SharedData()
         self.login_model = LoginModel( shared_data = self.shared_data )
-        self.system_model = SystemModel( shared_data = self.shared_data )
+        self.system_model = SystemModel( shared_data = self.shared_data, _debug = False )
 
         Window.bind( on_key_down = self.on_keyboard_down)
         screens = View.screens.screens   
@@ -68,8 +68,8 @@ class Tracker(MDApp):
         
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Orange"
-        self.theme_cls.material_style = "M3"
-        self.theme_cls.primary_hue = "500"
+        # self.theme_cls.material_style = "M3"
+        # self.theme_cls.primary_hue = "500"
 
         self.manager_screens.current = 'login screen'
 

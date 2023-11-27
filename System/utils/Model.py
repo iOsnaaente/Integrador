@@ -256,7 +256,6 @@ class ModbusDatabase:
         }
         return tag_info
 
-
     def read_tags(self, device_address: int, tag_type: str, start_address: int, count: int) -> list[dict]:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:
@@ -289,7 +288,6 @@ class ModbusDatabase:
             tag_list.append(tag_info)
 
         return tag_list
-
 
     def write_tag( self, device_address : int, tag_type : str, address : int, new_value ) -> bool:
         # Verifica o tipo de tag e a tabela correspondente

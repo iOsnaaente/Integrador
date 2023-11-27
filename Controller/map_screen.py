@@ -25,7 +25,17 @@ class MapScreenController:
         
     def get_view(self) -> View.MapScreen.map_screen:
         return self.view
+    
+    def get_sys_time( self ):
+        return self.model.get_sys_time()
+    
+    def get_sys_date( self ):
+        return self.model.get_sys_date() 
+    
+    def get_sys_count( self ):
+        return self.model.get_system_generation()
         
+
     def is_connected(self) -> bool:
         return self.model.is_connected() 
 

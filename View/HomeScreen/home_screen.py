@@ -128,7 +128,7 @@ class HomeScreenView( BaseScreenView ):
         if self.controller.get_status() == True:
             self.ids.icon_system_status.icon_color = [ 0, 1, 0, 0.8 ]
             self.ids.icon_geracao.icon_color = [ 1, 1, 0, 0.8 ]
-            self.ids.label_geracao.text = str(self.controller.get_generation())
+            self.ids.label_geracao.text = str(round(self.controller.get_generation(),2))
             self.ids.label_system_status.text = 'Sistema online '
 
             vele, vgir = self.controller.get_motor_vel()

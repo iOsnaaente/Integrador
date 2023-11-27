@@ -5,17 +5,17 @@ INPUT_POS_GIR       = 0x00
 INPUT_POS_ELE       = 0x02
 INPUT_AZIMUTE       = 0x04    
 INPUT_ZENITE        = 0x06
-INPUT_GENERATION 	= 0x08
-INPUT_YEAR          = 0x0A
-INPUT_MONTH         = 0x0B
-INPUT_DAY           = 0x0C
-INPUT_HOUR          = 0x0D
-INPUT_MINUTE        = 0x0E
-INPUT_SECOND        = 0x0F     
-INPUT_TEMP          = 0x10
-INPUT_PRESURE       = 0x12
-INPUT_SENS_CONF_GIR = 0x14
-INPUT_SENS_CONF_ELE = 0x16
+INPUT_GENERATION 	= 0x08     
+INPUT_TEMP          = 0x0A
+INPUT_PRESURE       = 0x0C
+INPUT_SENS_CONF_GIR = 0x0E
+INPUT_SENS_CONF_ELE = 0x10
+INPUT_YEAR          = 0x12
+INPUT_MONTH         = 0x13
+INPUT_DAY           = 0x14
+INPUT_HOUR          = 0x15
+INPUT_MINUTE        = 0x16
+INPUT_SECOND        = 0x17
 INPUTS              = Registers( 0xFF, int )
 # |    0x00 |    0x01 |    0x02 |    0x03 |   0x04  |   0x05  | 
 # |    YEAR |   MONTH |     DAY |    HOUR | MINUTE  | SECOND  | 
@@ -101,5 +101,4 @@ LOCALIZATION    = [ LATITUDE, LONGITUDE, TEMPERATURE, PRESSURE ]
 UART_BAUD = 115200 
 UART_NUM  = 0x00
 MODBUS_ID = 0x12
-
 
