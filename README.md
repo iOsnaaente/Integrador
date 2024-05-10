@@ -12,9 +12,9 @@ Tarefas gerais a serem realizadas
 - [ ] Definir uma paleta de cores puxando para o amarelo ou laranja 
     - [ ] Definir cores primarias 
     - [ ] Definir cores de acentuação
-- [ ] Corrigir os links do SideBar
-- [ ] Não enviar as informações sensíveis quando alguém loga no sistema 
-- [ ] Fazer o tema claro
+- [x] Corrigir os links do SideBar
+- [-] Não enviar as informações sensíveis quando alguém loga no sistema 
+- [-] Fazer o tema claro
 - [ ] Fazer botão para alternar entre os temas
 - [ ] Fazer botão para logout 
 - [ ] Solicitar a foto do usuário para o banco de dados 
@@ -22,7 +22,6 @@ Tarefas gerais a serem realizadas
 - [ ] Unificar os arquivos Models entre LoginModel e SystemModel
 
 ### Shared Data 
-
 Tarefas que serão compartilhadas entre todas as telas para acesso em qualquer ponto do código 
 - [ ] Colocar o Map dentro do Shared Data 
 - [ ] Colocar as posições do motor (Azimute e Zenite) dentro do Shared Data 
@@ -83,12 +82,12 @@ Tarefas para a área de Map Screen
 
 Tarefas para a área de Serial Screen 
 
-- [ ] Corrgir os DropDowns para mostrarem valores especificados 
-- [ ] Fazer o botão do Att Comports 
-- [ ] Implementar a conexão Serial
-- [ ] Lançar Sweet cards para coneção estabelecida 
-- [ ] Lançar Sweet cards para coneção perdida 
-- [ ] Lançar Sweet cards para coneção Negada 
+- [-] Corrgir os DropDowns para mostrarem valores especificados 
+- [X] Fazer o botão do Att Comports 
+- [X] Implementar a conexão Serial
+- [o] Lançar Sweet cards para coneção estabelecida 
+- [o] Lançar Sweet cards para coneção perdida 
+- [o] Lançar Sweet cards para coneção Negada 
 - [ ] Implementar o card de controle manual dos motores
 - [ ] Implementar o card de log da serial 
 - [ ] Corrigir os gráficos para os valores lidos na serial 
@@ -97,7 +96,7 @@ Tarefas para a área de Serial Screen
 
 ### Sensor Screen
 Tarefas para a área de Sensor Screen 
-- [ ] Criar a screen de Sensor
+- [X] Criar a screen de Sensor
 
 
 ### Diagnostic Screen

@@ -1,17 +1,20 @@
 kivy
+kivy-garden
+mapview
 kivymd
 kivymd-extensions
-kivymd-extensions.akivymd
 kivymd-extensions.sweetalert
-screeninfo
-watchdog
+kivymd-extensions.akivymd
 cryptography
 matplotlib
-requests
-ephem
-pyserial
+screeninfo
+minimalmodbus
 pymodbus
-
+pyserial
+requests
+watchdog
+ephem
+pytz
 
 
 # Buildozer requiements - akivymd

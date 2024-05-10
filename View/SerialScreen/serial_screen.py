@@ -21,8 +21,8 @@ class SerialScreenView(BaseScreenView):
     azimute_sensor = None 
 
     Zenite = ObjectProperty() 
-    zenite_motor = None 
-    zenite_sensor = None 
+    zenite_motor: SmoothLinePlot | None = None 
+    zenite_sensor: SmoothLinePlot | None = None 
 
     already_draw = False 
     
