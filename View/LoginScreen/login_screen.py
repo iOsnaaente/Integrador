@@ -1,17 +1,18 @@
-from View.base_screen       import BaseScreenView
-from kivy.properties        import ObjectProperty
-from kivymd.uix.card        import MDCard 
-from kivy.clock             import Clock
 from kivymd.uix.behaviors   import HoverBehavior 
 from kivymd.theming         import ThemableBehavior
+from kivymd.uix.card        import MDCard 
+from kivy.properties        import ObjectProperty
+from kivy.clock             import Clock
+
+from View.base_screen       import BaseScreenView
 
 from libs.sweetalert.sweetalert import SweetAlert
 
 import os 
-IMAGE_PATH = os.path.dirname( __file__ ).removesuffix('\\View\\LoginScreen') + '/images'
-KV_PATH = os.path.dirname( __file__ )
+PATH = os.path.dirname(__file__ ).removesuffix( os.path.join( 'View', 'LoginScreen') )
 
 
+# Card de novo usuário que dá pop na tela 
 class CardNewUser( MDCard ):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -20,42 +21,38 @@ class CardNewUser( MDCard ):
 class SwipeLine( MDCard, ThemableBehavior, HoverBehavior ):
     HOVER_ENTER_COLOR : list = [ 0.8, 0.8, 0.8, 0.85 ] 
     HOVER_LEAVE_COLOR : list = [ 0.5, 0.5, 0.5, 0.60 ] 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
     def on_enter(self, *args):
         self.md_bg_color = self.HOVER_ENTER_COLOR
         return super().on_enter()
-    
     def on_leave(self, *args):
         self.md_bg_color = self.HOVER_LEAVE_COLOR
         return super().on_leave()
 
 
 class LoginScreenView( BaseScreenView ):
-
     __debug : bool = True 
 
-    IMAGE_PATH = os.path.dirname( __file__ ).removesuffix('\\View\\LoginScreen') + '/assets/images'
-
+    # Propriedades do login 
     username = ObjectProperty()
     password = ObjectProperty()
 
-    sunrise_image =  IMAGE_PATH + '/sunrise.jpg'   
-    connectivity_icon = IMAGE_PATH +  '/connectivity.png'
-    green_power_icon = IMAGE_PATH +  '/green-power.png' 
-    security_icon = IMAGE_PATH +  '/security.png'
-    solar_icon = IMAGE_PATH +  '/smart-power.png'
-    smart_sun = IMAGE_PATH +  '/smart.png'
-    map_icon = IMAGE_PATH +  '/map.png'
+    # Imagens presentes em na tela de login  
+    sunrise_image =  PATH + os.path.join( 'assets', 'images', 'sunrise.jpg' )   
+    connectivity_icon = PATH + os.path.join( 'assets', 'images', 'connectivity.png' )
+    green_power_icon = PATH + os.path.join( 'assets', 'images', 'green-power.png' )  
+    security_icon = PATH + os.path.join( 'assets', 'images', 'security.png' )
+    solar_icon = PATH + os.path.join( 'assets', 'images', 'smart-power.png' ) 
+    smart_sun = PATH + os.path.join( 'assets', 'images', 'smart.png' )
+    map_icon = PATH + os.path.join( 'assets', 'images', 'map.png' )
     
+    # Thread de verificação de conexão com o servidor 
     ping_pong = None 
 
     def __init__(self, **kw):
         super().__init__(**kw)
                 
-
     # Tenta iniciar o socket de login
     def on_enter(self, *args):
         self.model.connect_server()
@@ -64,10 +61,9 @@ class LoginScreenView( BaseScreenView ):
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "O sistema pode não funcionar de acordo" )
         return super().on_enter(*args)
     
-
     # Faz o login 
     def login ( self ):
-        # Primeiro verifica o status da conexão 
+        # Primeiro verifica o status da conexão com o servidor 
         if not self.model.connection_status():
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "Sistema de login indisponível" )
             return 
@@ -75,21 +71,22 @@ class LoginScreenView( BaseScreenView ):
             # Tenta executar o login 
             ans = self.model.login( self.username.text, self.password.text )
             if ans:
+                # Se o login foi estabelecido, verifica o checkbox para reter as credenciais 
                 if self.ids.checkbox_keep_login.state == 'down':
                     self.model.set_table( 'DOWN', self.username.text, self.password.text )
                 elif self.ids.checkbox_keep_login.state == 'normal':
                     self.model.set_table( 'NORMAL', '' , '' ) 
 
-                # Se o login foi estabelecido, entra na aplicação 
+                # Entra na aplicação 
                 self.manager_screens.current = 'home screen'
                 Clock.unschedule( self.ping_pong )
-                self.model.shared_data.connected = True
+                self.model.shared_data.connected = True ###########################################################
                 if self.__debug: 
                     print( 'Logado com \nUsuário: {}\nSenha: {}'.format( self.username.text, self.password.text ) )
                     print( 'Keep data state : ', self.ids.checkbox_keep_login.state )
                     print( 'Data kept: ', self.model.get_table () )
 
-            # Caso contrário, lança um erro de usuário e senha incorreto 
+            # Caso não conecte, lança um erro de usuário e senha incorreto 
             else: 
                 SweetAlert( timer = 0.5 ).fire( 'Usuário e senha incorretos', type = 'failure' )
 

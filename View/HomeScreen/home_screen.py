@@ -16,9 +16,10 @@ from libs.kivy_garden.graph import Graph
 APP = MDApp.get_running_app()
 
 import os 
-PATH = os.path.dirname( __file__ )
-IMAGES = PATH.removesuffix('\\View\\HomeScreen') + '/assets/images/'
-MAP_ICON = PATH.removesuffix('\\View\\HomeScreen') + '/assets/icons/marker_popup.png' 
+PATH = os.path.dirname( __file__ ).removesuffix( os.path.join('View', 'HomeScreen') )
+
+IMAGES = PATH + os.path.join( 'assets','images' ) 
+MAP_ICON = PATH + os.path.join('assets','icons','marker_popup.png') 
 
 class HomeScreenView( BaseScreenView ):
 

@@ -6,7 +6,7 @@ from System.Tags        import *
 from libs.Sun           import SunPosition 
 
 import os 
-PATH = os.path.dirname( __file__ ).removesuffix('\\Model')
+PATH = os.path.dirname( __file__ ).removesuffix( os.path.join( 'Model') )
 
 from System.Tags import *
 

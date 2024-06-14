@@ -11,7 +11,8 @@ import struct
 import time 
 import os 
 
-DB_PATH = os.path.join(os.path.dirname(__file__).removesuffix('System'), 'Model', 'db', 'tags.db')
+DB_PATH = os.path.join( os.path.dirname(__file__).removesuffix('System'), 'Model', 'db', 'tags.db')
+
 
 class Device(ModbusRTU):
     
