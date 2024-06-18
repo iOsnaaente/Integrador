@@ -13,30 +13,31 @@ import os
 
 DB_PATH = os.path.join( os.path.dirname(__file__).removesuffix('System'), 'Model', 'db', 'tags.db')
 
-
-class Device(ModbusRTU):
+class Device( ModbusRTU ):
     
+    # Banco de dados 
     DB: ModbusDatabase
     write: bool = False 
     scan_on: bool = True
     err_count: int 
-    
 
     def __init__(self, slave: int, port: str, baudrate: int, parity: str = 'E', stop_bits: int = 1, byte_size: int = 8, timeout: int = 1, init_registers : bool = False, debug: bool = False):
         super().__init__(slave, port, baudrate, parity, stop_bits, byte_size, timeout, debug = debug )
         self.device_address = slave 
+        # Objeto Modbus 
         self.DB = ModbusDatabase( DB_PATH = DB_PATH, init_registers = init_registers, debug = debug )
-        self._debug = debug
-        
+        # Pega o Datashared do aplicativo 
         self.shared_data = App.get_running_app().shared_data
-
+        # Thread para fazer o escaneamento automatico da Serial 
         self.scan_routine = threading.Thread( target = self.auto_scan_routine ) 
         self.scan_routine.start() 
+        
         self.err_count = 0 
+        self._debug = debug
 
 
     def is_connected( self ): 
-        return self.client.serial.is_open
+        return False if self.client == None else True  
 
     def open(self):
         try:
@@ -48,7 +49,8 @@ class Device(ModbusRTU):
         self.client.serial.close() 
     
     def check_connection( self ): 
-        pass             
+        return self.is_connected()              
+
 
     def read_coil(self, register_type: str, address: int, count: int = 1, DB : ModbusDatabase | None = None  ) -> list | bool | None :
         if isinstance( DB, ModbusDatabase ):
@@ -81,6 +83,7 @@ class Device(ModbusRTU):
                     else: 
                         self.DB.write_tag( self.device_address, tag_type = register_type, address = address+addr, new_value = read_modbus[addr] )
                 return read_modbus 
+
 
     def read_register(self, register_type: str, address: int, last_addres: int = 1, DB : ModbusDatabase | None = None  ) -> list[ int | float ] | bool | None:
         if isinstance( DB, ModbusDatabase ):
@@ -122,6 +125,7 @@ class Device(ModbusRTU):
                         count += 1
                 return values 
             
+
     def write_coils(self, address: int, value: bool | list[bool] ) -> bool | None:
         register_type = 'coil_register'
         read_db = self.DB.read_tag( self.device_address, register_type, address )
@@ -141,6 +145,7 @@ class Device(ModbusRTU):
                 value = read_modbus[0]
                 self.DB.write_tag( self.device_address, tag_type = register_type, address = address, new_value = value )
                 return value 
+
 
     def write_register(self, address: int, value: int | float ) -> bool | None:
         register_type = 'holding_register'

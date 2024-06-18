@@ -80,7 +80,6 @@ class LoginScreenView( BaseScreenView ):
                 # Entra na aplicação 
                 self.manager_screens.current = 'home screen'
                 Clock.unschedule( self.ping_pong )
-                self.model.shared_data.connected = True ###########################################################
                 if self.__debug: 
                     print( 'Logado com \nUsuário: {}\nSenha: {}'.format( self.username.text, self.password.text ) )
                     print( 'Keep data state : ', self.ids.checkbox_keep_login.state )

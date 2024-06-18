@@ -58,7 +58,6 @@ class Tracker( MDApp ):
         self.login_model = LoginModel( shared_data = self.shared_data )
         self.system_model = SystemModel( shared_data = self.shared_data, _debug = False )
 
-        Window.bind( on_key_down = self.on_keyboard_down)
         screens = View.screens.screens   
         for _, name_screen in enumerate(screens.keys()):
             if name_screen == 'login screen':
@@ -72,18 +71,11 @@ class Tracker( MDApp ):
         
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Orange"
-        # self.theme_cls.material_style = "M3"
-        # self.theme_cls.primary_hue = "500"
+        self.theme_cls.material_style = "M3"
+        self.theme_cls.primary_hue = "500"
 
-        self.manager_screens.current = 'login screen'
-
+        self.manager_screens.current = 'serial screen'
         return self.manager_screens
-
-
-    def on_keyboard_down(self, window, keyboard, keycode, text, modifiers) -> None:
-        if "meta" in modifiers or "ctrl" in modifiers and text == "r":
-            # self.rebuild()
-            pass 
 
     def get_manager(self):
         return self.manager_screens

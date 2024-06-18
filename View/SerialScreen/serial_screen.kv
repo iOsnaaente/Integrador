@@ -287,177 +287,179 @@
                     size_hint: 0.2, 1
                     md_bg_color: [0.25,0.25,0.25,0.5]
                     spacing: 10 
-                    padding: 10 
                     MDLabel: 
-                        size_hint: 1, 0.1
+                        size_hint: 1, 0.075
                         text: 'Painel de comandos'
-                    MDScrollView:
-                        size_hint: 1, 0.9
-                        md_bg_color: 0.1, 0.1, 0.1, 0.5
-                        do_scroll_x: False
-                        do_scroll_y: True
-                        radius: 10
-                        MDBoxLayout: 
-                            id: commands_scroll   
+                        halign: 'center'
+                    MDBoxLayout: 
+                        id: commands_scroll   
+                        orientation: 'vertical'
+                        size_hint: 1, 0.925
+                        padding: sp(10),0, sp(10), 0
+                        spacing: sp(5)
+                        #
+                        # Modo de operação 
+                        MDCard:
                             orientation: 'vertical'
-                            size_hint: 1, None
-                            adaptive_height: True
-                            spacing: sp(10)
-                            padding: sp(10)
+                            size_hint: 1, 0.15
                             #
-                            # Modo de operação 
+                            # # Title 
+                            MDLabel:
+                                text: "Modo de operação:"
+                                halign: 'center'
+                                color: 'white'                                    
+                                bold: True 
+                            #
+                            # # Content 
                             MDCard:
-                                orientation: 'vertical'
-                                size_hint: 1, None
-                                height: sp(50)
+                                size_hint: 0.9, None 
+                                height: sp(25)
+                                pos_hint: {'center_x': 0.50 }
+                                orientation: 'horizontal'
+                                #
+                                # # Checkbox Automatico 
+                                MDCheckbox:
+                                    id: modo_auto 
+                                    group: 'mode'
+                                    pos_hint: {'center_x': 0.15 }
+                                    disabled_color: app.theme_cls.primary_color
+                                    color_inactive: app.theme_cls.primary_color
+                                    size_hint: None, None
+                                    size: sp(25), sp(25)
+                                    active: True
                                 MDLabel:
-                                    text: "Modo de operação:"
-                                    halign: 'left'
-                                    color: 'white'                                    
-                                    bold: True 
+                                    text: "Automatico"
+                                    valign: 'center'
+                                #
+                                # # Checkbox Manual 
+                                MDCheckbox:
+                                    id: modo_manual 
+                                    group: 'mode'
+                                    pos_hint: {'center_x': 0.15 }
+                                    color_inactive: app.theme_cls.primary_color
+                                    disabled_color: app.theme_cls.primary_color
+                                    size_hint: None, None
+                                    size: sp(25), sp(25)
+                                    active: False
+                                MDLabel:
+                                    text: "Manual"
+                                    color: 'white'
+                                    valign: 'center'
+                        #
+                        # Indicações  
+                        MDCard:
+                            orientation: 'vertical'
+                            size_hint: 1, 0.15
+                            MDLabel:
+                                text: "Motores movendo:"
+                                halign: 'center'
+                                valign: 'center'
+                                color: 'white'                                    
+                                bold: True 
+                            MDCard: 
+                                size_hint: 0.8, None 
+                                orientation: 'horizontal'
+                                pos_hint: {'center_x': 0.5 }
+                                height: sp(25)
+                                MDCard:
+                                    size_hint: 1, 1
+                                    orientation: 'horizontal'
+                                    spacing: sp(5)
+                                    padding: sp(10),0,0,0
+                                    MDIcon:
+                                        pos_hint: {'center_x': 0.15 }
+                                        size_hint: None, None
+                                        size: sp(35), sp(35)
+                                        icon: 'circle'
+                                        color: 'gray'
+                                    MDLabel:
+                                        text: "Azimute"
+                                        valign: 'center'
+                                        color: 'gray'
                                 MDCard:
                                     size_hint: 1, None 
                                     height: sp(25)
                                     orientation: 'horizontal'
-                                    MDCheckbox:
-                                        group: 'mode'
-                                        pos_hint: {'center_x': 0.15 }
-                                        size_hint: None, None
-                                        size: sp(25), sp(25)
-                                        active: True
-                                    MDLabel:
-                                        text: "Automatico"
-                                        color: 'white'
-                                        valign: 'center'
-                                # MDCard:
-                                #     size_hint: 1, None 
-                                #     height: sp(25)
-                                #     orientation: 'horizontal'
-                                    MDCheckbox:
-                                        group: 'mode'
-                                        pos_hint: {'center_x': 0.15 }
-                                        size_hint: None, None
-                                        size: sp(25), sp(25)
-                                        active: False
-                                    MDLabel:
-                                        text: "Manual"
-                                        color: 'white'
-                                        valign: 'center'
-                            #
-                            # Estado dos motores  
-                            MDCard:
-                                orientation: 'vertical'
-                                size_hint: 0.95, None
-                                height: sp(75)
-                                MDLabel:
-                                    text: "Ligar/Desligar motores:"
-                                    halign: 'left'
-                                    color: 'white'
-                                    bold: True 
-                                MDSwitch:
-                                    id: power_widget_switch
-                                    active: root.controller.get_power_motors()
-                                    pos_hint: {'center_x': 0.250,'center_y': 0.50}
-                                    width: self.parent.width*0.4
-                                    icon_inactive: "close"
-                                    icon_active: "check"
-                                    thumb_color_active: "green"
-                                    thumb_color_inactive: "red"
-                                    track_color_active: [0.2,1,0.2, 0.6]
-                                    track_color_inactive:  [1,0.1,0.1, 0.45]
-                                    on_active: root.controller.turn_on_off_motors( self.active )
-                                    
-                            MDCard:
-                                orientation: 'vertical'
-                                size_hint: 0.95, None
-                                height: sp(75)
-                                MDLabel:
-                                    text: "Velocidade motores:"
-                                    halign: 'left'
-                                    color: 'white'
-                                    bold: True 
-                                MDTextField:
-                                    id: vel_azimute
-                                    text: 'Vel. Azi.:'
-                                    on_text_validate: root.controller.send_motors_vel()
-                                MDTextField:
-                                    id: vel_zenite
-                                    text: 'Vel. Zen.:'
-                                    on_text_validate: root.controller.send_motors_vel()
-                            #
-                            # Indicações  
-                            MDCard:
-                                orientation: 'vertical'
-                                size_hint: 1, None
-                                height: sp(50)
-                                MDLabel:
-                                    text: "Motores movendo:"
-                                    halign: 'left'
-                                    color: 'white'                                    
-                                    bold: True 
-                                MDCard: 
-                                    size_hint: 1, None 
-                                    orientation: 'horizontal'
-                                    height: sp(25)
-                                    MDCard:
-                                        size_hint: 1, 1
-                                        orientation: 'horizontal'
-                                        spacing: sp(5)
-                                        padding: sp(10),0,0,0
-                                        MDIcon:
-                                            pos_hint: {'center_x': 0.15 }
-                                            size_hint: None, None
-                                            size: sp(35), sp(35)
-                                            icon: 'circle'
-                                            color: 'gray'
-                                        MDLabel:
-                                            text: "Azimute"
-                                            valign: 'center'
-                                            color: 'gray'
-                                    MDCard:
-                                        size_hint: 1, None 
-                                        height: sp(25)
-                                        orientation: 'horizontal'
-                                        spacing: sp(5)
-                                        MDIcon:
-                                            pos_hint: {'center_x': 0.15 }
-                                            size_hint: None, None
-                                            size: sp(35), sp(35)
-                                            icon: 'circle'
-                                            color: 'gray'
-                                        MDLabel:
-                                            text: "Zenite"
-                                            valign: 'center'
-                                            color: 'gray'
-                            #
-                            # Home  
-                            MDCard:
-                                orientation: 'vertical'
-                                size_hint: 1, None
-                                height: sp(50)
-                                padding: 0, sp(10), 0, 0    
-                                MDLabel:
-                                    text: "Mover para casa:"
-                                    halign: 'left'
-                                    color: 'white'                                    
-                                    bold: True 
-                                MDCard: 
-                                    size_hint: 1, None 
-                                    height: sp(25)
-                                    orientation: 'horizontal'
                                     spacing: sp(5)
-                                    padding: sp(10),0,0,0
-                                    MDIconButton:
-                                        pos_hint: {'center_x': 0.1, 'center_y': 0.5 }
-                                        size_hint: 0.1, None
-                                        height: self.width 
-                                        icon: 'home'
-                                        theme_icon_color: 'Custom'
-                                        icon_color: [0.1, 1, 0.1, 0.8 ]
+                                    MDIcon:
+                                        pos_hint: {'center_x': 0.15 }
+                                        size_hint: None, None
+                                        size: sp(35), sp(35)
+                                        icon: 'circle'
+                                        color: 'gray'
                                     MDLabel:
-                                        text: "Go home"
+                                        text: "Zenite"
                                         valign: 'center'
-                                        color: 'white'
+                                        color: 'gray'
+                        #
+                        # Home  
+                        MDCard:
+                            orientation: 'vertical'
+                            size_hint: 1, 0.20
+                            padding: 0, sp(10), 0, sp(10)    
+                            MDLabel:
+                                size_hint: 1, 0.2
+                                text: "Mover para casa:"
+                                halign: 'center'
+                                color: 'white'                                    
+                                bold: True 
+                            MDRectangleFlatIconButton:
+                                size_hint: 1, 0.7
+                                text: "Go home"
+                                icon: 'home'
+                                pos_hint: {'center_x': 0.5, 'center_y': 0.5 }
+                                size_hint: 0.75, 1
+                                theme_icon_color: 'Custom'
+                                theme_text_color: 'Custom'
+                                icon_color: 'green'
+                                text_color: 'white'
+                                line_color: [1,1,1,0]
+                                on_press: print( 'Press go home' )
+                        #
+                        # # Velocidades 
+                        MDCard:
+                            orientation: 'vertical'
+                            size_hint: 1, 0.30
+                            MDLabel:
+                                size_hint: 1, 0.2
+                                text: "Velocidade motores:"
+                                halign: 'center'
+                                color: 'white'
+                                bold: True 
+                            MDTextField:
+                                id: vel_azimute 
+                                size_hint_x: 0.625
+                                pos_hint: {'center_x': 0.5 }
+                                text: 'Vel. Azi.:'
+                                on_text_validate: root.controller.send_motors_vel()
+                            MDTextField:
+                                id: vel_zenite
+                                size_hint_x: 0.625
+                                pos_hint: {'center_x': 0.5 }
+                                text: 'Vel. Zen.:'
+                                on_text_validate: root.controller.send_motors_vel()
+                        #
+                        # Estado dos motores  
+                        MDCard:
+                            orientation: 'vertical'
+                            size_hint: 0.95, 0.2
+                            MDLabel:
+                                text: "Ligar/Desligar motores:"
+                                halign: 'center'
+                                color: 'white'
+                                bold: True 
+                            MDSwitch:
+                                id: power_widget_switch
+                                active: root.controller.get_power_motors()
+                                pos_hint: {'center_x': 0.50,'center_y': 0.50}
+                                width: self.parent.width*0.4
+                                icon_inactive: "close"
+                                icon_active: "check"
+                                thumb_color_active: "green"
+                                thumb_color_inactive: "red"
+                                track_color_active: [0.2,1,0.2, 0.6]
+                                track_color_inactive:  [1,0.1,0.1, 0.45]
+                                on_active: root.controller.turn_on_off_motors( self.active )
                 #
                 #
                 # #
