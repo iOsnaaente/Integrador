@@ -89,7 +89,6 @@ class SerialConfiguration( MDCard ):
         self.connection_button.bind( on_release = self.connect )
         self.refresh.bind( on_release = self.att_comport )
         
-
         _, state, comp, baud, time = self.__db.serial[0]
         self.comport_label.text = '    ' + comp 
         self.baudrate_label.text = '    ' + baud 
@@ -153,8 +152,9 @@ class SerialConfiguration( MDCard ):
         time = self.timeout_label.text.replace('    ', '')
         if self.connection_keep.active == True:
             self.__db.set_serial( 'T', comp, baud, time )
-            print( comp, baud, time, 'check True' )
-            
+            # print( comp, baud, time, 'check True' )
         else:
-            print( comp, baud, time, 'check False' )
+            pass 
+            # print( comp, baud, time, 'check False' )
+        
         print( 'Implementar a conexão serial em Views/commom_components/serial_conf')

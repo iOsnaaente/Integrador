@@ -5,7 +5,7 @@ PATH = os.path.dirname( __file__ )
 
 class Database: 
     def __init__( self ) -> None:
-        self.con = sqlite3.connect( PATH + '/db_keeper.db' )
+        self.con = sqlite3.connect( os.path.join( PATH, 'db_keeper.db') )
         self.cursor = self.con.cursor()
         self.create_login_table() 
 

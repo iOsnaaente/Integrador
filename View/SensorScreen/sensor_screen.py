@@ -5,7 +5,9 @@ import os
 
 from kivy.clock import Clock
 
-PATH = os.path.dirname( __file__ ).removesuffix('\\View\\SensorScreen') + '/assets/3D'
+PATH  = os.path.dirname( __file__ ).removesuffix( os.path.join('View', 'SensorScreen' ) )
+PATH += os.path.join( 'assets', '3D' )
+
 
 class SensorScreenView(BaseScreenView):
 

@@ -15,7 +15,8 @@ import math
 #####################################
 
 import os 
-MAP_SOURCE_ICON = os.path.dirname(__file__).removesuffix('\\View\\MapScreen') + '/assets/icons/marker_popup.png' 
+MAP_SOURCE_ICON = os.path.join( 
+    os.path.dirname(__file__).removesuffix( os.path.join( 'View','MapScreen')), 'assets','icons','marker_popup.png' ) 
 
 class Ecliptica( MDWidget ):
 

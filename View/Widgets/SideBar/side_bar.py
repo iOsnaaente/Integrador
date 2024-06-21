@@ -8,8 +8,8 @@ from kivymd.app import MDApp
 
 
 import os 
-PATH = os.path.dirname( __file__ ).removesuffix('\\View\\Widgets\\SideBar')
-IMAGES = PATH + '/assets/images/'
+PATH = os.path.dirname( __file__ ).removesuffix( os.path.join('View', 'Widgets', 'SideBar') )
+
 APP = MDApp.get_running_app()
 
 imgs = [ 'smart.png'          ,
@@ -84,13 +84,13 @@ class SideBar( MDBoxLayout ):
         if self.model.shared_data.photo: 
             self.user_photo.source = self.model.shared_data.photo
         else: 
-            self.user_photo.source = PATH.removesuffix('\\View\\commom_components\\SideBar') + '/assets/images/usernophoto.png'
+            self.user_photo.source = PATH + os.path.join( 'assets','images','usernophoto.png' ) 
         self.username.text = str(self.model.shared_data.username)
         for img, label, link in zip( imgs, lbls, lnks ):
             self.home_side_bar.add_widget(  
                 MyCardMenu(
                     text = label,
-                    image = IMAGES + img, 
+                    image = PATH + os.path.join( 'assets', 'images', img ), 
                     body_size = [ 1, 1/(len(imgs)+1) ],
                     screen_link = link
                 ) 

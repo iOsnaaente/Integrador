@@ -9,7 +9,7 @@ import os
 
 def multi_threaded_login( connection : socket.socket, __debug : bool = False ):
     ''' Realiza uma conexão segura '''  
-    db = Database( os.path.dirname( __file__ ) + '/db/database.db' )
+    db = Database( os.path.join( os.path.dirname( __file__ ), 'db', 'database.db' ) ) 
     UNIKEY_SESION = get_sync_unikey( connection, __debug = __debug )
     while True:
         try:

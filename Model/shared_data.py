@@ -35,6 +35,7 @@ class SharedData:
         "DISCRETE_POWER"      : False,
         "DISCRETE_TIME"       : False,
         "DISCRETE_GPS"        : False,
+        "DISCRETE_CONNECTED"  : False,
 
         "COIL_POWER"          : False, "COIL_LED"            : False,
         "COIL_M_GIR"          : False, "COIL_M_ELE"          : False,

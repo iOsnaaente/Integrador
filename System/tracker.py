@@ -11,31 +11,37 @@ import struct
 import time 
 import os 
 
-DB_PATH = os.path.join(os.path.dirname(__file__).removesuffix('System'), 'Model', 'db', 'tags.db')
+DB_PATH = os.path.join( os.path.dirname(__file__).removesuffix('System'), 'Model', 'db', 'tags.db')
 
-class Device(ModbusRTU):
+class Device( ModbusRTU ):
     
+    # Banco de dados 
     DB: ModbusDatabase
     write: bool = False 
     scan_on: bool = True
     err_count: int 
-    
 
     def __init__(self, slave: int, port: str, baudrate: int, parity: str = 'E', stop_bits: int = 1, byte_size: int = 8, timeout: int = 1, init_registers : bool = False, debug: bool = False):
         super().__init__(slave, port, baudrate, parity, stop_bits, byte_size, timeout, debug = debug )
         self.device_address = slave 
+        # Objeto Modbus 
         self.DB = ModbusDatabase( DB_PATH = DB_PATH, init_registers = init_registers, debug = debug )
-        self._debug = debug
-        
+        # Pega o Datashared do aplicativo 
         self.shared_data = App.get_running_app().shared_data
-
+        # Thread para fazer o escaneamento automatico da Serial 
         self.scan_routine = threading.Thread( target = self.auto_scan_routine ) 
         self.scan_routine.start() 
+        
         self.err_count = 0 
+        self._debug = True
 
 
-    def is_connected( self ): 
-        return self.client.serial.is_open
+    def is_connected( self ) -> bool: 
+        try: 
+            return False if self.read_coil( 'coil_register', DISCRETE_CONNECTED ) == None else True 
+        except Exception as err:
+            print( err )
+            return False
 
     def open(self):
         try:
@@ -47,9 +53,10 @@ class Device(ModbusRTU):
         self.client.serial.close() 
     
     def check_connection( self ): 
-        pass             
+        return self.is_connected()              
 
-    def read_coil(self, register_type: str, address: int, count: int = 1, DB : ModbusDatabase | None = None  ) -> list | bool | None :
+
+    def read_coil(self, register_type: str, address: int, count: int = 1, DB : ModbusDatabase | None = None  ) -> list [bool] | bool | None :
         if isinstance( DB, ModbusDatabase ):
             read_db = DB.read_tags( self.device_address, register_type, address, count )
         else:
@@ -80,6 +87,7 @@ class Device(ModbusRTU):
                     else: 
                         self.DB.write_tag( self.device_address, tag_type = register_type, address = address+addr, new_value = read_modbus[addr] )
                 return read_modbus 
+
 
     def read_register(self, register_type: str, address: int, last_addres: int = 1, DB : ModbusDatabase | None = None  ) -> list[ int | float ] | bool | None:
         if isinstance( DB, ModbusDatabase ):
@@ -121,6 +129,7 @@ class Device(ModbusRTU):
                         count += 1
                 return values 
             
+
     def write_coils(self, address: int, value: bool | list[bool] ) -> bool | None:
         register_type = 'coil_register'
         read_db = self.DB.read_tag( self.device_address, register_type, address )
@@ -140,6 +149,7 @@ class Device(ModbusRTU):
                 value = read_modbus[0]
                 self.DB.write_tag( self.device_address, tag_type = register_type, address = address, new_value = value )
                 return value 
+
 
     def write_register(self, address: int, value: int | float ) -> bool | None:
         register_type = 'holding_register'
@@ -192,13 +202,13 @@ class Device(ModbusRTU):
                     super().write_registers( 0x00, holding_data )
                     self.write = False
 
+                # Lê todos a cada um segundo 
                 else: 
-                    # Lê todos a cada um segundo 
                     if time.time() - d_time > 1:
                         d_time = time.time() 
                         for dt, ind in zip( self.read_modbus( 'coil_register' , 0x00, 0x08, 'BIT' ), [ "COIL_POWER", "COIL_LED",   "COIL_M_GIR", "COIL_M_ELE", "COIL_LEDR",  "COIL_LEDG",  "COIL_LEDB",  "COIL_SYNC_DATE" ] ):
                             self.shared_data.SYSTEM_TABLE[ind] = dt 
-                        for dt, ind in zip( self.read_modbus( 'coil_input', 0x00, 0x04, 'BIT' ), [ "DISCRETE_FAIL", "DISCRETE_POWER", "DISCRETE_TIME", "DISCRETE_GPS"] ):
+                        for dt, ind in zip( self.read_modbus( 'coil_input', 0x00, 0x05, 'BIT' ), [ "DISCRETE_FAIL", "DISCRETE_POWER", "DISCRETE_TIME", "DISCRETE_GPS", "DISCRETE_CONNECTED"] ):
                             self.shared_data.SYSTEM_TABLE[ind] = dt 
                         for dt, ind in zip( self.read_modbus( 'holding_register', 0x00, 0x16, 'FLOAT'), [ "HR_PV_GIR", "HR_KP_GIR", "HR_KI_GIR", "HR_KD_GIR", "HR_AZIMUTE", "HR_PV_ELE", "HR_KP_ELE", "HR_KI_ELE", "HR_KD_ELE", "HR_ALTITUDE", "HR_LATITUDE", "HR_LONGITUDE" ] ):
                             self.shared_data.SYSTEM_TABLE[ind] = dt 
@@ -208,7 +218,6 @@ class Device(ModbusRTU):
                             self.shared_data.SYSTEM_TABLE[ind] = dt 
                         for dt, ind in zip( self.read_modbus( 'analog_input', 0x12, 0x17-0x12, 'INT' ), [ "INPUT_YEAR", "INPUT_MONTH", "INPUT_DAY", "INPUT_HOUR", "INPUT_MINUTE", "INPUT_SECOND" ] ):
                             self.shared_data.SYSTEM_TABLE[ind] = dt 
-
 
                     # Leitura a no mínimo 100ms 
                     if time.time() - h_time > 0.100:
@@ -227,10 +236,9 @@ class Device(ModbusRTU):
                             self.shared_data.SYSTEM_TABLE['INPUT_GENERATION'] = self.read_modbus( 'analog_input', INPUT_GENERATION, 2, 'FLOAT'  )
                         h_time = time.time()
 
-
             except Exception as err :
                 self.err_count += 1 
                 if self.err_count > 100: 
                     self.check_connection() 
                     self.err_count = 0 
-                print( 'System/Tracker error: ', err )
+                    print( 'System/Tracker error: ', err )

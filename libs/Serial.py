@@ -3,7 +3,7 @@ import glob
 import sys 
 
 def get_serial_ports( lenght : int = 25, debug: bool = False  ):
-    portList = [] 
+    port_list = [] 
     if sys.platform.startswith('win'):  
         ports = ['COM%s' % (i + 1) for i in range( lenght )]
     elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
@@ -15,9 +15,13 @@ def get_serial_ports( lenght : int = 25, debug: bool = False  ):
         try:
             s = serial.Serial( port )
             s.close()
-            portList.append(port)
+            port_list.append(port)
             if debug:
                 print( f'Port {port} found!' )
         except (OSError, serial.SerialException):
             pass
-    return portList
+    return port_list
+
+if __name__ == '__main__':
+    ports = get_serial_ports( debug = True)
+    print( ports ) 

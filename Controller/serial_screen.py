@@ -55,7 +55,6 @@ class SerialScreenController:
     def get_zenite_sensor( self ) -> float:
         return self.zenite[1]
 
-
     def init_serial_conection( self ):
         pass 
 

@@ -21,7 +21,7 @@ server.listen(5)
 ThreadCount = 0 
 
 def login(name, password):
-    with open(PATH + '/bd/login.csv', 'r') as log:
+    with open( os.path.join( PATH, 'bd','login.csv'), 'r') as log:
         lines = log.readlines()[1:]
         print( lines )
         for line in lines:
@@ -33,11 +33,11 @@ def login(name, password):
 
 def new_user( user, password ):
     if not login( user, password ):
-        with open( PATH + '/bd/login.csv', 'r') as log:
+        with open( os.path.join( PATH, 'bd','login.csv'), 'r') as log:
             log.seek(0)
             nl = len(log.readlines())
             data = str(nl) + ';' + user + ';' + password + '\n'
-        with open( PATH + '/bd/login.csv', 'a') as log:
+        with open( os.path.join( PATH, 'bd','login.csv'), 'a') as log:
             log.write( data )
             if DEBUG: print('Criado o usuário {} com senha {} no ID {}'.format(user, password, nl))
             return str(nl)

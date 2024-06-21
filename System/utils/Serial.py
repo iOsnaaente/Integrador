@@ -1,18 +1,16 @@
-from typing import Union
 import minimalmodbus 
 import struct
 
-
 class ModbusRTU:
     
-    connected: bool
     port: str 
+    connected: bool
+
+    byte_size: int 
     baudrate: int 
+    timeout: int 
     parity: str 
     stop_bits: int 
-    byte_size: int 
-    timeout: int 
-
 
     def __init__(self, slave : int, port: str,  baudrate: int , parity: str = 'N', stop_bits: int = 1, byte_size: int = 8, timeout: int = 1, debug: bool = False, **kwargs):
         self.port = port
@@ -25,7 +23,7 @@ class ModbusRTU:
         self.__debug = debug
         # Try to open serial port
         try:
-            self.client = minimalmodbus.Instrument(port=port, slaveaddress=slave, mode=minimalmodbus.MODE_RTU, debug=debug)
+            self.client = minimalmodbus.Instrument( port = port, slaveaddress = slave, mode = minimalmodbus.MODE_RTU, debug = debug)
             self.client.serial.baudrate = baudrate 
             self.client.serial.timeout = timeout
             self.client.serial.bytesize = byte_size 
@@ -133,7 +131,7 @@ class ModbusRTU:
                 print(f"Erro ao ler as bobinas do dispositivo Modbus. Erro: {err}")
             return None
 
-    def write_registers(self, address: int, values: Union[int, float, list[Union[int, float]]] ):
+    def write_registers(self, address: int, values: int | float | list[ int | float] ):
         try:
             # Verifica se o cliente está conectado
             if self.client is None:
@@ -171,7 +169,7 @@ class ModbusRTU:
                 print(f"Erro ao escrever nos registradores do dispositivo Modbus. Erro: {err}")
             return False
 
-    def write_coils(self, address: int, values: Union[bool, list[bool]]) -> bool:
+    def write_coils( self, address: int, values: bool | list[bool] ) -> bool:
         try:
             # Verifica se o cliente está conectado
             if self.client is None:
@@ -198,20 +196,3 @@ class ModbusRTU:
             if self.__debug:
                 print(f"Erro ao escrever nas bobinas do dispositivo Modbus. Erro: {err}")
             return False
-
-
-if __name__ == '__main__':
-    # Teste da classe ModbusRTU
-    modbus = ModbusRTU( 0x12, 'COM18', 115200, debug = True, parity = 'E'  )
-    
-    print( modbus.write_registers( 0x00, 0.5 ) )
-    print( modbus.write_registers( 0x0A, 0.5 ) )
-    print( modbus.write_coils( 0x00, [True, True, True, True ]) )
-
-     
-    # print( modbus.read_register( 'analog_input', 0x00, 10, var_type = 'FLOAT' )  ) 
-    # print( modbus.read_register( 'holding_register', 0x00, 10, var_type = 'INT' )  ) 
-    # print( modbus.read_coils( 'coil_input', 0x00, 10 )  ) 
-    # print( modbus.read_coils( 'coil_register', 0x00, 10 )  ) 
-
-    # print( modbus.read_register( 'analog_input', 0x00,  10, var_type = 'INT'   ) )

@@ -41,6 +41,7 @@ DISCRETE_FAIL       = 0x00      # BIT
 DISCRETE_POWER      = 0x01      # BIT
 DISCRETE_TIME       = 0x02      # BIT
 DISCRETE_GPS        = 0x03      # BIT
+DISCRETE_CONNECTED  = 0x04      # BIT
 
 # MODBUS COILS REGISTER ADDRESSES
 COIL_POWER          = 0x00      # BIT    

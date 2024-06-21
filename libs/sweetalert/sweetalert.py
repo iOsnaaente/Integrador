@@ -61,7 +61,8 @@ from kivymd.uix.spinner import MDSpinner
 from kivymd.uix.textfield import MDTextFieldRect
 from kivymd.uix.fitimage import FitImage
 
-from kivymd_extensions.sweetalert.animation import FailureAnimation, OthersAnimation, SuccessAnimation
+# from kivymd_extensions.sweetalert.animation import FailureAnimation, OthersAnimation, SuccessAnimation
+from libs.sweetalert.animation import FailureAnimation, SuccessAnimation, OthersAnimation 
 
 Builder.load_string(
     """

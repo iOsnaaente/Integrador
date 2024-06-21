@@ -42,10 +42,7 @@ class HomeScreenController:
         if self.model.auto_connect():
             try: 
                 keep, _, comp, baudrate, timeout = self.model.serial()[0]
-                # print( 'Serial confi', keep, comp, baudrate, timeout )
-                status = self.model.connect_device( 0x12, comp, baudrate, timeout )
-                self.shared_data.connected = status 
-                return self.shared_data.connected 
+                return True if self.model.connect_device( 0x12, comp, baudrate, timeout ) != None else False 
             except Exception as err: 
                 if self.debug:
                     print( 'init_system error:', err  )

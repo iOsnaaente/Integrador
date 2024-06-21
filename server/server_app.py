@@ -20,7 +20,7 @@ app_answere = {
 
 def multi_threaded_app( connection : socket.socket, __debug : bool = False ): 
     ''' Servidor da aplicação. Gerencia as requisições do app'''  
-    db = Database( os.path.dirname( __file__ ) + '/db/database.db' )
+    db = Database(  os.path.join( os.path.dirname( __file__ ), 'db', 'database.db' )  )
     UNIKEY_SESION = get_sync_unikey( connection, __debug = __debug )
     while True:
         data = connection.recv(2048).decode()
