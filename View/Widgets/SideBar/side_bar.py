@@ -80,12 +80,12 @@ class SideBar( MDBoxLayout ):
 
     def build( self, clock_event ):
         
-        self.user_level_access.text = str(self.model.shared_data.level_access) 
-        if self.model.shared_data.photo: 
-            self.user_photo.source = self.model.shared_data.photo
+        self.user_level_access.text = str(self.model.level_access) 
+        if self.model.photo: 
+            self.user_photo.source = self.model.photo
         else: 
             self.user_photo.source = PATH + os.path.join( 'assets','images','usernophoto.png' ) 
-        self.username.text = str(self.model.shared_data.username)
+        self.username.text = str(self.model.username)
         for img, label, link in zip( imgs, lbls, lnks ):
             self.home_side_bar.add_widget(  
                 MyCardMenu(

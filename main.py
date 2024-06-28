@@ -7,10 +7,10 @@ from kivymd.app import MDApp
 # Tenta iniciar no monitor secundário 
 # Caso não consiga, inicia no monitor primário
 from screeninfo import get_monitors
-try: 
-    monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
-except:
-    monitor = get_monitors()[0]
+# try: 
+#     monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
+# except:
+monitor = get_monitors()[0]
 
 
 # Define o tamanho da janela
@@ -25,15 +25,12 @@ Window.fullscreen = 'auto'
 
 
 # Onde as informações devem ser compartilhadas 
-from Model.shared_data import SharedData 
-from Model.login_model import LoginModel 
 from Model.system_model import SystemModel 
 
 
 class Tracker( MDApp ):
     import os
     KV_DIRS = [os.path.join(os.getcwd(), "View")]
-    shared_data : SharedData 
     DEBUG = False
 
     # Cores do Aplicativo 
@@ -54,16 +51,14 @@ class Tracker( MDApp ):
         import View.screens
 
         self.manager_screens = MDScreenManager()
-        self.shared_data = SharedData()
-        self.login_model = LoginModel( shared_data = self.shared_data )
-        self.system_model = SystemModel( shared_data = self.shared_data, _debug = False )
+        self.system_model = SystemModel( _debug = False )
 
         screens = View.screens.screens   
         for _, name_screen in enumerate(screens.keys()):
             if name_screen == 'login screen':
-                controller = screens[name_screen]["controller"]( model = self.login_model, shared_data = self.shared_data)
+                controller = screens[name_screen]["controller"]( model = self.system_model )
             else:
-                controller = screens[name_screen]["controller"]( model = self.system_model, shared_data = self.shared_data)
+                controller = screens[name_screen]["controller"]( model = self.system_model )
             view = controller.get_view()
             view.manager_screens = self.manager_screens
             view.name = name_screen

@@ -25,8 +25,9 @@ class SerialScreenView(BaseScreenView):
     zenite_sensor: SmoothLinePlot | None = None 
 
     already_draw = False 
-    
-    MAX_POINTS_GRAPH_CANVAS = 250
+    count_disconn = 0 
+
+    MAX_POINTS_GRAPH_CANVAS = 100
     _x = [0]
 
     def __init__(self, **kw):
@@ -54,6 +55,11 @@ class SerialScreenView(BaseScreenView):
         self.ids.azimuth_graph.add_plot( self.azimute_motor )
         self.ids.azimuth_graph.add_plot( self.azimute_sensor )
 
+        # Adiciona o Callback dos Sliders 
+        # self.ids.azimuth_graph_slider.bind( on_value_pos = self.controller.att_azimuth_graph_slider )
+        # self.ids.zenith_graph_slider.bind( on_value_pos = self.controller.att_zenith_graph_slider )
+
+        
         Clock.schedule_interval( self.render, 0.1 )
         BaseScreenView.on_kv_post(self, base_widget)
     
@@ -72,35 +78,54 @@ class SerialScreenView(BaseScreenView):
 
 
     def render( self, clk_event ):
+
         if self.controller.is_connected():  
             # Se o sistema estiver conectado, ele remove a marca d'agua 
-            self.ids.graph_system_off.pos_hint = {'center_x': 50.0 }
+            self.ids.graph_system_off.pos_hint = {'center_x': 500.0 }
             self.ids.power_widget_switch.active = self.controller.get_power_motors()
-        else:                               
-            # Se não estiver conectado, ele não atualiza os valores do gráfico
-            self.ids.graph_system_off.pos_hint = {'center_x': 0.50 }
+            
+            self.count_disconn = 0 
+
+        else:      
+            self.count_disconn += 1
+            if self.count_disconn > 25:                         
+                # Se não estiver conectado, ele não atualiza os valores do gráfico
+                self.ids.graph_system_off.pos_hint = {'center_x': 0.50 }
+                self.ids.power_widget_switch.active = False 
             return 
         
-        
-        self._x.append( self._x[-1] + clk_event )
-        
-        self.ids.zenith_graph.xmin  = math.ceil( self._x[ 0 ] )
-        self.ids.zenith_graph.xmax  = math.ceil( self._x[-1 ] )
-        self.ids.azimuth_graph.xmin = math.ceil( self._x[ 0 ] )
-        self.ids.azimuth_graph.xmax = math.ceil( self._x[-1 ] )
-        
-        self.controller.update_values()
-        self.azimute_motor.points.append ( (self._x[-1], self.controller.get_azimute_motor()    ) )
-        self.azimute_sensor.points.append( (self._x[-1], self.controller.get_azimute_sensor()   ) )
-        self.zenite_motor.points.append  ( (self._x[-1], self.controller.get_zenite_motor()     ) )
-        self.zenite_sensor.points.append ( (self._x[-1], self.controller.get_zenite_sensor()    ) )
 
+
+        # Ativa e desativa os sliders 
+        if self.model.SYSTEM_TABLE['HR_STATE'] == self.model.REMOTE: 
+            self.ids.azimuth_graph_slider.disabled = False  
+            self.ids.zenith_graph_slider.disabled  = False 
+        else: 
+            self.ids.azimuth_graph_slider.disabled = True   
+            self.ids.zenith_graph_slider.disabled  = True  
+
+        # Atualiza os valores de acionamento dos motores 
+        self.controller.check_motors_moving( )
+
+
+        # Atualiza os valores dos pontos dos gráficos
         if len(self._x) > self.MAX_POINTS_GRAPH_CANVAS: 
             self.azimute_motor.points.pop(0)
             self.azimute_sensor.points.pop(0)
             self.zenite_motor.points.pop(0)
             self.zenite_sensor.points.pop(0)
             self._x.pop(0)
+        self._x.append( self._x[-1] + clk_event )
+        self.ids.zenith_graph.xmin  = math.ceil( self._x[ 0 ] )
+        self.ids.zenith_graph.xmax  = math.ceil( self._x[-1 ] )
+        self.ids.azimuth_graph.xmin = math.ceil( self._x[ 0 ] )
+        self.ids.azimuth_graph.xmax = math.ceil( self._x[-1 ] )
+        self.controller.update_values()
+        self.azimute_motor.points.append ( (self._x[-1], self.controller.get_azimute_motor()    ) )
+        self.azimute_sensor.points.append( (self._x[-1], self.controller.get_azimute_sensor()   ) )
+        self.zenite_motor.points.append  ( (self._x[-1], self.controller.get_zenite_motor()     ) )
+        self.zenite_sensor.points.append ( (self._x[-1], self.controller.get_zenite_sensor()  ) )
+
 
 
     def model_is_changed(self) -> None:

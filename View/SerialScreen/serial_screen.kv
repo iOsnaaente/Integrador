@@ -70,8 +70,8 @@
                                         id: azimuth_graph
                                         xlabel: 'Tempo (s)'
                                         ylabel: 'Azimute (º)' 
-                                        x_ticks_minor: 10
-                                        x_ticks_major: 25
+                                        x_ticks_minor: 5    
+                                        x_ticks_major: 10
                                         y_ticks_major: 60
                                         y_grid_label: True
                                         x_grid_label: True
@@ -93,16 +93,20 @@
                                         color: 'gray'
                                         size_hint: 0.1, 1
                                         pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                    
                                     MDSlider:
+                                        id: azimuth_graph_slider 
                                         size_hint: 0.8, 1
                                         hint: True
                                         disabled: True
+                                        # disabled: False
                                         thumb_color_disabled: "gray"
                                         thumb_color_inactive: 'gray'
                                         track_color_active: "gray"
                                         track_color_inactive: "gray"
-
-                                        # thumb_color_active: app.theme_cls.primary 
+                                        step: 0.25
+                                        value: 100 
+                                        on_value_pos: root.controller.att_azimuth_graph_slider()                                        
                                     MDIcon:
                                         icon: 'arrow-right'
                                         color: 'gray'
@@ -120,28 +124,38 @@
                                 md_bg_color: [0,0,0,0]
                                 MDBoxLayout:
                                     orientation: 'horizontal'
+                                    pos_hint: {'center_x': 0.5,'center_y': 0.5}
                                     MDIcon:
-                                        size_hint: 0.1, None
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        size_hint: 0.25, None
                                         height: self.width 
                                         icon: 'circle'
-                                        color: 'red'
+                                        theme_text_color: 'Custom'
+                                        theme_icon_color: 'Custom'
+                                        icon_color: 'red'
+                                        text_color: 'red'
                                     MDLabel:
-                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
                                         valign: 'center'
+                                        halign: 'center'
                                         text: "Pos. Motor"
                                         color: 'white'
                                         font_size: sp(12)
                                 MDBoxLayout:
                                     orientation: 'horizontal'
+                                    pos_hint: {'center_x': 0.5,'center_y': 0.5}
                                     MDIcon:
-                                        size_hint: 0.1, None
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        size_hint: 0.25, None
                                         height: self.width 
                                         icon: 'circle'
-                                        color: 'blue'
+                                        theme_text_color: 'Custom'
+                                        theme_icon_color: 'Custom'
+                                        icon_color: 'blue'
+                                        text_color: 'blue'
                                     MDLabel:
-                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
                                         valign: 'center'
-                                        text: "Pos. Sensor"
+                                        halign: 'center'
+                                        text: "Pos. Setpoint"
                                         color: 'white'
                                         font_size: sp(12)
                         #
@@ -170,8 +184,8 @@
                                         id: zenith_graph
                                         xlabel: 'Time (s)'
                                         ylabel: 'Zenite (º)' 
-                                        x_ticks_minor: 10
-                                        x_ticks_major: 25
+                                        x_ticks_minor: 5
+                                        x_ticks_major: 10
                                         y_ticks_major: 60
                                         y_grid_label: True
                                         x_grid_label: True
@@ -193,14 +207,22 @@
                                         color: 'gray'
                                         size_hint: 0.1, 1
                                         pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                    
                                     MDSlider:
+                                        id: zenith_graph_slider 
                                         size_hint: 0.8, 1
                                         hint: True
                                         disabled: True
+                                        # disabled: False
+                                        step: 0.25
+                                        value: 100 
                                         thumb_color_disabled: "gray"
                                         thumb_color_inactive: 'gray'
                                         track_color_active: "gray"
                                         track_color_inactive: "gray"
+                                        on_value_pos: root.controller.att_zenith_graph_slider()
+                                    
+
                                     MDIcon:
                                         icon: 'arrow-up'
                                         color: 'gray'
@@ -218,12 +240,17 @@
                                 MDBoxLayout:
                                     orientation: 'horizontal'
                                     MDIcon:
-                                        size_hint: 0.1, None
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        size_hint: 0.25, None
                                         height: self.width 
                                         icon: 'circle'
-                                        color: 'red'
+                                        theme_text_color: 'Custom'
+                                        theme_icon_color: 'Custom'
+                                        icon_color: 'red'
+                                        text_color: 'red'
                                     MDLabel:
                                         pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        halign: 'center'
                                         valign: 'center'
                                         text: "Pos. Motor"
                                         color: 'white'
@@ -231,14 +258,19 @@
                                 MDBoxLayout:
                                     orientation: 'horizontal'
                                     MDIcon:
-                                        size_hint: 0.1, None
+                                        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        size_hint: 0.25, None
                                         height: self.width 
                                         icon: 'circle'
-                                        color: 'blue'
+                                        theme_icon_color: 'Custom'
+                                        theme_text_color: 'Custom'
+                                        icon_color: 'blue'
+                                        text_color: 'blue'
                                     MDLabel:
                                         pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                                        halign: 'center'
                                         valign: 'center'
-                                        text: "Pos. Sensor"
+                                        text: "Pos. Setpoint"
                                         color: 'white'
                                         font_size: sp(12)
 
@@ -327,6 +359,7 @@
                                     size_hint: None, None
                                     size: sp(25), sp(25)
                                     active: True
+                                    on_state: root.controller.change_operation_mode( "AUTO", self.active ) 
                                 MDLabel:
                                     text: "Automatico"
                                     valign: 'center'
@@ -341,6 +374,7 @@
                                     size_hint: None, None
                                     size: sp(25), sp(25)
                                     active: False
+                                    on_state: root.controller.change_operation_mode( "MANUAL", self.active  )
                                 MDLabel:
                                     text: "Manual"
                                     color: 'white'
@@ -367,11 +401,14 @@
                                     spacing: sp(5)
                                     padding: sp(10),0,0,0
                                     MDIcon:
+                                        id: azimuth_moving
                                         pos_hint: {'center_x': 0.15 }
                                         size_hint: None, None
                                         size: sp(35), sp(35)
-                                        icon: 'circle'
-                                        color: 'gray'
+                                        theme_text_color: 'Custom'
+                                        theme_icon_color: 'Custom'
+                                        icon: 'circle' 
+                                        color: [ 1.0, 0.1, 0.1, 0.75 ]
                                     MDLabel:
                                         text: "Azimute"
                                         valign: 'center'
@@ -382,11 +419,14 @@
                                     orientation: 'horizontal'
                                     spacing: sp(5)
                                     MDIcon:
+                                        id: zenith_moving
                                         pos_hint: {'center_x': 0.15 }
                                         size_hint: None, None
                                         size: sp(35), sp(35)
                                         icon: 'circle'
-                                        color: 'gray'
+                                        theme_text_color: 'Custom'
+                                        theme_icon_color: 'Custom'
+                                        color: [ 1.0, 0.1, 0.1, 0.75 ]
                                     MDLabel:
                                         text: "Zenite"
                                         valign: 'center'
@@ -414,30 +454,45 @@
                                 icon_color: 'green'
                                 text_color: 'white'
                                 line_color: [1,1,1,0]
-                                on_press: print( 'Press go home' )
+                                on_press: root.controller.go_home_system()
                         #
                         # # Velocidades 
                         MDCard:
                             orientation: 'vertical'
-                            size_hint: 1, 0.30
+                            size_hint: 1, 0.325
                             MDLabel:
                                 size_hint: 1, 0.2
                                 text: "Velocidade motores:"
                                 halign: 'center'
                                 color: 'white'
                                 bold: True 
-                            MDTextField:
-                                id: vel_azimute 
-                                size_hint_x: 0.625
-                                pos_hint: {'center_x': 0.5 }
-                                text: 'Vel. Azi.:'
-                                on_text_validate: root.controller.send_motors_vel()
-                            MDTextField:
-                                id: vel_zenite
-                                size_hint_x: 0.625
-                                pos_hint: {'center_x': 0.5 }
-                                text: 'Vel. Zen.:'
-                                on_text_validate: root.controller.send_motors_vel()
+                                
+                            MDCard:
+                                orientation: 'horizontal'
+                                spacing: sp(5)
+                                padding: sp(10),0,0,0
+                                MDLabel: 
+                                    size_hint_x: 0.25
+                                    text: 'Vel. Azi:'
+                                MDTextField:
+                                    size_hint_x: 0.75
+                                    id: vel_azimute 
+                                    pos_hint: {'center_x': 0.5 }
+                                    hint_text: '0 - 100 %'
+                                    on_text_validate: root.controller.send_motors_vel()
+                            MDCard:
+                                orientation: 'horizontal'
+                                spacing: sp(5)
+                                padding: sp(10),0,0,0
+                                MDLabel:    
+                                    size_hint_x: 0.25
+                                    text: 'Vel. Azi:'
+                                MDTextField:
+                                    size_hint_x: 0.75
+                                    id: vel_zenite
+                                    pos_hint: {'center_x': 0.5 }
+                                    hint_text: '0 - 100 %'
+                                    on_text_validate: root.controller.send_motors_vel()
                         #
                         # Estado dos motores  
                         MDCard:
@@ -468,8 +523,8 @@
                 #
                 MDStackLayout:
                     size_hint: 0.75, 1
-                    md_bg_color: [0.25,0.25,0.25,0.5]
-                    radius: 10
+                    # md_bg_color: [0.25,0.25,0.25,0.5]
+                    radius: 20
                     spacing: 10 
                     padding: 10 
 
@@ -498,14 +553,13 @@
                                     pos_hint: {'center_x': 0.5,'top': 1.0}
                                     padding: sp(10) 
                                     spacing: sp(25)
- 
-
                     #
                     # Serial monitor
                     MDCard:
                         orientation: 'vertical'
                         size_hint: 0.25, 0.875
                         spacing: 5
+                        radius: 15
                         padding: 5 
                         MDLabel:
                             size_hint: 1, 0.1

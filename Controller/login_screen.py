@@ -1,4 +1,3 @@
-from Model.shared_data import SharedData 
 import View.LoginScreen.login_screen
 
 
@@ -11,15 +10,13 @@ import View.LoginScreen.login_screen
 class LoginScreenController:
 
     card_widget = None 
-    __shared_data : SharedData | None 
 
-    def __init__(self, model, shared_data : SharedData | None = None ):
+    def __init__( self, model ):
         # Seta o Modelo de LoginScreen -> Model.login_screen.LoginScreenModel
         self.model = model  
         # Seta a View de LoginScreen -> View.LoginScreen.login_screen.LoginScreenView
         self.view = View.LoginScreen.login_screen.LoginScreenView( controller = self, model = self.model )
         # Set o SharedData 
-        self.__shared_data = shared_data 
 
     # Retorna a View de LoginScreen -> View.LoginScreen.login_screen.LoginScreenView 
     def get_view(self) -> View.LoginScreen.login_screen.LoginScreenView:

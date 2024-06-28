@@ -6,11 +6,11 @@ from kivy.clock import Clock
 from kivy.metrics import dp
 
 from Model.db.database import Database 
-from Model.shared_data import SharedData
 from kivymd.app import MDApp 
 from kivy.clock import Clock 
 
 import libs.Serial as serial
+import os 
 
 class SerialConfiguration( MDCard ):
     comport_label = ObjectProperty() 
@@ -37,7 +37,8 @@ class SerialConfiguration( MDCard ):
     is_connected: bool = False   
     comport: str = ''
 
-    shared_data = MDApp.get_running_app()
+    app = MDApp.get_running_app()
+    model = None 
 
     def on_kv_post(self, base_widget):
         Clock.tick()
@@ -78,10 +79,11 @@ class SerialConfiguration( MDCard ):
             width_mult = 2
         )
         Clock.schedule_once( self.do_bind )
+        self.render_event = Clock.schedule_interval( self.render, 0.5 )  
         return super().on_kv_post(base_widget)
 
     def do_bind(self, *args):
-        self.shared_data = self.shared_data.shared_data 
+        self.model = self.app.system_model 
 
         self.comport_icon.bind( on_release = self.open_comport_menu )
         self.baudrate_icon.bind( on_release = self.open_baudrate_menu )
@@ -94,7 +96,7 @@ class SerialConfiguration( MDCard ):
         self.baudrate_label.text = '    ' + baud 
         self.timeout_label.text = '    ' + time 
         
-        self.is_connected = self.shared_data.connected
+        self.is_connected = self.model.connected
         if self.is_connected: 
             self.comport = comp 
         else:
@@ -152,9 +154,20 @@ class SerialConfiguration( MDCard ):
         time = self.timeout_label.text.replace('    ', '')
         if self.connection_keep.active == True:
             self.__db.set_serial( 'T', comp, baud, time )
-            # print( comp, baud, time, 'check True' )
         else:
+            print( comp, baud, time, 'check False' )    
             pass 
-            # print( comp, baud, time, 'check False' )
-        
-        print( 'Implementar a conexão serial em Views/commom_components/serial_conf')
+        if self.model != None:  
+            self.model.connect_device( 0x12, comp, baud, time ) 
+        else:
+            print( f'Model is None into {os.path.dirname(__file__)}' )
+            return False 
+    
+    
+    def render( self, dt = None ):
+        if self.model.is_connected(): 
+            self.ids.connection_icon.icon_color = [ 0,1,0,0.8] 
+            self.ids.connection_label.text = "Serial Connected"
+        else:
+            self.ids.connection_icon.icon_color = [ 1,0,0,0.8]
+            self.ids.connection_label.text = "Serial Disconnected" 

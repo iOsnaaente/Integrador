@@ -1,14 +1,4 @@
-import importlib
-
 import View.SerialScreen.serial_screen
-
-from Model.shared_data import SharedData 
-
-# We have to manually reload the view module in order to apply the
-# changes made to the code on a subsequent hot reload.
-# If you no longer need a hot reload, you can delete this instruction.
-importlib.reload(View.SerialScreen.serial_screen)
-
 
 class SerialScreenController:
     """
@@ -19,22 +9,22 @@ class SerialScreenController:
     """
     card_widget = None 
 
-    _shared_data : SharedData 
-
-    def __init__(self, model, shared_data: SharedData, _debug: bool = False ):
+    def __init__(self, model, _debug: bool = False ):
         self.model = model  # Model.login_screen.LoginScreenModel
         self.view = View.SerialScreen.serial_screen.SerialScreenView( controller = self, model = self.model )
-        self._shared_data = shared_data 
         self._debug = _debug 
         
         self.azimute = [0,0]
         self.zenite = [0,0]
 
-    def get_view(self) -> View.SerialScreen.serial_screen:
+    def get_view(self) -> View.SerialScreen.serial_screen.SerialScreenView:
         return self.view
     
-    def get_shared_data( self ) -> SharedData:
-        return self._shared_data
+    def get_shared_data( self ):
+        return self.model
+    
+    def get_model( self ) :
+        return self.model 
 
     def is_connected( self ):
         return self.model.is_connected()
@@ -45,56 +35,160 @@ class SerialScreenController:
         self.zenite  = data[2:]
 
     def get_azimute_motor( self ) -> float:
-        return self.azimute[0]
+        return self.azimute[0] if self.azimute[0] > 0 else -self.azimute[0] 
     def get_azimute_sensor( self ) -> float:
-        return self.azimute[1]
+        return self.azimute[1] if self.azimute[1] > 0 else -self.azimute[1] 
     
     def get_zenite_motor( self ) -> float:
-        return self.zenite[0]
+        return self.zenite[0] if self.zenite[0] > 0 else -self.zenite[0] 
     
     def get_zenite_sensor( self ) -> float:
-        return self.zenite[1]
+        return self.zenite[1] if self.zenite[1] > 0 else -self.zenite[1]
 
-    def init_serial_conection( self ):
-        pass 
+                
+    def change_operation_mode( self, type: str, value: bool  ):
+        try:
+            if type == 'AUTO' and value:
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.AUTOMATIC 
+                self.view.ids.modo_manual.active = False 
+                print( type, value )
+                self.model.system.write = True
+    
+            elif type == 'MANUAL' and value :
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE
+                self.view.ids.modo_auto.active = False
+                print( type, value )
+                self.model.system.write = True
 
-    def refresh_serial_comports( self ):
-        pass 
+        except Exception as err:
+            if self._debug:
+                print( err )
 
-    def change_operation_mode( self ):
-        pass 
+
+    def check_motors_moving( self ):
+        # Se o motor Azimute estiver ativo, ele muda de cor do icon para verde  
+        if self.model.SYSTEM_TABLE['COIL_M_GIR']:
+            self.view.ids.azimuth_moving.color = [ 0.1, 1.0, 0.1, 0.75 ]
+        else:
+            self.view.ids.azimuth_moving.color = [ 1.0, 0.1, 0.1, 0.75 ]
+        
+        # Se o motor Zenite estiver ativo, ele muda de cor do icon para verde 
+        if self.model.SYSTEM_TABLE['COIL_M_ELE']:
+            self.view.ids.zenith_moving.color = [ 0.1, 1.0, 0.1, 0.75 ]
+        else:
+            self.view.ids.zenith_moving.color = [ 1.0, 0.1, 0.1, 0.75 ]
+         
 
     def turn_on_off_motors( self, state : bool ) -> None:
-        if self._debug:
-            print( 'Turn On Off motors: ', state)
-        self.model.shared_data.SYSTEM_TABLE['COIL_POWER'] = state
-        self.model.system.write = True
+        try:
+            if state:
+                # Coloca em modo Remoto
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE 
+            else: 
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.AUTOMATIC                 
+            # Aciona o relé dos motores 
+            self.model.SYSTEM_TABLE['COIL_POWER'] = state
+            # Habilita escrita 
+            self.model.system.write = True
+            if self._debug:
+                print( 'Turn On/Off motors: ', state)
+        except Exception as err: 
+            if self._debug:
+                print( err )
+            
 
     def get_power_motors( self ) -> bool:
-        return self.model.shared_data.SYSTEM_TABLE['COIL_POWER']
-
-    def send_motors_vel( self ) -> None: 
         try: 
-            azi = float( self.get_view().ids.vel_azimute.text.replace('Vel. Azi.:', '') )
-            if azi > 100:       azi =  100 
-            elif azi < -100:    azi = -100 
-            zeni = float( self.get_view().ids.vel_zenite.text.replace('Vel. Zen.:','') )
-            if zeni > 100:       zeni =  100 
-            elif zeni < -100:    zeni = -100
-            
+            # Pega o estado do Coil Power e retorna 
+            state = self.model.SYSTEM_TABLE['COIL_POWER']
+            return state 
+        except Exception as err: 
+            return False
+        
+    def send_motors_vel( self ) -> None:
+        print( 'send_motors_vel' )
+        try: 
+            # Pega o valor de azimute  
+            azi_text = self.view.ids.vel_azimute.text 
+            # Transforam em numero e seta os limites 
+            azi = float( azi_text ) if azi_text != '' else 0.0 
+            azi = -100 if azi < -100 else 100 if azi > 100 else azi 
+            # Se for 0 então o motor para, se não ele liga 
             if azi == 0:
-                self.model.shared_data.SYSTEM_TABLE['COIL_M_GIR'] = False 
+                self.model.SYSTEM_TABLE['COIL_M_GIR'] = False 
             else:
-                self.model.shared_data.SYSTEM_TABLE['COIL_M_ELE'] = True 
-            if zeni == 0:
-                self.model.shared_data.SYSTEM_TABLE['COIL_M_GIR'] = False
-            else: 
-                self.model.shared_data.SYSTEM_TABLE['COIL_M_GIR'] = True 
-            self.model.shared_data.SYSTEM_TABLE['HR_ZENITE'] = zeni
-            self.model.shared_data.SYSTEM_TABLE['HR_AZIMUTE'] = azi
+                self.model.SYSTEM_TABLE['COIL_M_GIR'] = True 
+            # Atualiza os valores para escrita 
+            self.model.SYSTEM_TABLE['HR_AZIMUTE'] = azi
+            # Habilita para ser escrito no sistema 
             self.model.system.write = True
         except Exception as err :
             print( err )
+        try: 
+            # Pega o valor de azimute  
+            zeni_text = self.view.ids.vel_zenite.text
+            # Transforam em numero e seta os limites 
+            zeni = float( zeni_text ) if zeni_text != '' else 0.0 
+            zeni = -100 if zeni < -100 else 100 if zeni > 100 else zeni 
+            # Se for 0 então o motor para, se não ele liga 
+            if zeni == 0:    
+                self.model.SYSTEM_TABLE['COIL_M_GIR'] = False
+            else: 
+                self.model.SYSTEM_TABLE['COIL_M_GIR'] = True 
+            # Atualiza os valores para escrita 
+            self.model.SYSTEM_TABLE['HR_ZENITE'] = zeni
+            # Habilita para ser escrito no sistema 
+            self.model.system.write = True
+        except Exception as err :
+            if self._debug:
+                print( err )
+
 
     def go_home_system( self ):
-        pass 
+        print('go home system')
+        try: 
+            # Coloca em condição de FAIL STATE 
+            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE 
+            # Liga os motores 
+            self.model.SYSTEM_TABLE['COIL_M_GIR'] = True 
+            self.model.SYSTEM_TABLE['COIL_M_ELE'] = True 
+            # Escreve a posição de Home 
+            self.model.SYSTEM_TABLE['HR_AZIMUTE'] = self.model.AZI_HOME 
+            self.model.SYSTEM_TABLE['HR_ZENITE'] = self.model.ZEN_HOME
+            # Habilita escrita
+            self.model.system.write = True
+        except Exception as err:    
+            if self._debug:
+                print( err ) 
+            
+
+    def att_zenith_graph_slider( self ):
+        try: 
+            # Lê a posição do slider  
+            value = self.view.ids.zenith_graph_slider.value 
+            # Escreve a posição do Slider no ZENITE 
+            self.model.SYSTEM_TABLE['HR_PV_GIR'] = value*3.6
+            # Muda o modo de operação para REMOTE 
+            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE
+            # Aciona o motor de ZENITE 
+            self.model.SYSTEM_TABLE['COIL_M_ELE'] = True 
+            self.model.system.write = True
+            print( value ) 
+        except Exception as err:
+            print( err )
+
+    def att_azimuth_graph_slider( self   ):
+        try:
+            # Lê a posição do slider  
+            value = self.view.ids.azimuth_graph_slider.value
+            # Escreve a posição do slider no AZIMUTE 
+            self.model.SYSTEM_TABLE['HR_PV_ELE'] = value*3.6
+            # Aciona o motor de AZIMUTE 
+            self.model.SYSTEM_TABLE['COIL_M_GIR'] = True 
+            # Muda o modo de operação para REMOTE 
+            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE 
+            self.model.system.write = True
+            print( value ) 
+        except Exception as err:
+            print( err )
+            

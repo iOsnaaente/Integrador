@@ -1,4 +1,3 @@
-from Model.shared_data import SharedData 
 from kivymd.uix.screen import MDScreen 
 
 import View.HomeScreen.home_screen
@@ -26,20 +25,18 @@ class HomeScreenController:
     motor_vel : list = [0,0]
     generation: float = 0.0
     sudently_disconected: bool = False 
-    shared_data: SharedData 
     last_measure: float 
 
-    def __init__(self, model, shared_data : SharedData, debug: bool = False ):
+    def __init__(self, model, debug: bool = False ):
         self.model = model  # Model.home_screen.HomeScreenModel
         self.view = View.HomeScreen.home_screen.HomeScreenView( controller = self, model = self.model )
-        self.shared_data = shared_data 
         self.debug = debug 
 
     def get_view(self) -> MDScreen:
         return self.view
     
     def auto_connect(self):
-        if self.model.auto_connect():
+        if self.model.auto_connect() and not self.model.is_connected():
             try: 
                 keep, _, comp, baudrate, timeout = self.model.serial()[0]
                 return True if self.model.connect_device( 0x12, comp, baudrate, timeout ) != None else False 
@@ -57,8 +54,8 @@ class HomeScreenController:
                 return [0, 0] 
             else:
                 self.motor_vel = [ 
-                    (actual_pos[0] - self.last_pos[0])/(2*math.pi*(time.time()-self.last_measure)),
-                    (actual_pos[1] - self.last_pos[1])/(2*math.pi*(time.time()-self.last_measure)) 
+                    (actual_pos[0] - self.last_pos[0])/(2*math.pi*(time.time()-self.last_measure))*0.1,
+                    (actual_pos[1] - self.last_pos[1])/(2*math.pi*(time.time()-self.last_measure))*0.1 
                 ]
                 self.last_pos = actual_pos 
                 self.sudently_disconected = False 
@@ -68,9 +65,8 @@ class HomeScreenController:
             self.sudently_disconected = True
             actual_pos = [0,0]
     
-        finally:
-            self.last_measure = time.time() 
-            return actual_pos  
+        self.last_measure = time.time() 
+        return actual_pos  
         
     def get_motor_vel( self ):
         return self.motor_vel 
@@ -79,4 +75,4 @@ class HomeScreenController:
         return self.model.get_system_generation() 
 
     def get_status( self ):
-        return self.shared_data.connected 
+        return self.model.is_connected() 

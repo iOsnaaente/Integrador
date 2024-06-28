@@ -1,4 +1,3 @@
-from Model.shared_data import SharedData
 import View.SensorScreen.sensor_screen
 import importlib
 
@@ -8,12 +7,11 @@ import importlib
 importlib.reload(View.SensorScreen.sensor_screen)
 
 class SensorScreen:
-    def __init__(self, model, shared_data : SharedData ):
+    def __init__(self, model ):
         self.model = model  # Model.diganosticos_screen.DiganosticosScreenModel
-        __shared_data = shared_data 
         self.view = View.SensorScreen.sensor_screen.SensorScreenView( controller = self, model = self.model )
 
-    def get_view(self):
+    def get_view(self) -> View.SensorScreen.sensor_screen.SensorScreenView:
         return self.view
     
     def is_connected( self ): 

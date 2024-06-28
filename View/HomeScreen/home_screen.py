@@ -30,7 +30,7 @@ class HomeScreenView( BaseScreenView ):
     line_plot: SmoothLinePlot 
     graphs_active: bool = False 
     render_event: bool | None = None 
-
+    count_disconn: int = 0 
 
     # Quando o arquivo KV já terminou de instanciar as classes dentro do arquivo   
     def on_kv_post(self, *args):
@@ -99,7 +99,7 @@ class HomeScreenView( BaseScreenView ):
         self.ids.box_content.remove_widget( self.side_bar )
         self.side_bar = SideBar( model = self.model ) 
         self.ids.box_content.add_widget( self.side_bar )
-        self.render_event = Clock.schedule_interval(self.render, 0.25 )
+        self.render_event = Clock.schedule_interval(self.render, 0.10 )
         
         # Animação do plot bar 
         self.bar_plot.bar_width = 0
@@ -129,14 +129,18 @@ class HomeScreenView( BaseScreenView ):
             self.ids.icon_geracao.icon_color = [ 1, 1, 0, 0.8 ]
             self.ids.label_geracao.text = str(round(self.controller.get_generation(),2))
             self.ids.label_system_status.text = 'Sistema online '
-            vele, vgir = self.controller.get_motor_vel()
+            vele, vgir = self.controller.get_motor_vel(   )
             self.ids.label_motor_vertical.text = f'Vel: {vele:.2f} rad/s'
             self.ids.label_motor_horizontal.text = f'Vel: {vgir:.2f} rad/s'
-            pele, pgir = self.controller.get_motor_pos()
+            pele, pgir = self.controller.get_motor_pos( )
             self.ids.label_encoder_vertical.text = f'Pos: {pele:.2f} º'
             self.ids.label_encoder_horizontal.text = f'Pos: {pgir:.2f} º'
             self.ids.graph_system_off.pos_hint = {'x': 10.0,'y': 10.0}
+            self.count_disconn = 0 
         else: 
+            self.count_disconn += 1 
+        
+        if self.count_disconn > 10: 
             self.ids.icon_system_status.icon_color = [ 1, 0, 0, 0.8 ]
             self.ids.icon_geracao.icon_color = [ 0.5, 0.5, 0.5, 0.8 ]      
             self.ids.label_geracao.text = '--.--'
@@ -146,8 +150,6 @@ class HomeScreenView( BaseScreenView ):
             self.ids.label_motor_horizontal.text = 'Vel: --.--rad/s'
             self.ids.label_encoder_horizontal.text = 'Pos: --.--º'
             self.ids.graph_system_off.pos_hint =  {'center_x': 0.50,'center_y': 0.50}
-            if self.controller.sudently_disconected:
-                self.controller.auto_connect()
 
     @property 
     def username( self ): 
