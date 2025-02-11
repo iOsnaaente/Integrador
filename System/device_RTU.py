@@ -19,12 +19,16 @@ class Device_RTU( ModbusRTU, DeviceBase ):
     scan_on: bool = True
     err_count: int 
 
-    def __init__(self, slave: int, port: str, baudrate: int, parity: str = 'E', stop_bits: int = 1, byte_size: int = 8, timeout: int = 1, init_registers : bool = False, debug: bool = False):
+    def __init__(self, 
+        slave: int, port: str, baudrate: int, database: ModbusDatabase,
+        parity: str = 'E', stop_bits: int = 1, byte_size: int = 8, 
+        timeout: int = 1, init_registers : bool = False, debug: bool = False   
+    ):
         super().__init__(slave, port, baudrate, parity, stop_bits, byte_size, timeout, debug = debug )
         self.device_address = slave 
         
         # Objeto Modbus 
-        self.DB = ModbusDatabase( DB_PATH = DB_PATH, init_registers = init_registers, debug = debug )
+        self.DB = database 
         
         # Pega o Datashared do aplicativo 
         self.shared_data = App.get_running_app().system_model

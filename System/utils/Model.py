@@ -145,6 +145,7 @@ class ModbusDatabase:
             self.devices[device_address] = device
         return self.devices 
     
+
     def read_tags_by_device(self, device_address : int ) -> list:
         tags = []
         self.cursor.execute("""
@@ -170,6 +171,7 @@ class ModbusDatabase:
             tags.append(tag)
         return tags
 
+
     def create_device(self, name: str, address: int, description: str = '', version: str = '') -> None:
         self.cursor.execute(""" SELECT id FROM device WHERE name = ?""", ( name,) )
         if self.cursor.fetchone():
@@ -185,6 +187,7 @@ class ModbusDatabase:
             self.read_devices()
         return None 
 
+
     def get_device(self, name: str, address: int) -> dict:
         devices = self.read_devices()
         for _, device_info in devices.items():
@@ -193,6 +196,7 @@ class ModbusDatabase:
         if self.__debug:
             Logger.warning(f"Device '{name}' with address '{address}' does not exist!")
         return dict({})
+
 
     #
     #   TAGS STTINGS
@@ -225,6 +229,7 @@ class ModbusDatabase:
             Logger.info(f"Tag '{name}' created successfully!")
         return 
 
+
     def read_tag ( self, device_address : int, tag_type : str, addr : int ) -> dict:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:        
@@ -256,6 +261,7 @@ class ModbusDatabase:
             'periodic'      : tag[11]
         }
         return tag_info
+
 
     def read_tags(self, device_address: int, tag_type: str, start_address: int, count: int) -> list[dict]:
         # Verifica o tipo de tag e a tabela correspondente
@@ -290,6 +296,7 @@ class ModbusDatabase:
 
         return tag_list
 
+
     def write_tag( self, device_address : int, tag_type : str, address : int, new_value ) -> bool:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:
@@ -315,6 +322,27 @@ class ModbusDatabase:
                 if self.__debug:
                     Logger.warning(f"Tag with address '{address}' and type '{tag_type}' updated successfully!")
                 return True
+
+
+    """
+        Retorna os registros da tabela especificada cujo campo last_update está entre start_date e end_date.
+        :param table: Nome da tabela onde buscar (ex: 'holding_register', 'analog_input', etc.)
+        :param start_date: Data inicial (datetime)
+        :param end_date: Data final (datetime)
+        :return: Lista de tuplas com os registros encontrados.
+    """
+    def read_data_by_date_range(self, tag_type: str, start_date: datetime.datetime, end_date: datetime.datetime) -> list:
+        # Formata as datas para string no formato padrão ISO (ou no formato que você esteja utilizando)
+        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S")
+        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S")
+        query = f"""
+            SELECT *
+            FROM {tag_type}
+            WHERE last_update BETWEEN ? AND ?
+        """
+        self.cursor.execute(query, (start_str, end_str))
+        results = self.cursor.fetchall()
+        return results
 
     # type,  device_address, address, length, var_type,  name, read_write, description
     def initialize_tags( self ) -> None:

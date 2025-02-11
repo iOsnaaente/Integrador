@@ -1,31 +1,101 @@
-<DiganosticosScreenView>
+<DiganosticosScreenView>:
     md_bg_color: app.theme_cls.bg_darkest
-
-    MDFloatLayout:
-        id: float_content 
-        size_hint: 1, 1    
-        orientation: 'horizontal'
-        md_bg_color: [0.1,0.1,0.1,0.5]
+    orientation: 'vertical'
+    padding: dp(10)
+    spacing: dp(10)
     
+    # Preenche o fundo da tela 
+    MDBoxLayout:
+        size_hint: 1, 1 
+        orientation: 'horizontal'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}        
+        padding: ('110sp', '10dp', '10dp', '10dp')
+        spacing: '10dp'
+        
+        # Delimita o espaço da SideBar 
         MDBoxLayout:
-            size_hint: 0.5,0.5
-            pos_hint: {'center_x': 0.5,'center_y': 0.5}
+            id: main_area
+            size_hint: 0.75, 1
+            pos_hint: {'right': 0.75, 'top': 1.0}
             orientation: 'vertical'
-            MDLabel: 
-                pos_hint: {'center_x': 0.5,'center_y': 0.5}
-                size_hint: 1.0, 0.8
-                text: 'Gerar relatório'
-                font_size: sp(32)
-                bold: True 
-                halign: 'center'
-                valign: 'center'
-            MDRectangleFlatIconButton:
-                pos_hint: {'center_x': 0.5,'center_y': 0.5}
-                size_hint: 1.0, 0.2
-                icon: 'database'
-                text: 'Gerar'
-                theme_text_color: "Custom"
-                text_color: "white"
-                line_color: "white"
-                theme_icon_color: "Custom"
-                icon_color: "white"
+            spacing: sp(10)
+            radius: sp(15)
+            
+            # Cabeçalho com a descrição da view
+            MDBoxLayout:
+                size_hint: 1, 0.10
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5 }
+                orientation: 'vertical'
+                spacing: sp(10)
+                radius: sp(15)
+                MDLabel:
+                    text: "Diagnóstico - Relatórios do Sistema de Rastreamento"
+                    font_style: "H5"
+                    halign: "center"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+            
+            # Seletor de datas (início e fim)
+            MDBoxLayout:
+                size_hint: 0.5, 0.15
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5 }
+                orientation: 'vertical'
+                spacing: sp(10)
+                radius: sp(15)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(40)
+                    spacing: dp(10)
+                    
+                    MDRaisedButton:
+                        id: date_range
+                        text: "Selecionar a Data"
+                        pos_hint: { "center_x" : 0.5, "center_y" : 0.5 }
+                        on_release:
+                            root.show_date_picker( self )
+                        
+                    MDTextField:
+                        id: start_date 
+                        
+                    MDTextField:
+                        id: end_date
+
+
+            
+            # Área para o gráfico de preview de geração solar
+            MDBoxLayout:
+                size_hint: 1, 0.5
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5 }
+                orientation: 'vertical'
+                spacing: sp(10)
+                radius: sp(15)
+                MDCard:
+                    id: graph_zone
+                    spacing: sp(10)
+                    radius: sp(15)
+                    size_hint: 1, 1
+                    MDLabel:
+                        text: "Gráfico de Geração Solar (Preview)"
+                        halign: "center"
+            
+            # Botão para gerar o relatório
+            MDBoxLayout:
+                size_hint: 1, 0.1
+                pos_hint: {'center_x': 0.5, 'top': 1.0 }
+                orientation: 'vertical'
+                spacing: sp(10)
+                radius: sp(15)
+                MDRaisedButton:
+                    text: "Gerar Relatório"
+                    size_hint_y: None
+                    height: dp(50)
+                    pos_hint: {"center_x": 0.5}
+                    on_release: root.gerar_relatorio()
+    
+    # float content 
+    MDFloatLayout:
+        id: float_content
+        size_hint: 1, 1    
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        orientation: 'horizontal'

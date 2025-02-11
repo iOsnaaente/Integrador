@@ -8,10 +8,10 @@ import logging
 # Tenta iniciar no monitor secundário 
 # Caso não consiga, inicia no monitor primário
 from screeninfo import get_monitors
-# try: 
-#     monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
-# except:
-monitor = get_monitors()[1]
+try: 
+    monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
+except:
+    monitor = get_monitors()[1]
 
 # Define o tamanho da janela
 from kivy.core.window import Window
@@ -34,7 +34,7 @@ Logger.addHandler(file_handler)
 
 # Define o nível do Logger para:
 # logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL
-Logger.setLevel(logging.DEBUG)
+Logger.setLevel(logging.WARNING)
 
 
 # Onde as informações devem ser compartilhadas 
@@ -81,7 +81,7 @@ class Tracker( MDApp ):
         self.theme_cls.material_style = "M3"
         self.theme_cls.primary_hue = "500"
 
-        self.manager_screens.current = 'login screen'
+        self.manager_screens.current = 'diagnosticos screen'
         return self.manager_screens
 
     def get_manager(self):

@@ -1,19 +1,18 @@
 from kivymd.uix.list import OneLineListItem
 from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.card import MDCard
-from kivymd.app      import MDApp 
-
 from kivy.properties import ObjectProperty
-from kivy.logger     import Logger
-from kivy.clock      import Clock 
-from kivy.metrics    import dp
+from kivymd.uix.card import MDCard
+from kivy.clock import Clock
+from kivy.metrics import dp
 
-from Model.db.database  import Database 
+from Model.db.database import Database 
+from kivymd.app import MDApp 
+from kivy.clock import Clock 
+from kivy.logger import Logger
+
 from Model.system_model import SystemModel
-
 import libs.Serial as serial
 import os 
-
 
 class SerialConfiguration( MDCard ):
     comport_label = ObjectProperty() 

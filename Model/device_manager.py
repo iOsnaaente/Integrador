@@ -1,4 +1,5 @@
-from System.device_base import DeviceBase 
+from System.device_base import DB_PATH 
+from System.utils.Model import ModbusDatabase 
 from System.device_RTU import Device_RTU
 from System.device_TCP import Device_TCP 
 from kivy.logger import Logger 
@@ -17,14 +18,15 @@ from kivy.logger import Logger
 class DeviceManager:
     # Valores do sistema 
     init_registers: bool = False 
+    database: ModbusDatabase
     slave: int
     port: str 
 
     def __init__(self, debug: bool = False):
+        self.database = ModbusDatabase( DB_PATH = DB_PATH, init_registers = True, debug = debug )
         self.device = None
         self.debug = debug
-
-
+        
     """
         Tenta conectar com o dispositivo Serial e verifica se há uma conexão
     """
@@ -39,7 +41,7 @@ class DeviceManager:
             timeout = int(timeout)
             # Instancia o dispositivo com os parâmetros fornecidos.
             self.device = Device_RTU( 
-                slave, port, baudrate, timeout = timeout, 
+                slave, port, baudrate, self.database, timeout = timeout, 
                 parity = parity, stop_bits = stop_bits, byte_size = byte_size, 
                 init_registers = init_registers, debug = self.debug )
             
