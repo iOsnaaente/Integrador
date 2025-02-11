@@ -1,3 +1,4 @@
+from kivy.logger import Logger
 import datetime
 import sqlite3 
 import pytz 
@@ -30,10 +31,10 @@ class ModbusDatabase:
                 self.initialize_tags()
             self.read_devices() 
             if self.__debug:
-                print( 'DB Modbus inicializado com sucesso.' )
+                Logger.info( 'DB Modbus inicializado com sucesso.' )
         except Exception as err: 
             if self.__debug:
-                print( 'DB Exception: ', err )
+                Logger.warning( f'DB Exception: {err}' )
 
     def create_db( self ) -> None:
         self.cursor.execute("""
@@ -173,7 +174,7 @@ class ModbusDatabase:
         self.cursor.execute(""" SELECT id FROM device WHERE name = ?""", ( name,) )
         if self.cursor.fetchone():
             if self.__debug:
-                print(f"Device '{name}' already exists!")
+                Logger.warning(f"Device '{name}' already exists!")
             return None
         else: 
             self.cursor.execute("""
@@ -190,7 +191,7 @@ class ModbusDatabase:
             if device_info['name'] == name and device_info['address'] == address:
                 return device_info
         if self.__debug:
-            print(f"Device '{name}' with address '{address}' does not exist!")
+            Logger.warning(f"Device '{name}' with address '{address}' does not exist!")
         return dict({})
 
     #
@@ -200,16 +201,16 @@ class ModbusDatabase:
         self.cursor.execute("""SELECT id FROM device WHERE address = ?""", ( device_address , ) ) 
         if not self.cursor.fetchone():
             if self.__debug:
-                print(f"Device with address '{device_address}' does not exist!")
+                Logger.warning(f"Device with address '{device_address}' does not exist!")
             return None
         self.cursor.execute(f"""SELECT id FROM {tag_type} WHERE address = ?""", (address,))
         if self.cursor.fetchone():
             if self.__debug:
-                print(f"Tag with address '{address}' already exists in '{tag_type}'!")
+                Logger.warning(f"Tag with address '{address}' already exists in '{tag_type}'!")
             return None
         if tag_type not in  [ 'coil_input', 'coil_register', 'holding_register', 'analog_input' ]:
             if self.__debug:
-                print(f"Invalid tag type: '{tag_type}'")
+                Logger.warning(f"Invalid tag type: '{tag_type}'")
             return None
 
         self.cursor.execute(
@@ -221,14 +222,14 @@ class ModbusDatabase:
         self.con.commit()
         self.read_devices()
         if self.__debug:
-            print(f"Tag '{name}' created successfully!")
+            Logger.info(f"Tag '{name}' created successfully!")
         return 
 
     def read_tag ( self, device_address : int, tag_type : str, addr : int ) -> dict:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:        
             if self.__debug:
-                print(f"Invalid tag type: '{tag_type}'")
+                Logger.warning(f"Invalid tag type: '{tag_type}'")
             return dict({})
 
         # Consulta a tag no banco de dados
@@ -236,7 +237,7 @@ class ModbusDatabase:
         tag = self.cursor.fetchone()
         if not tag:
             if self.__debug:
-                print(f"Tag not found with address '{addr}' and type '{tag_type}'")
+                Logger.warning(f"Tag not found with address '{addr}' and type '{tag_type}'")
             return dict({})
 
         # Retorna as informações da tag
@@ -260,7 +261,7 @@ class ModbusDatabase:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:
             if self.__debug:
-                print(f"Invalid tag type: '{tag_type}'")
+                Logger.warning(f"Invalid tag type: '{tag_type}'")
             return []
         
         # Consulta as tags no banco de dados
@@ -293,7 +294,7 @@ class ModbusDatabase:
         # Verifica o tipo de tag e a tabela correspondente
         if tag_type not in ['coil_input', 'coil_register', 'holding_register', 'analog_input']:
             if self.__debug:
-                print(f"Invalid tag type: '{tag_type}'")
+                Logger.warning(f"Invalid tag type: '{tag_type}'")
             return False
         else: 
             # Consulta a tag no banco de dados
@@ -301,7 +302,7 @@ class ModbusDatabase:
             tag_id = self.cursor.fetchone()
             if not tag_id:
                 if self.__debug:
-                    print( f"Tag not found with address '{address}' and type '{tag_type}'")
+                    Logger.warning( f"Tag not found with address '{address}' and type '{tag_type}'")
                 return False
             else: 
                 # Atualiza as informações da tag no banco de dados
@@ -312,7 +313,7 @@ class ModbusDatabase:
                 self.con.commit()
 
                 if self.__debug:
-                    print(f"Tag with address '{address}' and type '{tag_type}' updated successfully!")
+                    Logger.warning(f"Tag with address '{address}' and type '{tag_type}' updated successfully!")
                 return True
 
     # type,  device_address, address, length, var_type,  name, read_write, description

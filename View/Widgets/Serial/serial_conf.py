@@ -1,16 +1,19 @@
 from kivymd.uix.list import OneLineListItem
 from kivymd.uix.menu import MDDropdownMenu
-from kivy.properties import ObjectProperty
 from kivymd.uix.card import MDCard
-from kivy.clock import Clock
-from kivy.metrics import dp
+from kivymd.app      import MDApp 
 
-from Model.db.database import Database 
-from kivymd.app import MDApp 
-from kivy.clock import Clock 
+from kivy.properties import ObjectProperty
+from kivy.logger     import Logger
+from kivy.clock      import Clock 
+from kivy.metrics    import dp
+
+from Model.db.database  import Database 
+from Model.system_model import SystemModel
 
 import libs.Serial as serial
 import os 
+
 
 class SerialConfiguration( MDCard ):
     comport_label = ObjectProperty() 
@@ -37,10 +40,10 @@ class SerialConfiguration( MDCard ):
     is_connected: bool = False   
     comport: str = ''
 
-    app = MDApp.get_running_app()
-    model = None 
+    app: MDApp = MDApp.get_running_app()
+    model: SystemModel | None = None 
 
-    def on_kv_post(self, base_widget):
+    def on_kv_post(self, base_widget = None ):
         Clock.tick()
         self.comport_menu = MDDropdownMenu(
             caller = self.comport_icon,
@@ -96,12 +99,19 @@ class SerialConfiguration( MDCard ):
         self.baudrate_label.text = '    ' + baud 
         self.timeout_label.text = '    ' + time 
         
-        self.is_connected = self.model.connected
+        # Pega o status da conexão 
+        if isinstance( self.model, SystemModel ):
+            self.is_connected = self.model.connected
+        else: 
+            self.is_connected = False 
+        
+        # Verifica se a conexão esta ativa  
         if self.is_connected: 
             self.comport = comp 
         else:
             self.comport = ''
 
+        # Verifica o stado do botão de Keep Conected 
         if state == 'T':
             self.connection_keep.active = True
             self.is_connected = True 
@@ -146,7 +156,7 @@ class SerialConfiguration( MDCard ):
             ],
             width_mult = 2
         )
-        print( 'Att comports ')
+        Logger.debug( 'Att comports ')
 
     def connect( self, con = None ): 
         comp = self.comport_label.text.replace('    ', '')
@@ -155,17 +165,21 @@ class SerialConfiguration( MDCard ):
         if self.connection_keep.active == True:
             self.__db.set_serial( 'T', comp, baud, time )
         else:
-            print( comp, baud, time, 'check False' )    
+            Logger.debug( comp, baud, time, 'check False' )    
             pass 
         if self.model != None:  
             self.model.connect_device( 0x12, comp, baud, time ) 
         else:
-            print( f'Model is None into {os.path.dirname(__file__)}' )
+            Logger.debug( f'Model is None into {os.path.dirname(__file__)}' )
             return False 
     
     
     def render( self, dt = None ):
-        if self.model.is_connected(): 
+        if isinstance( self.model, SystemModel ):
+            conn =  self.model.is_connected()
+        else: 
+            conn = False  
+        if conn: 
             self.ids.connection_icon.icon_color = [ 0,1,0,0.8] 
             self.ids.connection_label.text = "Serial Connected"
         else:

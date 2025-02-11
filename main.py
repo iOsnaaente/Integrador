@@ -1,7 +1,8 @@
 from kivymd.uix.screenmanager import MDScreenManager
 from kivy.utils import rgba, QueryDict
+from kivy.logger import Logger 
 from kivymd.app import MDApp
-
+import logging 
 
 # Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
 # Tenta iniciar no monitor secundário 
@@ -10,8 +11,7 @@ from screeninfo import get_monitors
 # try: 
 #     monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
 # except:
-monitor = get_monitors()[0]
-
+monitor = get_monitors()[1]
 
 # Define o tamanho da janela
 from kivy.core.window import Window
@@ -19,14 +19,26 @@ Window.size = ( monitor.width, monitor.height )
 Window.left = monitor.x
 Window.top = monitor.y + 25
 
-
 # Inicia em modo Tela Cheia 
 Window.fullscreen = 'auto'
 
 
+# FileHandler para gravar os logs do programa dentro de App.log
+file_handler = logging.FileHandler( "App.log", encoding = "utf-8" )
+file_handler.setLevel( logging.DEBUG ) 
+formatter = logging.Formatter( "%(asctime)s - %(name)s - %(levelname)s - %(message)s" )
+file_handler.setFormatter( formatter )
+
+# Adiciona o handler para usar o Logger do Kivy
+Logger.addHandler(file_handler)
+
+# Define o nível do Logger para:
+# logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL
+Logger.setLevel(logging.DEBUG)
+
+
 # Onde as informações devem ser compartilhadas 
 from Model.system_model import SystemModel 
-
 
 class Tracker( MDApp ):
     import os

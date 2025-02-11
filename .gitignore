@@ -1,0 +1,42 @@
+# Ambientes virtuais
+venv/
+.env/
+env/
+ENV/
+
+# Arquivos compilados e cache do Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Arquivos de log
+*.log
+
+# Arquivos de backup do editor
+*~
+*.swp
+*.swo
+
+# Configurações do VSCode
+.vscode/
+
+# Arquivos temporários do Kivy
+.kivy/
+
+# Outros arquivos temporários
+*.tmp
+*.temp
+
+# Arquivos de cache do pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Arquivos de instalação do Python
+build/
+dist/
+*.egg-info/
+
+# Arquivos do sistema (MacOS, Linux)
+.DS_Store
+Thumbs.db

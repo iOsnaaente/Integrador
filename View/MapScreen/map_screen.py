@@ -9,12 +9,10 @@ from kivy.clock import Clock
 from View.base_screen import BaseScreenView
 from View.Widgets.Graphs.graph_sun_path import AzimuteAllDay, ZeniteAllDay 
 
-#####################################
 from libs.Sun import SunPosition 
 import math 
-#####################################
-
 import os 
+
 MAP_SOURCE_ICON = os.path.join( 
     os.path.dirname(__file__).removesuffix( os.path.join( 'View','MapScreen')), 'assets','icons','marker_popup.png' ) 
 

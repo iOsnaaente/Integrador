@@ -1,6 +1,6 @@
 from View.Widgets.SideBar.side_bar import SideBar 
 from View.base_screen import BaseScreenView
-from kivy.graphics import *
+# from kivy.graphics import *
 
 from View.Widgets.Serial.serial_conf import SerialConfiguration 
 from libs.kivy_garden.graph import SmoothLinePlot
@@ -9,26 +9,30 @@ from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 
 import math 
+from Model.system_model import SystemModel
+from Model.system_manager import *
 
 class SerialScreenView(BaseScreenView):
 
     side_bar : SideBar
+    model: SystemModel
 
     Serial  = ObjectProperty()
     
     Azimute = ObjectProperty()
-    azimute_motor = None 
-    azimute_sensor = None 
+    azimute_motor: SmoothLinePlot 
+    azimute_sensor: SmoothLinePlot 
 
     Zenite = ObjectProperty() 
-    zenite_motor: SmoothLinePlot | None = None 
-    zenite_sensor: SmoothLinePlot | None = None 
+    zenite_motor: SmoothLinePlot 
+    zenite_sensor: SmoothLinePlot 
 
     already_draw = False 
     count_disconn = 0 
 
     MAX_POINTS_GRAPH_CANVAS = 100
     _x = [0]
+
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -97,7 +101,7 @@ class SerialScreenView(BaseScreenView):
 
 
         # Ativa e desativa os sliders 
-        if self.model.SYSTEM_TABLE['HR_STATE'] == self.model.REMOTE: 
+        if self.model.SYSTEM_TABLE['HR_STATE'] == self.model.system_state.REMOTE: 
             self.ids.azimuth_graph_slider.disabled = False  
             self.ids.zenith_graph_slider.disabled  = False 
         else: 

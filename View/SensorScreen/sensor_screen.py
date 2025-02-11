@@ -1,9 +1,10 @@
 from View.Widgets.SideBar.side_bar import SideBar 
 from View.base_screen import BaseScreenView
 from kivymd.uix.label import MDLabel 
-import os
 
+from kivy.logger import Logger
 from kivy.clock import Clock
+import os
 
 PATH  = os.path.dirname( __file__ ).removesuffix( os.path.join('View', 'SensorScreen' ) )
 PATH += os.path.join( 'assets', '3D' )
@@ -27,7 +28,6 @@ class SensorScreenView(BaseScreenView):
     def on_kv_post (self, *args):    
         self.side_bar = SideBar( model = self.model ) 
         self.ids.float_content.add_widget( self.side_bar  )
-
         ids = [ 'label_motor_vertical', 
                 'label_encoder_vertical'
                 'label_motor_horizontal',
@@ -37,16 +37,14 @@ class SensorScreenView(BaseScreenView):
                 'icon_geracao',
                 'label_geracao',
         ]
-
-
         return super().on_enter(*args)
 
     
     def on_enter(self, *args):
-        # Atualiza as tagas do sistema 
+        # Atualiza as tags do sistema 
         if self.controller.is_connected():
             for tag in self.controller.get_tags():
-                print( tag )
+                Logger.debug( tag )
         else: 
             # Retira a Label de sistema não conectado
             pass 

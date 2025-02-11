@@ -1,9 +1,8 @@
-# from System.utils.Model import ModbusDatabase
-# from System.utils.Serial import ModbusRTU
 from System.utils.Model import ModbusDatabase 
 from System.utils.Serial import ModbusRTU 
-from System.Tags import * 
+from System.device_base import * 
 
+from kivy.logger import Logger 
 from kivy.app import App
 
 import threading
@@ -11,9 +10,8 @@ import struct
 import time 
 import os 
 
-DB_PATH = os.path.join( os.path.dirname(__file__).removesuffix('System'), 'Model', 'db', 'tags.db')
 
-class Device( ModbusRTU ):
+class Device_RTU( ModbusRTU, DeviceBase ):
     
     # Banco de dados 
     DB: ModbusDatabase
@@ -60,7 +58,7 @@ class Device( ModbusRTU ):
             read_db = self.DB.read_tags( self.device_address, register_type, address, count )
         if read_db == {}:
             if self._debug:
-                print( f'Something wrong - DB:{read_db}' )
+                Logger.warning( f'Something wrong - DB:{read_db}' )
             return None
         else: 
             # Verifica o tipo do primeiro elemento do dicionário, todos devem ser do mesmo tipo 
@@ -68,13 +66,13 @@ class Device( ModbusRTU ):
             for tag in read_db: 
                 if tag['type'] != var_type:
                     if self._debug:
-                        print( f'Elements are no the same type: ', tag['type'], ' !== ', var_type )
+                        Logger.warning( f"Elements are no the same type: {tag['type']} !== {var_type}" )
                     return False
             # Se todos forem do mesmo tipo ler
             read_modbus = super().read_coils( register_type, address, read_db[0]['len']*count )         
             if not isinstance( read_modbus, list ): 
                 if self._debug:
-                    print( f'Something wrong - Modbus:{read_modbus}' )
+                    Logger.warning( f'Something wrong - Modbus:{read_modbus}' )
                 return None 
             else: 
                 # Salva os novos valores lidos, dentro do DB
@@ -93,7 +91,7 @@ class Device( ModbusRTU ):
             read_db = self.DB.read_tags( self.device_address, register_type, address, last_addres )
         if read_db == {}:
             if self._debug:
-                print( f'Something wrong - DB:{read_db}' )
+                Logger.warning( f'Something wrong - DB:{read_db}' )
             return None
         else: 
             var_types = [] 
@@ -104,7 +102,7 @@ class Device( ModbusRTU ):
             read_modbus = super().read_registers(register_type, address, num_reg, 'INT' )
             if not isinstance( read_modbus, list ): 
                 if self._debug:
-                    print( f'Something wrong - Modbus:{read_modbus}' )
+                    Logger.warning( f'Something wrong - Modbus:{read_modbus}' )
                 return None 
             else: 
                 values = [] 
@@ -132,7 +130,7 @@ class Device( ModbusRTU ):
         read_db = self.DB.read_tag( self.device_address, register_type, address )
         if read_db == {}:
             if self._debug:
-                print( f'Something wrong - DB:{read_db}' )
+                Logger.warning( f'Something wrong - DB:{read_db}' )
             return None
         else: 
             if isinstance( value, int ):
@@ -140,7 +138,7 @@ class Device( ModbusRTU ):
             read_modbus = super().write_coils( address, value )
             if not isinstance( read_modbus, list ): 
                 if self._debug:
-                    print( f'Something wrong - Modbus:{read_modbus}' )
+                    Logger.warning( f'Something wrong - Modbus:{read_modbus}' )
                 return None 
             else: 
                 value = read_modbus[0]
@@ -153,7 +151,7 @@ class Device( ModbusRTU ):
         read_db = self.DB.read_tag( self.device_address, register_type, address )
         if read_db == {}:
             if self._debug:
-                print( f'Something wrong - DB:{read_db}' )
+                Logger.warning( f'Something wrong - DB:{read_db}' )
             return None
         else: 
             if isinstance( value, int ):
@@ -161,7 +159,7 @@ class Device( ModbusRTU ):
             read_modbus = super().write_registers( address, value )
             if not isinstance( read_modbus, list ): 
                 if self._debug:
-                    print( f'Something wrong - Modbus:{read_modbus}' )
+                    Logger.warning( f'Something wrong - Modbus:{read_modbus}' )
                 return None 
             else: 
                 value = read_modbus[0]
@@ -231,26 +229,44 @@ class Device( ModbusRTU ):
                     if time.time() - d_time > 2.5:
                         d_time = time.time() 
                         try:
-                            # Read Coil 
-                            for dt, ind in zip( self.read_modbus( 'coil_register' , 0x00, 0x08, 'BIT' ), [ "COIL_POWER", "COIL_LED",   "COIL_M_GIR", "COIL_M_ELE", "COIL_LEDR",  "COIL_LEDG",  "COIL_LEDB",  "COIL_SYNC_DATE" ] ):
-                                self.shared_data.SYSTEM_TABLE[ind] = dt 
-                            # Read Discrete input                           
-                            for dt, ind in zip( self.read_modbus( 'coil_input', 0x00, 0x05, 'BIT' ), [ "DISCRETE_FAIL", "DISCRETE_POWER", "DISCRETE_TIME", "DISCRETE_GPS", "DISCRETE_CONNECTED"] ):
-                                self.shared_data.SYSTEM_TABLE[ind] = dt 
-                            # Read holdings Float 
-                            for dt, ind in zip( self.read_modbus( 'holding_register', 0x00, 0x16, 'FLOAT'), [ "HR_PV_GIR", "HR_KP_GIR", "HR_KI_GIR", "HR_KD_GIR", "HR_AZIMUTE", "HR_PV_ELE", "HR_KP_ELE", "HR_KI_ELE", "HR_KD_ELE", "HR_ALTITUDE", "HR_LATITUDE", "HR_LONGITUDE" ] ):
-                                self.shared_data.SYSTEM_TABLE[ind] = dt 
-                            # Read holdings Int 
-                            for dt, ind in zip( self.read_modbus( 'holding_register', 0x18, 0x1C-0x18, 'INT'), [ "HR_STATE", "HR_YEAR", "HR_MONTH", "HR_DAY", "HR_HOUR", "HR_MINUTE", "HR_SECOND" ] ):
-                                self.shared_data.SYSTEM_TABLE[ind] = dt 
-                            # Read Analog Float 
-                            for dt, ind in zip( self.read_modbus( 'analog_input', 0x00, 0x10, 'FLOAT'), [ "INPUT_POS_GIR", "INPUT_POS_ELE", "INPUT_AZIMUTE", "INPUT_ZENITE", "INPUT_GENERATION", "INPUT_TEMP", "INPUT_PRESURE", "INPUT_SENS_CONF_GIR", "INPUT_SENS_CONF_ELE" ] ):
-                                self.shared_data.SYSTEM_TABLE[ind] = dt 
-                            # Read Analog Int 
-                            for dt, ind in zip( self.read_modbus( 'analog_input', 0x12, 0x17-0x12, 'INT' ), [ "INPUT_YEAR", "INPUT_MONTH", "INPUT_DAY", "INPUT_HOUR", "INPUT_MINUTE", "INPUT_SECOND" ] ):
-                                self.shared_data.SYSTEM_TABLE[ind] = dt 
+                            # Leitura de Coils
+                            coils = self.read_modbus('coil_register', 0x00, 8, 'BIT')
+                            if coils and isinstance( coils, list ):
+                                for dt, ind in zip(coils, ["COIL_POWER", "COIL_LED", "COIL_M_GIR", "COIL_M_ELE", "COIL_LEDR", "COIL_LEDG", "COIL_LEDB", "COIL_SYNC_DATE"]):
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
+
+                            # Leitura de entradas discretas
+                            disc_inputs = self.read_modbus('coil_input', 0x00, 5, 'BIT')
+                            if disc_inputs and isinstance( disc_inputs, list ):
+                                for dt, ind in zip(disc_inputs, ["DISCRETE_FAIL", "DISCRETE_POWER", "DISCRETE_TIME", "DISCRETE_GPS", "DISCRETE_CONNECTED"]):
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
+
+                            # Leitura de holdings (Float)
+                            holdings_float = self.read_modbus('holding_register', 0x00, 22, 'FLOAT')
+                            if holdings_float and isinstance( holdings_float, list ):
+                                for dt, ind in zip(holdings_float, ["HR_PV_GIR", "HR_KP_GIR", "HR_KI_GIR", "HR_KD_GIR", "HR_AZIMUTE", "HR_PV_ELE", "HR_KP_ELE", "HR_KI_ELE", "HR_KD_ELE", "HR_ALTITUDE", "HR_LATITUDE", "HR_LONGITUDE"]):
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
+
+                            # Leitura de holdings (Int)
+                            holdings_int = self.read_modbus('holding_register', 0x18, (0x1C - 0x18), 'INT')
+                            if holdings_int and isinstance( holdings_int, list ):
+                                for dt, ind in zip(holdings_int, ["HR_STATE", "HR_YEAR", "HR_MONTH", "HR_DAY", "HR_HOUR", "HR_MINUTE", "HR_SECOND"]):
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
+
+                            # Leitura de Analog (Float)
+                            analog_float = self.read_modbus('analog_input', 0x00, 16, 'FLOAT')
+                            if analog_float and isinstance( analog_float, list ):
+                                for dt, ind in zip(analog_float, ["INPUT_POS_GIR", "INPUT_POS_ELE", "INPUT_AZIMUTE", "INPUT_ZENITE", "INPUT_GENERATION", "INPUT_TEMP", "INPUT_PRESURE", "INPUT_SENS_CONF_GIR", "INPUT_SENS_CONF_ELE"]):
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
+                                    
+                            # Leitura de Analog (Int)
+                            analog_int = self.read_modbus('analog_input', 0x12, (0x17 - 0x12), 'INT')
+                            if analog_int and isinstance( analog_int, list ):
+                                for dt, ind in zip(analog_int, ["INPUT_YEAR", "INPUT_MONTH", "INPUT_DAY", "INPUT_HOUR", "INPUT_MINUTE", "INPUT_SECOND"]):
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
+
                         except Exception as err :
-                            print( "all regs excpet error:", err ) 
+                            Logger.warning( f"All regs excpet error: {err}" ) 
                             self.shared_data.SYSTEM_TABLE['DISCRETE_CONNECTED'] =  self.is_connected() 
                         
 
@@ -259,4 +275,4 @@ class Device( ModbusRTU ):
                 self.shared_data.SYSTEM_TABLE['DISCRETE_CONNECTED'] =  self.is_connected() 
                 if self.err_count > 25:
                     self.shared_data.SYSTEM_TABLE['DISCRETE_CONNECTED'] =  False 
-                print( 'System/Tracker error: ', err )
+                Logger.warning( f'System/Tracker error: {err}' )

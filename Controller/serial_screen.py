@@ -1,4 +1,5 @@
 import View.SerialScreen.serial_screen
+from kivy.logger import Logger
 
 class SerialScreenController:
     """
@@ -49,20 +50,20 @@ class SerialScreenController:
     def change_operation_mode( self, type: str, value: bool  ):
         try:
             if type == 'AUTO' and value:
-                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.AUTOMATIC 
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.system_state.AUTOMATIC 
                 self.view.ids.modo_manual.active = False 
-                print( type, value )
+                Logger.debug( f"{type}  {value}" )
                 self.model.system.write = True
     
             elif type == 'MANUAL' and value :
-                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.system_state.REMOTE
                 self.view.ids.modo_auto.active = False
-                print( type, value )
+                Logger.debug( f"{type}  {value}" )
                 self.model.system.write = True
 
         except Exception as err:
             if self._debug:
-                print( err )
+                Logger.debug( f"{err}" )
 
 
     def check_motors_moving( self ):
@@ -77,24 +78,24 @@ class SerialScreenController:
             self.view.ids.zenith_moving.color = [ 0.1, 1.0, 0.1, 0.75 ]
         else:
             self.view.ids.zenith_moving.color = [ 1.0, 0.1, 0.1, 0.75 ]
-         
+        
 
     def turn_on_off_motors( self, state : bool ) -> None:
         try:
             if state:
                 # Coloca em modo Remoto
-                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE 
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.system_state.REMOTE 
             else: 
-                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.AUTOMATIC                 
+                self.model.SYSTEM_TABLE['HR_STATE'] = self.model.system_state.AUTOMATIC                 
             # Aciona o relé dos motores 
             self.model.SYSTEM_TABLE['COIL_POWER'] = state
             # Habilita escrita 
             self.model.system.write = True
             if self._debug:
-                print( 'Turn On/Off motors: ', state)
+                Logger.debug( f'Turn On/Off motors: {state}' )
         except Exception as err: 
             if self._debug:
-                print( err )
+                Logger.debug( f"{err}" )
             
 
     def get_power_motors( self ) -> bool:
@@ -106,7 +107,7 @@ class SerialScreenController:
             return False
         
     def send_motors_vel( self ) -> None:
-        print( 'send_motors_vel' )
+        Logger.debug( 'send_motors_vel' )
         try: 
             # Pega o valor de azimute  
             azi_text = self.view.ids.vel_azimute.text 
@@ -123,7 +124,7 @@ class SerialScreenController:
             # Habilita para ser escrito no sistema 
             self.model.system.write = True
         except Exception as err :
-            print( err )
+            Logger.debug( f"{err}" )
         try: 
             # Pega o valor de azimute  
             zeni_text = self.view.ids.vel_zenite.text
@@ -141,25 +142,25 @@ class SerialScreenController:
             self.model.system.write = True
         except Exception as err :
             if self._debug:
-                print( err )
+                Logger.debug( f"{err}" )
 
 
     def go_home_system( self ):
-        print('go home system')
+        Logger.debug('go home system')
         try: 
             # Coloca em condição de FAIL STATE 
-            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE 
+            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.system_state.REMOTE 
             # Liga os motores 
             self.model.SYSTEM_TABLE['COIL_M_GIR'] = True 
             self.model.SYSTEM_TABLE['COIL_M_ELE'] = True 
             # Escreve a posição de Home 
-            self.model.SYSTEM_TABLE['HR_AZIMUTE'] = self.model.AZI_HOME 
-            self.model.SYSTEM_TABLE['HR_ZENITE'] = self.model.ZEN_HOME
+            self.model.SYSTEM_TABLE['HR_AZIMUTE'] = self.model.system_state.AZI_HOME 
+            self.model.SYSTEM_TABLE['HR_ZENITE'] = self.model.system_state.ZEN_HOME
             # Habilita escrita
             self.model.system.write = True
         except Exception as err:    
             if self._debug:
-                print( err ) 
+                Logger.debug( f"{err}" ) 
             
 
     def att_zenith_graph_slider( self ):
@@ -169,13 +170,13 @@ class SerialScreenController:
             # Escreve a posição do Slider no ZENITE 
             self.model.SYSTEM_TABLE['HR_PV_GIR'] = value*3.6
             # Muda o modo de operação para REMOTE 
-            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE
+            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.system_state.REMOTE
             # Aciona o motor de ZENITE 
             self.model.SYSTEM_TABLE['COIL_M_ELE'] = True 
             self.model.system.write = True
-            print( value ) 
+            Logger.debug( f"{value}" ) 
         except Exception as err:
-            print( err )
+            Logger.debug( f"{err}" )
 
     def att_azimuth_graph_slider( self   ):
         try:
@@ -186,9 +187,9 @@ class SerialScreenController:
             # Aciona o motor de AZIMUTE 
             self.model.SYSTEM_TABLE['COIL_M_GIR'] = True 
             # Muda o modo de operação para REMOTE 
-            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.REMOTE 
+            self.model.SYSTEM_TABLE['HR_STATE'] = self.model.system_state.REMOTE 
             self.model.system.write = True
-            print( value ) 
+            Logger.debug( f"{value}" ) 
         except Exception as err:
-            print( err )
+            Logger.debug( f"{err}" )
             

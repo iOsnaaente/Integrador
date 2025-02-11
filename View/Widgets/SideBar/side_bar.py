@@ -1,37 +1,43 @@
+from kivymd.uix.screenmanager import MDScreenManager
 from kivy.properties import ObjectProperty
+from kivy.logger import Logger 
 from kivy.clock import Clock 
+from kivy.app import App
 
 from kivymd.uix.boxlayout import MDBoxLayout 
 from kivy.animation import Animation 
 from kivymd.uix.card import MDCard
 from kivymd.app import MDApp
 
-
+from Model.system_model import SystemModel
 import os 
-PATH = os.path.dirname( __file__ ).removesuffix( os.path.join('View', 'Widgets', 'SideBar') )
 
+PATH = os.path.dirname( __file__ ).removesuffix( os.path.join('View', 'Widgets', 'SideBar') )
 APP = MDApp.get_running_app()
 
-imgs = [ 'smart.png'          ,
-         'map.png'            ,  
-         'connectivity.png'   ,
-         'smart-power.png'    ,
-         'security.png'       , 
-        ]
+imgs = [ 
+    'smart.png'          ,
+    'map.png'            ,  
+    'connectivity.png'   ,
+    'smart-power.png'    ,
+    'security.png'       , 
+]
 
-lbls = [ 'Home'               ,
-         'Mapa'               ,  
-         'Atuador'            ,
-         'Sensor'             ,
-         'Diagnos.'           ,
-        ] 
+lbls = [ 
+    'Home'               ,
+    'Mapa'               ,  
+    'Atuador'            ,
+    'Sensor'             ,
+    'Diagnos.'           ,
+] 
 
-lnks = [ 'home screen'        ,
-         'map screen'         ,  
-         'serial screen'      ,
-         'sensor screen'      ,
-         'diagnosticos screen', 
-        ]
+lnks = [ 
+    'home screen'        ,
+    'map screen'         ,  
+    'serial screen'      ,
+    'sensor screen'      ,
+    'diagnosticos screen', 
+]
     
 
 class MyCardMenu( MDCard ):    
@@ -49,12 +55,12 @@ class MyCardMenu( MDCard ):
         manager_screen = APP.manager_screens
         current = manager_screen.current 
         try: 
-            print('Link to screen: ', self.screen_link  )
+            Logger.info( f'Link to screen: {self.screen_link}'  )
             manager_screen.current = self.screen_link 
-            print('OK - Current screen: ', manager_screen.current )
+            Logger.debug( f'OK - Current screen: {manager_screen.current}' )
         except: 
             manager_screen.current = current 
-            print( 'Exception change screen ')
+            Logger.warning( f'Exception change to screen {current}')
         return super().on_press()
 
     def hover_in(self):
@@ -68,10 +74,8 @@ class SideBar( MDBoxLayout ):
     user_photo = ObjectProperty()
     username = ObjectProperty()
     user_level_access = ObjectProperty()
-
     home_side_bar = ObjectProperty() 
-
-    model = ''
+    model: SystemModel
 
     def __init__(self, model, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,7 +83,6 @@ class SideBar( MDBoxLayout ):
         Clock.schedule_once( self.build, 0.1 )
 
     def build( self, clock_event ):
-        
         self.user_level_access.text = str(self.model.level_access) 
         if self.model.photo: 
             self.user_photo.source = self.model.photo
@@ -97,10 +100,10 @@ class SideBar( MDBoxLayout ):
             )
 
     def hover_image_in( self ):
-        print( 'hover_image_in' )
+        Logger.debug( 'hover_image_in' )
 
     def hover_image_out( self ):
-        print( 'hover_image_out' )
+        Logger.debug( 'hover_image_out' )
 
     def change_image( self ):
-        print( 'change_image' )
+        Logger.debug( 'change_image' )

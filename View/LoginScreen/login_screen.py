@@ -3,8 +3,10 @@ from kivymd.theming         import ThemableBehavior
 from kivymd.uix.card        import MDCard 
 from kivy.properties        import ObjectProperty
 from kivy.clock             import Clock
+from kivy.logger            import Logger
 
 from View.base_screen       import BaseScreenView
+from Model.params_config    import IMAGE_PATHS
 
 from libs.sweetalert.sweetalert import SweetAlert
 
@@ -38,15 +40,6 @@ class LoginScreenView( BaseScreenView ):
     username = ObjectProperty()
     password = ObjectProperty()
 
-    # Imagens presentes em na tela de login  
-    sunrise_image =  PATH + os.path.join( 'assets', 'images', 'sunrise.jpg' )   
-    connectivity_icon = PATH + os.path.join( 'assets', 'images', 'connectivity.png' )
-    green_power_icon = PATH + os.path.join( 'assets', 'images', 'green-power.png' )  
-    security_icon = PATH + os.path.join( 'assets', 'images', 'security.png' )
-    solar_icon = PATH + os.path.join( 'assets', 'images', 'smart-power.png' ) 
-    smart_sun = PATH + os.path.join( 'assets', 'images', 'smart.png' )
-    map_icon = PATH + os.path.join( 'assets', 'images', 'map.png' )
-    
     # Thread de verificação de conexão com o servidor 
     ping_pong = None 
 
@@ -57,14 +50,14 @@ class LoginScreenView( BaseScreenView ):
     def on_enter(self, *args):
         self.model.connect_server()
         self.ping_pong = Clock.schedule_interval( self.model.keep_connection_alive, 1 )
-        if not self.model.connection_status():
+        if not self.model.get_server_connection_status():
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "O sistema pode não funcionar de acordo" )
         return super().on_enter(*args)
     
     # Faz o login 
     def login ( self ):
         # Primeiro verifica o status da conexão com o servidor 
-        if not self.model.connection_status():
+        if not self.model.get_server_connection_status():
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "Sistema de login indisponível" )
             return 
         else: 
@@ -81,9 +74,9 @@ class LoginScreenView( BaseScreenView ):
                 self.manager_screens.current = 'home screen'
                 Clock.unschedule( self.ping_pong )
                 if self.__debug: 
-                    print( 'Logado com \nUsuário: {}\nSenha: {}'.format( self.username.text, self.password.text ) )
-                    print( 'Keep data state : ', self.ids.checkbox_keep_login.state )
-                    print( 'Data kept: ', self.model.get_table () )
+                    Logger.debug( f'Logado com \nUsuário: {self.username.text}\nSenha: {self.password.text}' )
+                    Logger.debug( f'Keep data state : {self.ids.checkbox_keep_login.state}' )
+                    Logger.debug( f'Data kept: {self.model.get_table()}' )
 
             # Caso não conecte, lança um erro de usuário e senha incorreto 
             else: 
@@ -92,7 +85,7 @@ class LoginScreenView( BaseScreenView ):
     # Criar novo usuário 
     def create_new_user( self, user, password, sup, sup_psd ):
         # Primeiro verifica o status da conexão 
-        if not self.model.connection_status():
+        if not self.model.get_server_connection_status():
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "Sistema de registro indisponível" )
             return 
         else: 

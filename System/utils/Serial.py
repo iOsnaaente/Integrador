@@ -1,5 +1,8 @@
+from kivy.logger import Logger
+
 import minimalmodbus 
 import struct
+
 
 class ModbusRTU:
     
@@ -31,11 +34,11 @@ class ModbusRTU:
             self.client.serial.stopbits = stop_bits  
             self.connected = True 
             if debug:
-                print('Modbus connection OK')
+                Logger.info('Modbus connection OK')
         except Exception as err:
             self.client = None 
             if debug:
-                print('Serial Modbus Exception: ', err )
+                Logger.warning('Serial Modbus Exception: ', err )
                 
     def update_connection(self, port: str, baudrate: int , parity: str = 'N', stop_bits: int = 1, byte_size: int = 8, timeout: int = 1, __debug: bool=False, **kwargs):
         back = self.client
@@ -58,7 +61,7 @@ class ModbusRTU:
         except Exception as err:
             self.client = back 
             if __debug:
-                print( f'cant connect serial application. Error: {err}')
+                Logger.warning( f'cant connect serial application. Error: {err}')
             return False 
 
     def read_registers( self, register_type: str, address: int, length: int, var_type: str ) -> None | list[ int | float ]:
@@ -66,7 +69,7 @@ class ModbusRTU:
             # Verifica se o cliente esta conectado 
             if self.client is None:
                 if self.__debug:
-                    print("Conexão Modbus não estabelecida.")       
+                    Logger.warning("Conexão Modbus não estabelecida.")       
                 return None      
             # Verifica o tipo de registro e a tabela correspondente
             if register_type == 'analog_input':
@@ -75,13 +78,13 @@ class ModbusRTU:
                 fc = 0x03
             else:
                 if self.__debug:
-                    print(f"Tipo de registro inválido: '{register_type}'")                
+                    Logger.warning(f"Tipo de registro inválido: '{register_type}'")                
                 return None 
             # Leitura dos input registers
             response = self.client.read_registers(address, length, functioncode = fc )
             if response is None:
                 if self.__debug:
-                    print("Erro ao ler os registradores do dispositivo Modbus.")
+                    Logger.warning("Erro ao ler os registradores do dispositivo Modbus.")
                 return None
             else:
                 # Realize o tratamento adequado para cada tipo de dado
@@ -98,7 +101,7 @@ class ModbusRTU:
                     return int_values
         except Exception as err:
             if self.__debug:
-                print(f"Erro ao ler registros do dispositivo Modbus. Erro: {err}")
+                Logger.warning(f"Erro ao ler registros do dispositivo Modbus. Erro: {err}")
             return None
     
     def read_coils(self, register_type: str, address: int, length: int ):
@@ -106,7 +109,7 @@ class ModbusRTU:
             # Verifica se o cliente está conectado
             if self.client is None:
                 if self.__debug:
-                    print("Conexão Modbus não estabelecida.")
+                    Logger.warning("Conexão Modbus não estabelecida.")
                 return None
             # Verifica o tipo de registro e a tabela correspondente
             if register_type == 'coil_register':
@@ -115,20 +118,20 @@ class ModbusRTU:
                 fc = 0x02
             else:
                 if self.__debug:
-                    print(f"Tipo de registro inválido: '{register_type}'")                
+                    Logger.warning(f"Tipo de registro inválido: '{register_type}'")                
                 return None 
             # Consulta as bobinas no dispositivo Modbus
             response = self.client.read_bits( address, length, functioncode = fc )
             if response is None:
                 if self.__debug:
-                    print("Erro ao ler as bobinas do dispositivo Modbus.")
+                    Logger.warning("Erro ao ler as bobinas do dispositivo Modbus.")
                 return None
             else: 
                 # Obtém os valores lidos das bobinas
                 return response[::-1]
         except Exception as err:
             if self.__debug:
-                print(f"Erro ao ler as bobinas do dispositivo Modbus. Erro: {err}")
+                Logger.warning(f"Erro ao ler as bobinas do dispositivo Modbus. Erro: {err}")
             return None
 
     def write_registers(self, address: int, values: int | float | list[ int | float] ):
@@ -136,7 +139,7 @@ class ModbusRTU:
             # Verifica se o cliente está conectado
             if self.client is None:
                 if self.__debug:
-                    print("Conexão Modbus não estabelecida.")
+                    Logger.warning("Conexão Modbus não estabelecida.")
                 return False
             # Verifica o tipo de cada dado e realiza o tratamento adequado
             if isinstance(values, int):            
@@ -156,17 +159,17 @@ class ModbusRTU:
                 response = self.client.write_registers( address, regs )
             else: 
                 if self.__debug:
-                    print("Erro de registrador Modbus.")
+                    Logger.warning("Erro de registrador Modbus.")
                 return False
             if response is None:
                 if self.__debug:
-                    print("Erro ao ler as bobinas do dispositivo Modbus.")
+                    Logger.warning("Erro ao ler as bobinas do dispositivo Modbus.")
                 return None
             else:
                 return True 
         except Exception as err:
             if self.__debug:
-                print(f"Erro ao escrever nos registradores do dispositivo Modbus. Erro: {err}")
+                Logger.warning(f"Erro ao escrever nos registradores do dispositivo Modbus. Erro: {err}")
             return False
 
     def write_coils( self, address: int, values: bool | list[bool] ) -> bool:
@@ -174,7 +177,7 @@ class ModbusRTU:
             # Verifica se o cliente está conectado
             if self.client is None:
                 if self.__debug:
-                    print("Conexão Modbus não estabelecida.")
+                    Logger.warning("Conexão Modbus não estabelecida.")
                 return False
             # Escreve na bobina do dispositivo Modbus
             if isinstance(values, bool):
@@ -183,16 +186,16 @@ class ModbusRTU:
                 response = self.client.write_bits(address, values ) # Funtion_Code = 15 
             else:
                 if self.__debug:
-                    print('Tipo de registrador incompatível.')
+                    Logger.warning('Tipo de registrador incompatível.')
                 return False
 
             if response is None:
                 if self.__debug:
-                    print("Erro ao escrever nas bobinas do dispositivo Modbus.")
+                    Logger.warning("Erro ao escrever nas bobinas do dispositivo Modbus.")
                 return False
             else:
                 return True
         except Exception as err:
             if self.__debug:
-                print(f"Erro ao escrever nas bobinas do dispositivo Modbus. Erro: {err}")
+                Logger.warning(f"Erro ao escrever nas bobinas do dispositivo Modbus. Erro: {err}")
             return False
