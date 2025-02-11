@@ -10,7 +10,6 @@ from System.tracker     import Device
 from System.Tags        import * 
 
 # Import de Libs de Gerenciamento e config. 
-from Model.device_manager import DeviceManager
 from Model.server_manager import ServerManager
 from Model.system_manager import SystemManager
 from Model.user_manager   import UserManager 
@@ -51,7 +50,6 @@ class SystemModel( BaseScreenModel ):
 
     # Gerenciadores de acesso 
     database_manager: Database 
-    device_manager: DeviceManager 
     server_manager: ServerManager 
     system_manager: SystemManager 
     user_manager: UserManager 
@@ -68,8 +66,7 @@ class SystemModel( BaseScreenModel ):
     def __init__( self, _debug: bool = False  ) -> None:
         super().__init__()
         self.database_manager = Database( )
-        self.device_manager = DeviceManager( debug = _debug )
-        self.server_manager = ServerManager( debug = True )         
+        self.server_manager = ServerManager( debug = _debug )         
         self.system_manager = SystemManager( debug = _debug )
         self.user_manager = UserManager( debug = _debug )
         self._debug = _debug
@@ -207,7 +204,7 @@ class SystemModel( BaseScreenModel ):
     #                   User Manager Functions                       # 
     # ---------------------------------------------------------------# 
     def connect_device( self, slave: int, port: str, baudrate : int, timeout : int = 1 ) -> bool:
-        return self.device_manager.connect_device( slave, port, baudrate, timeout = timeout )
+        return self.system_manager.connect_device_RTU( slave, port, baudrate, timeout = timeout )
 
     ''' User ans Password model.getters '''
     @property

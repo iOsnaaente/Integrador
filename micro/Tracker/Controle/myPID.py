@@ -1,90 +1,91 @@
-from time import ticks_ms
+from time import ticks_ms, ticks_diff
 
 class PID:
-    actual_measure = 0
-    last_measure   = 0
     
-    error_rounded = 0
-    error_real    = 0
-    
-    PV = 0.00
-    Kp = 0.75
-    Ki = 0.55
-    Kd = 0.10
-    
-    dto = 0
-    dti = 0
-    dt  = 0 
+    current_time: float = 0.0 
+    last_time: float    = 0.0 
 
-    def __init__( self, PV : float, Kp : float, Kd : float, Ki : float ):
+    last_error: float   = 0.0 
+    error: float        = 0.0 
+    
+    setpoint:float      = 0.0 
+    output: float       = 0.0 
+    
+    derivative: float   = 0.0 
+    integral: float     = 0.0 
+    tol: float          = 0.0 
+    
+    Kp: float           = 0.0 
+    Ki: float           = 0.0 
+    Kd: float           = 0.0 
+
+    """
+        :param setpoint: Valor desejado (PV) a ser mantido.
+        :param Kp: Ganho proporcional.
+        :param Ki: Ganho integral.
+        :param Kd: Ganho derivativo.
+        :param tol: Tolerância para considerar o erro como zero.
+    """
+    def __init__(self, setpoint: float, Kp: float, Ki: float, Kd: float, tol: float = 0.25):
+        self.setpoint = setpoint
         self.Kp = Kp
         self.Ki = Ki
         self.Kd = Kd
-        self.PV = PV 
-    
-    @property 
-    def pid( self ):
-        return (self.Kp*self.error_rounded) + (self.Ki*((self.actual_measure-self.last_measure)*self.dt/2)) + (self.Kp*self.Kd*(self.error_rounded/self.dt)*self.actual_measure)
-    
-    def att(self, measure : float ):
-        self.last_measure = self.actual_measure
-        self.actual_measure = measure
-        self.dto = ticks_ms()
-    
-    def set_PV(self, PV):
-        self.PV = PV
-    
-    def get_params( self ):
-        return [ self.Kd, self.Ki, self.Kp, self.PV ] 
+        self.tol = tol
         
-    def compute(self, measure, tol : float = 0.25 ):
-        
-        self.error_real    = abs( self.PV - measure )
-        self.error_rounded = 0 if round( self.error_real, 1 ) < tol else self.error_real 
-        self.last_measure   = self.actual_measure
-        self.actual_measure = measure
-        
-        self.dti = ticks_ms()
-        self.dt  = self.dti - self.dto 
-        self.dto = self.dti
-        
-        if self.PV < measure:
-            op1 = 360 - measure + self.PV
-            op2 = measure - self.PV
-        else: 
-            op1 = self.PV - measure  
-            op2 = measure + 360 - self.PV
-        
-        pid = self.pid if abs(self.pid) < 100 else 100 
-        return pid if op1 < op2 else -pid
-        
+        self.integral = 0.0
+        self.last_error = 0.0
+        self.last_time = ticks_ms()
 
-if __name__ == '__main__':
-    
-    import Tracker.Sensor.myAS5600 as sn
-    import time 
-    isc0  = machine.I2C ( 0, freq = 100000, sda = machine.Pin( 16  ), scl = machine.Pin( 17  ) ) 
-    
-    SENS  = sn.AS5600 ( isc0, startAngle = 100 )
-    
-    myPID = PID( PV = 100, Kp = 0.55, Kd = 0.25, Ki = 0.15 )
-    
-    ang = SENS.degAngle()
-    myPID.att( ang )
-    time.sleep( 0.1 )
-    
-    myPID.set_PV( 100 )
-        
-    for _ in range( 60 ):
-        ang = SENS.degAngle()
-        pos = myPID.compute( ang )
-        print( ang, myPID.PV, myPID.error_real, pos*0.05 )
-        time.sleep( 0.5 ) 
-    
-    
-    
-    
-    
-    
-    
-    
+
+    """
+        Atualiza o controle PID com a medição atual e retorna a saída.
+        :param measurement: Valor medido atualmente.
+        :return: Valor de controle calculado pelo PID.
+    """
+    def update(self, measurement: float) -> float:
+        current_time = ticks_ms()
+        dt_ms = ticks_diff(current_time, self.last_time)
+        dt = dt_ms / 1000.0  # converte para segundos
+        # Evita divisão por zero em dt
+        if dt <= 0:
+            dt = 1e-3
+        # Calcula o erro
+        self.error = self.setpoint - measurement
+        # Se o erro estiver abaixo da tolerância, trata como zero
+        if abs(self.error) < self.tol:
+            self.error = 0.0
+        # Integração do erro ao longo do tempo
+        self.integral += self.error * dt
+        # Cálculo da derivada
+        self.derivative = (self.error - self.last_error) / dt
+        # Cálculo da saída PID
+        self.output = (self.Kp * self.error) + (self.Ki * self.integral) + (self.Kd * self.derivative)
+        # Atualiza o último erro e tempo
+        self.last_error = self.error
+        self.last_time = current_time
+        return self.output
+
+
+    """ Reseta os termos integral e último erro """
+    def reset(self):
+        self.integral = 0.0
+        self.last_error = 0.0
+        self.last_time = ticks_ms()
+
+
+    """ Atualiza o valor desejado (setpoint) e reseta os acumuladores """
+    def set_setpoint(self, setpoint: float):
+        self.setpoint = setpoint
+        self.reset()
+
+
+    """ Retorna os parâmetros do controlador """
+    def get_params(self) -> dict:
+        return {
+            'setpoint': self.setpoint,
+            'Kp': self.Kp,
+            'Ki': self.Ki,
+            'Kd': self.Kd,
+            'tolerance': self.tol
+        }

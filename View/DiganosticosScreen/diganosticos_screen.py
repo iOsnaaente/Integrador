@@ -138,7 +138,7 @@ class DiganosticosScreenView(BaseScreenView):
         )
 
         # Cria uma plotagem dos valore (linha vermelha) com pontos para cada dia do intervalo
-        plot = MeshLinePlot(color=[1, 0, 0, 1])
+        plot = MeshLinePlot( color = [1, 0, 0, 1] )
         points = []
         current_date = date_range[0]
         while current_date <= date_range[-1]:

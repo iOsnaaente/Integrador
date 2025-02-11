@@ -1,7 +1,8 @@
 from Tracker.Sensor.myAS5600   import AS5600
 from Tracker.Time.myDatetime   import DS3231
 from Tracker.Serial.myModbus   import Modbus
-from Tracker.Sun.mySunposition import compute 
+from Tracker.Sun.mySunposition import compute
+from Tracker.Controle.myPID    import PID 
 from L298N import Motor
 
 from constants import * 
@@ -10,14 +11,14 @@ from pinout import *
 import machine
 import time 
 
+
 machine.freq()          # get the current frequency of the CPU
 machine.freq(240000000) # set the CPU frequency to 240 MHz
+
 
 generation = machine.ADC(26)
 power_gen = generation.read_u16()
 
-''' Watchdog de 5000ms '''
-#wdt = machine.WDT( timeout = 8000 )
 
 print( f'Motor de giro: INA={MOTOR_GIR_INA} / INB={MOTOR_GIR_INB} / ENB={MOTOR_GIR_ENB}')
 print( f'Motor de elevação: INA={MOTOR_ELE_INA} / INB={MOTOR_ELE_INB} / ENB={MOTOR_ELE_ENB}')
@@ -40,8 +41,8 @@ print( 'Iniciando o sensor angular AS5600 de ELEVAÇÃO' )
 print( 'Iniciando o sensor angular AS5600 de GIRO' )
 SELE = AS5600( I2C1 ) 
 SGIR = AS5600( I2C0 )
-   
-   
+
+
 ''' Prevent a long loop to reset'''
 #wdt.feed() 
 print( f'Iniciando RTC DS3231: {I2C0.scan()}' )
@@ -54,71 +55,109 @@ print( f'Iniciando Modbus na UART {UART_NUM} com o baudrate {UART_BAUD} no ender
 MODBUS = Modbus( UART_NUM, UART_BAUD, 0x12, tx  = machine.Pin( UART_TXD0 ) , rx  = machine.Pin( UART_RXD0 ) )
 MODBUS.set_registers( DISCRETES, COILS, INPUTS, HOLDINGS )
 
+
 print( MODBUS.myUART ,'\nSLAVE ADDRESS: ', MODBUS.ADDR_SLAVE, "\nFunction code available: ", Modbus.FUNCTIONS_CODE_AVAILABLE )
 print( 'Registradores cadastrados\n' )
 print( 'Holdings  - Type: {} Len: {} {}'.format( MODBUS.HOLDINGS.TYPE , MODBUS.HOLDINGS.REGS , MODBUS.HOLDINGS.STACK  )  )
 print( 'Inputs    - Type: {} Len: {} {}'.format( MODBUS.INPUTS.TYPE   , MODBUS.INPUTS.REGS   , MODBUS.INPUTS.STACK    )  )
 print( 'Coils     - Type: {} Len: {} {}'.format( MODBUS.COILS.TYPE    , MODBUS.COILS.REGS    , MODBUS.COILS.STACK     )  )
 print( 'Discretes - Type: {} Len: {} {}'.format( MODBUS.DISCRETES.TYPE, MODBUS.DISCRETES.REGS, MODBUS.DISCRETES.STACK )  , end = '\n\n' )
-    
+
+
 print( 'Atualizando os COILS registers' ) 
 POWER_MOTOR   = machine.Pin( POWER_MOTOR, machine.Pin.OUT )
 POWER_LED = machine.Pin( POWER_LED  , machine.Pin.OUT )
+
 
 print( 'Atualizando os DISCRETE registers' ) 
 LED_FAIL = machine.Pin( LED_BUILTIN, machine.Pin.OUT )
 
 
-''' Prevent a long loop to reset'''
-#wdt.feed()
+print( "Iniciando os controladores PID" )
+pid_azimuth = PID( setpoint = 0.0, Kp = 0.75, Ki = 0.55, Kd = 0.10, tol = 0.25 ) 
+pid_zenith  = PID( setpoint = 0.0, Kp = 0.75, Ki = 0.55, Kd = 0.10, tol = 0.25 ) 
 
+
+loop_time = time.ticks_ms()
 while True:
-    loop_time = time.ticks_ms()
     
-    print( 'Atualizando os INPUTS registers' ) 
+    # Atualiza as posições do sol 
     AZIMUTE, ALTITUDE = compute( LOCALIZATION,  DS.get_datetime() )
-    print( 'DS.get_datetime()=', DS.get_datetime() ) 
-    INPUTS.set_regs( INPUT_YEAR, DS.get_datetime() )
-    print( 'DS.get_temperature()=', DS.get_temperature() ) 
-    INPUTS.set_reg_float ( INPUT_TEMP, DS.get_temperature() ) 
-    print( 'SGIR.degAngle()=', SGIR.degAngle() ) 
-    INPUTS.set_reg_float ( INPUT_POS_GIR, SGIR.degAngle() ) 
-    print( 'SELE.degAngle()=', SELE.degAngle() ) 
-    INPUTS.set_reg_float ( INPUT_POS_ELE, SELE.degAngle() ) 
-    print( 'compute( LOCALIZATION,  TIME )=', AZIMUTE, ALTITUDE )
+    
+    # Atualiza a geração solar 
     power_gen = generation.read_u16()
     INPUTS.set_reg_float ( INPUT_GENERATION,  power_gen )
-    print( 'Generation =', power_gen )
-    INPUTS.set_reg_float ( INPUT_AZIMUTE, AZIMUTE ) 
-    INPUTS.set_reg_float ( INPUT_ZENITE, ALTITUDE ) 
     
+    # Atualiza a hora do relógio e temperatura 
+    INPUTS.set_regs( INPUT_YEAR, DS.get_datetime() )
+    INPUTS.set_reg_float ( INPUT_TEMP, DS.get_temperature() )
     
-    print( 'Atualizando os DISCRETES registers' )
-    DISCRETES.set_reg_bool( DISCRETE_FAIL, False )
+    # Lê as posições dos motores 
+    pos_az = SGIR.read_angle(accumulate=True)
+    pos_ze = SELE.read_angle(accumulate=True)
+    INPUTS.set_reg_float(INPUT_POS_GIR, pos_az)
+    INPUTS.set_reg_float(INPUT_POS_ELE, pos_ze)
+    
+    # Atualiza o Set Point do sistema 
+    if HOLDINGS.get_reg( HR_STATE ) == REMOTE:
+        INPUTS.set_reg_float ( INPUT_AZIMUTE, HOLDINGS.get_reg_float( HR_PV_GIR) ) 
+        INPUTS.set_reg_float ( INPUT_ZENITE, HOLDINGS.get_reg_float( HR_PV_ELE) ) 
+    #
+    elif HOLDINGS.get_reg( HR_STATE ) == AUTOMATIC: 
+        INPUTS.set_reg_float ( INPUT_AZIMUTE, AZIMUTE ) 
+        INPUTS.set_reg_float ( INPUT_ZENITE, ALTITUDE ) 
+    #
+    elif HOLDINGS.get_reg( HR_STATE ) == FAIL_STATE:
+        INPUTS.set_reg_float ( INPUT_AZIMUTE, 0.0 )
+        INPUTS.set_reg_float ( INPUT_ZENITE, 0.0  )
+    else: 
+        INPUTS.set_reg_float ( INPUT_AZIMUTE, 0.0 )
+        INPUTS.set_reg_float ( INPUT_ZENITE, 0.0 )
+        DISCRETES.set_reg_bool( DISCRETE_FAIL, True )
+
+    # Atualiza o relé de acionamento     
     DISCRETES.set_reg_bool( DISCRETE_POWER, COILS.get_reg_bool( COIL_POWER ) )
+    
+    # Informações de data e hora sincronizados 
     DISCRETES.set_reg_bool( DISCRETE_TIME, False )
     DISCRETES.set_reg_bool( DISCRETE_GPS, False )
+
     
-    
-    print( 'Atualizando os COILS registers' )
-    POWER_LED.value( COILS.get_reg_bool( COIL_LED ) )
-    POWER_MOTOR.value( COILS.get_reg_bool( COIL_POWER ) )
-    if COILS.get_reg_bool( COIL_M_GIR ):
-        GIR.move( HOLDINGS.get_reg_float( HR_PV_GIR) )
-    else:
-        GIR.break_motor()
-    if COILS.get_reg_bool( COIL_M_ELE ):
-        ELE.move( HOLDINGS.get_reg_float( HR_PV_ELE) )
-    else:
-        ELE.break_motor()
+    '''	Para mover os motores, COIL_M_GIR/ELE deve ser ON '''
+    if HOLDINGS.get_reg( HR_STATE ) == REMOTE:
+        GIR.move( INPUTS.get_reg_float ( INPUT_AZIMUTE )/100 )  
+        ELE.move( INPUTS.get_reg_float ( INPUT_ZENITE )/100 ) 
+    else: 
+        GIR.break_motor() 
+        ELE.break_motor() 
+        
+    ''' Para Atualizar a hora do sistema '''   
     if COILS.get_reg_bool( COIL_SYNC_DATE ):
-        print( 'Atualizando a hora do sistema' )
         DS.set_datetime( HOLDINGS.get_reg( HR_YEAR ), HOLDINGS.get_reg( HR_MONTH ), HOLDINGS.get_reg( HR_DAY ), HOLDINGS.get_reg( HR_HOUR ), HOLDINGS.get_reg( HR_MINUTE ), HOLDINGS.get_reg( HR_SECOND ), 3 )
     
+    ''' Se acontecer um FAIL STATE  '''
     LED_FAIL.value( True if HOLDINGS.get_reg( HR_STATE ) == FAIL_STATE else False )
     
-    # Mantem o sincronismo de 1s para a rotina de atualização dos dados
-    time.sleep_ms( 1000 - (time.ticks_ms()-loop_time) if (time.ticks_ms()-loop_time) < 1000 else 0 )
+    # Atualiza os valores de COILS
+    POWER_LED.value( True if HOLDINGS.get_reg( HR_STATE ) == FAIL_STATE else False )
+    POWER_MOTOR.value( COILS.get_reg_bool( COIL_POWER ) )
+    
+
+    ''' 
+        Loop de Debug do sistema a cada 1s  
+    '''      
+    if (time.ticks_ms()-loop_time) > 100: 
+        print( 'Atualizando os INPUTS registers' ) 
+        print( 'DS.get_datetime()=', DS.get_datetime() ) 
+        print( 'DS.get_temperature()=', DS.get_temperature() ) 
+        print( 'OP MODE=', HOLDINGS.get_reg( HR_STATE ) ) 
+        print( 'SGIR.read_angle( accumulate = True )=', SGIR.read_angle( accumulate = True ) ) 
+        print( 'SELE.read_angle( accumulate = True )=', SELE.read_angle( accumulate = True ) ) 
+        print( 'GIR SP =', INPUTS.get_reg_float ( INPUT_AZIMUTE ) ) 
+        print( 'ELE SP =', INPUTS.get_reg_float ( INPUT_ZENITE ) ) 
+        print( 'compute( LOCALIZATION,  TIME )=', AZIMUTE, ALTITUDE )
+        print( 'Generation =', power_gen )
+        loop_time = time.ticks_ms()
     
     ''' Watchdog reset prevent'''
     #wdt.feed()

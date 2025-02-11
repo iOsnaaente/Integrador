@@ -28,20 +28,22 @@ class AS5600:
   Status     = 0       # Status register (MD, ML, MH)
   ADDRESS    = 0x36    # By default 
 
-  startAngle = 0  # starting angle
-  totalAngle = 0  # total absolute angular displacement
+  start_angle: float = 0.0  # Offset de angulo 
+  prev_angle:  float = 0.0  # Salva o angulo anterior 
+  total_angle: float = 0.0  # Angulo absoluto total acumulado
+  total_turns: int   = 0    # Contagem de voltas
   
   ## Constructor 
-  def __init__( self, I2C : machine.I2C , addr : int = 0x36, startAngle : float = 0.0  ): 
-    self.ADDRESS    = addr 
-    self.AS5600     = I2C 
-    self.startAngle = startAngle
-    self.LAST_ANGLE = startAngle
-    self.ERRORS     = 0 
+  def __init__( self, I2C : machine.I2C , addr : int = 0x36, start_angle : float = 0.0  ): 
+    self.ADDRESS      = addr 
+    self.AS5600       = I2C 
+    self.start_angle  = start_angle
+    self.last_angle   = start_angle
+    self.ERRORS       = 0 
     
       
   ## To write in the I2C we need a buffer struct like b'a21@\x02' 
-  def _write( self, addr_mem : int, buffer : bytes ) -> None:
+  def _write( self, addr_mem : int, buffer : bytes ) -> bool:
     try:
         if type( self.AS5600 ) == machine.I2C: 
           self.AS5600.writeto_mem( self.ADDRESS, addr_mem, buffer )
@@ -50,11 +52,10 @@ class AS5600:
         return True 
     except:
         self.ERRORS += 1 
-        #print( "AS5600 - ERROR -> _write line 49 ")
         return False 
     
   ## to read, we start at addr_mem and we read num_bytes from addr_mem 
-  def _read( self, addr_mem : int, num_bytes : int = 2 ) -> list:
+  def _read( self, addr_mem : int, num_bytes : int = 2 ) -> list | None:
     try:
         if type( self.AS5600 ) == machine.I2C: 
           return self.AS5600.readfrom_mem( self.ADDRESS, addr_mem, num_bytes )
@@ -62,40 +63,67 @@ class AS5600:
           return self.AS5600.readfrom( self.ADDRESS, num_bytes, addr_mem )
     except:
         self.ERRORS += 1 
-        #print( "AS5600 - ERROR -> _read line 60 ")
-        pass 
+        return None
 
   ## read the unscaled angle and unmodified angle
-  def rawAngle( self ) -> bytes:
+  def read_raw_angle( self ) -> int:
     try:
-        raw_angle = self._read( self.ANGLE, 2 )
+      raw_angle = self._read( self.ANGLE, 2 )
+      if isinstance( raw_angle, bytes ):
         HIGH_BYTE = raw_angle[0]    #  RAW ANGLE(11:8) on 0x0C address 
         LOW_BYTE  = raw_angle[1]    #  RAW ANGLE(7:0) on 0X0D address 
-        RAW_ANGLE = ( (HIGH_BYTE << 8) | LOW_BYTE ) 
-        return RAW_ANGLE 
+        raw_angle = ( (HIGH_BYTE << 8) | LOW_BYTE ) 
+        return raw_angle
+      else: 
+        return -1
     except: 
         self.ERRORS += 1
         if self.ERRORS > 10:
             self.set_config()
         return -1  
 
-  def gain(self):
+  def gain(self) -> int:
     self.GAIN = self._read( self.AGC , 1 )
-    return self.GAIN
+    if isinstance( self.GAIN, bytes ):
+      return self.GAIN[0]
+    else: 
+      return -1
 
-  ## Read the scaled angle 
-  def degAngle( self ) -> bytes : 
-    # To calculate the real angle : 
-    # We have to divide the 360º by the 12bits (0x0fff) plus the value from the sensor
-    # rawAngle * 360/4096 = rawAngle * 0.087890625
-    RAW_ANGLE = self.rawAngle()
-    if RAW_ANGLE == -1: return False
-    else:               DEG_ANGLE = RAW_ANGLE * ( 360.0 / 0x0fff )
-    self.LAST_ANGLE = (DEG_ANGLE - self.startAngle) if (DEG_ANGLE - self.startAngle) >= 0 else (DEG_ANGLE - self.startAngle)+360
+  # Read total angle accumulate 
+  def read_angle( self, accumulate: bool = False ) -> float: 
+    """ 
+      Para calcular o valor de angulo em Graus
+      1. Lê o angulo em bits 
+      2. Divide 360º pelos 12bits (0x0fff) 
+      3. Vezes o valor do angulo do sensor
+      angle = rawAngle * 360/4096 = rawAngle * 0.087890625
+    """ 
+    raw_angle = self.read_raw_angle()
+    if raw_angle == -1: 
+      return False
     
-    # If the angle is negative, we have to normalize it to be between [0, 360)º
-    return self.LAST_ANGLE
+    """ Converta para angulos """
+    angle = raw_angle * ( 360.0 / 0x0fff )
     
+    """ Normaliz para o multi voltas """
+    if (angle - self.start_angle) >= 0:
+      angle = angle - self.start_angle 
+    else: 
+      angle = (angle - self.start_angle) + 360.0 
+
+    """ Normaliza os angulos contando os pulsos """
+    delta_angle = angle - self.prev_angle 
+    self.prev_angle = angle 
+    if delta_angle < -180:
+      self.total_turns -= 1
+    elif delta_angle > 180:
+      self.total_turns += 1 
+    
+    self.total_angle = angle + ( self.total_turns * 360.0 )
+    if ( not accumulate ):
+      return angle 
+    else:
+      return self.total_angle 
 
   ## Verify the status of the magnetic range 
   ### The status be in the 0x0B address in the 5:3 bits
@@ -105,42 +133,57 @@ class AS5600:
   ## MD [5] Magnet was detected
   #
   ## To operate properly, the MD have to be set and the MH and ML have to be 0 
-  def checkStatus( self ): 
+  def check_status( self ) -> int: 
     status = self._read( self.STATUS, 1 )
-    self.MH = status[0] >> 3 and 1
-    self.ML = status[0] >> 4 and 1
-    self.MD = status[0] >> 5 and 1
-
-    ## Return 0 if OK, else -1 to low magnetic level or 1 to high magnetic level 
-    if self.MD:
-      return MD_CHECK
+    if isinstance( status, bytes ):
+      self.MH = status[0] >> 3 and 1
+      self.ML = status[0] >> 4 and 1
+      self.MD = status[0] >> 5 and 1
+      # Imã está presente  
+      if self.MD:
+        return MD_CHECK
+      else: 
+        # Imã esta Forte 
+        if self.MH:
+          return MH_CHECK
+        # Imã esta Fraco 
+        if self.ML:
+          return  ML_CHECK
+        # Sem erros 
+        return 0
+    # Não pode ler o endereço 
     else: 
-      if self.MH:
-        return MH_CHECK
-      if self.ML:
-        return  ML_CHECK
+      return -1
 
-  def print_diagnosis(self):
-        print( self._read( 0, 11 ) )
 
-  def get_config( self ):
+  def print_diagnosis(self) -> None:
+    print( self._read( 0, 11 ) )
+
+
+  def get_config( self ) -> list :
     try:
-        config = [ struct.unpack('B', val)[0] for val in self._read( 0, 11 )]
+      ret = self._read( 0, 11 )
+      if isinstance( ret, bytes ):
+        config = [ struct.unpack('B', val)[0] for val in ret ]
         return config
+      else:
+        return []
     except:
-        return False
+      return []
 
-  def set_config( self ):
+
+  def set_config( self ) -> bool:
     for i in range( 9 ):
-        status = self._write( i, chr(0) )
-        if status == False:
-            self.ERRORS += 1
-            return False
+      status = self._write( i, bytes(0) )
+      if status == False:
+        self.ERRORS += 1
+        return False
     return True 
 
   # Número de erros registrados 
-  def get_error_count(self):
-      return self.ERRORS
+  def get_error_count(self) -> int:
+    return self.ERRORS
     
-  def reset_errros_count(self):
-      self.ERRORS = 0
+  def reset_errros_count(self) -> int:
+    self.ERRORS = 0
+    return self.ERRORS
