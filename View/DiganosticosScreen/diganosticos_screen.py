@@ -1,5 +1,6 @@
-from libs.kivy_garden.graph import Graph, MeshLinePlot, Mesh
+from libs.kivy_garden.graph import Graph, MeshLinePlot
 from View.Widgets.SideBar.side_bar import SideBar
+from libs.sweetalert.sweetalert import SweetAlert
 from View.base_screen import BaseScreenView
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.card import MDCard 
@@ -7,15 +8,33 @@ from kivy.logger import Logger
 from kivy.clock import Clock
 
 import datetime
+import math
+import csv 
 
 
-class DiganosticosScreenView(BaseScreenView):
+"""
+    Filtra valores ruidosos da lista de medições.
+    :param y_values: Lista de medições (números)
+    :param threshold_factor: Fator relativo para definir discrepância (default: 0.5)
+    :return: Lista com os valores filtrados
+"""
+def filter_noisy_data( y_values: list, threshold_factor: float = 0.10 ) -> list:
+    for i in range(2, len(y_values) - 1):
+        if y_values[i] > y_values[i-1]+ (100*threshold_factor) or y_values[i] < y_values[i-1] - (100*threshold_factor):
+            y_values[i] = y_values[i-1]
+    return y_values
+
+
+class DiganosticosScreenView( BaseScreenView ):
     # Card que armazena o gráfico
+    series: dict | None = None
     graph_card: MDCard
+
 
     def __init__(self, **kw):
         super().__init__(**kw)
     
+
     def on_kv_post (self, *args):
         Clock.schedule_once( self.setup_graph, 0 )
         return super().on_kv_post(*args)
@@ -62,7 +81,7 @@ class DiganosticosScreenView(BaseScreenView):
         # Cria uma plotagem de exemplo (linha vermelha) com pontos simulados
         plot_data = MeshLinePlot(color=[1, 0, 0, 1])
         plot_data.set_mesh_size( 12 )
-        plot_data.points = [ (x, y) for x, y in zip( range(0, 49, 1 ), range(0, 360, 360//49 ) ) ]
+        plot_data.points = [ (x/10, (x/10)*math.sin(x/10)+180.0) for x in range(0, 490 ) ]
         graph.add_plot(plot_data)
 
         # Remove o conteúdo inicial (label) e adiciona o gráfico
@@ -119,26 +138,24 @@ class DiganosticosScreenView(BaseScreenView):
         if len(x_numeric) > 1:
             xmin = x_numeric[0]
             xmax = x_numeric[-1]
-            dt = (xmax - xmin) / (len(x_numeric) - 1)
         else:
             # Se houver somente um ponto, define xmin e xmax como o mesmo valor e dt como 1 (valor arbitrário)
             xmin = xmax = x_numeric[0] if x_numeric else 0
-            dt = 1
 
         """
             Condiciona os dados medidos 
         """
-        series = {
+        self.series = {
             'sensor_ele': {
-                'y_values': [row[2] for row in sensor_ele],
+                'y_values': filter_noisy_data( [ (row[2]+180.0)%360.0 for row in sensor_ele] ),
                 'color': [1, 0, 0, 1]  # Vermelho
             },
             'sensor_gir': {
-                'y_values': [row[2] for row in sensor_gir],
+                'y_values': filter_noisy_data( [row[2] for row in sensor_gir] ),
                 'color': [0, 1, 0, 1]  # Verde
             },
             'azimute': {
-                'y_values': [row[2] for row in azimute],
+                'y_values': [ (row[2]+180.0)%360.0 for row in azimute],
                 'color': [0, 0, 1, 1]  # Azul
             },
             'zenite': {
@@ -146,7 +163,7 @@ class DiganosticosScreenView(BaseScreenView):
                 'color': [1, 1, 0, 1]  # Amarelo
             },
             'generation': {
-                'y_values': [row[2] for row in generation],
+                'y_values': [(row[2]/65536.0)*360.0 for row in generation],
                 'color': [0, 1, 1, 1]  # Ciano
             }
         }
@@ -174,18 +191,18 @@ class DiganosticosScreenView(BaseScreenView):
 
         ''' Adiciona os plots '''
         # Para cada série, cria um MeshLinePlot usando x_numeric como eixo X e os valores y correspondentes
-        for name, props in series.items():
-            plot = MeshLinePlot(color=props['color'])
+        for name, props in self.series.items():
+            plot = MeshLinePlot( color = props['color'] )
             points = []
             
             # Garante que a lista de valores y tenha o mesmo comprimento que x_numeric
             for x_val, y_val in zip(x_numeric, props['y_values']):
                 # Se necessário, converte o y_val para float
                 try:
-                    y_val = float(y_val)
+                    y_val = float( y_val )
                 except Exception:
                     y_val = 0
-                points.append((x_val, y_val))
+                points.append( (x_val, y_val) )
                 
             plot.points = points
             graph.add_plot(plot)
@@ -199,10 +216,38 @@ class DiganosticosScreenView(BaseScreenView):
         '''Events called when the "CANCEL" dialog box button is clicked.'''
         print( instance, value )
 
+
     def gerar_relatorio(self):
         # Implementar a lógica para geração de relatório
-        print("Gerar Relatório acionado!")
-        # Aqui você pode adicionar a lógica de processamento e exibição do relatório
+        try: 
+            if self.series:
+                # Pega os nome das colunas 
+                series_names = list(self.series.keys())
+                min_length = min(len(self.series[name]['y_values']) for name in series_names)
+
+                # Abre (ou cria) o arquivo report.csv em modo de escrita
+                with open(f'Relatorios/relatorio_{datetime.date.today().strftime("%Y_%m_%d-%H_%M_%S")}.csv', 'w', newline = '' ) as f:
+                    writer = csv.writer( f, delimiter = ';' )
+
+                    # Escreve o cabeçalho: primeira coluna é "index" e as demais são as chaves das séries
+                    writer.writerow(['index'] + series_names)
+
+                    # Para cada índice até o min_length, escreve uma linha com:
+                    for i in range(min_length):
+                        row_data = [i]  # primeira coluna: índice
+                        for name in series_names:
+                            row_data.append(self.series[name]['y_values'][i])
+                        writer.writerow(row_data)
+
+                # Lança um aviso de sucesso
+                SweetAlert( timer = 2 ).fire( 'Relatório gerado com sucesso!', type = 'success' )
+
+            # Avisos de fracasso 
+            else:
+                SweetAlert( timer = 2 ).fire( "Nenhum dado para ser gerado no momento", type = 'failure' )
+        except:
+            SweetAlert( timer = 2 ).fire( "Nenhum dado para ser gerado no momento", type = 'failure' )
+
 
     def model_is_changed(self) -> None:
         """
