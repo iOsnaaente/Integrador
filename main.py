@@ -1,8 +1,11 @@
 from kivymd.uix.screenmanager import MDScreenManager
+from Model.system_model import SystemModel 
 from kivy.utils import rgba, QueryDict
 from kivy.logger import Logger 
 from kivymd.app import MDApp
 import logging 
+import os
+
 
 # Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
 # Tenta iniciar no monitor secundário 
@@ -12,6 +15,7 @@ try:
     monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
 except:
     monitor = get_monitors()[0]
+
 
 # Define o tamanho da janela
 from kivy.core.window import Window
@@ -37,11 +41,7 @@ Logger.addHandler(file_handler)
 Logger.setLevel(logging.DEBUG)
 
 
-# Onde as informações devem ser compartilhadas 
-from Model.system_model import SystemModel 
-
 class Tracker( MDApp ):
-    import os
     KV_DIRS = [os.path.join(os.getcwd(), "View")]
     DEBUG = False
 
@@ -81,7 +81,7 @@ class Tracker( MDApp ):
         self.theme_cls.material_style = "M3"
         self.theme_cls.primary_hue = "500"
 
-        self.manager_screens.current = 'diagnosticos screen'
+        self.manager_screens.current = 'home screen'
         return self.manager_screens
 
     def get_manager(self):
