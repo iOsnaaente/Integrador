@@ -16,7 +16,15 @@ A função compute faz os calculos necessários para encontrar a posição do so
     >>> computeRefrEquatorial : bool = False -> Calcular a refração dadas a temperatura e pressão do local ( Se True deve ser passado Temperatura e pressão em Location[2:3])
     >>> computeDistance : bool = False -> Sem utilidade por enquanto 
 '''
-def compute(Location : list, Time : list, useDegrees : bool = True, useNorthEqualsZero : bool = True, computeRefrEquatorial : bool = False, computeDistance : bool = False):
+def compute( 
+        Location : list, 
+        Time : list, 
+        useDegrees : bool = True, 
+        useNorthEqualsZero : bool = True, 
+        computeRefrEquatorial : bool = False, 
+        computeDistance : bool = False
+) -> list[float]:
+    
     # descompactação da lista Time 
     Tyear   = Time[0] + 2000 
     Tmonth  = Time[1]

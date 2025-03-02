@@ -11,7 +11,7 @@ from screeninfo import get_monitors
 try: 
     monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
 except:
-    monitor = get_monitors()[1]
+    monitor = get_monitors()[0]
 
 # Define o tamanho da janela
 from kivy.core.window import Window
@@ -34,7 +34,7 @@ Logger.addHandler(file_handler)
 
 # Define o nível do Logger para:
 # logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL
-Logger.setLevel(logging.WARNING)
+Logger.setLevel(logging.DEBUG)
 
 
 # Onde as informações devem ser compartilhadas 

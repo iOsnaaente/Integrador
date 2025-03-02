@@ -3,6 +3,22 @@ from System.utils.Model import ModbusDatabase
 from System.device_RTU import Device_RTU
 from System.device_TCP import Device_TCP 
 from kivy.logger import Logger 
+from kivymd.app import MDApp 
+
+import sqlite3
+import datetime 
+import threading 
+import time 
+import pytz
+
+
+historical_mapping = {
+    'history_sensor_gir': 'INPUT_POS_GIR',
+    'history_sensor_ele': 'INPUT_POS_ELE',
+    'history_azimute':   'INPUT_AZIMUTE',
+    'history_zenite':    'INPUT_ZENITE',
+    'history_generation':'INPUT_GENERATION'
+}
 
 
 """
@@ -48,6 +64,65 @@ class SystemManager:
         "COIL_SYNC_DATE"      : False,
     } 
     
+
+    # Mapeia cada tag para o tipo (nome da tabela) e endereço conforme definido em initialize_tags.
+    TAG_MAPPING = {
+        # Analog Input
+        "INPUT_POS_GIR": ("analog_input", 0x00),
+        "INPUT_POS_ELE": ("analog_input", 0x02),
+        "INPUT_AZIMUTE": ("analog_input", 0x04),
+        "INPUT_ZENITE": ("analog_input", 0x06),
+        "INPUT_GENERATION": ("analog_input", 0x08),
+        "INPUT_TEMP": ("analog_input", 0x0A),
+        "INPUT_PRESURE": ("analog_input", 0x0C),
+        "INPUT_SENS_CONF_GIR": ("analog_input", 0x0E),
+        "INPUT_SENS_CONF_ELE": ("analog_input", 0x10),
+        "INPUT_YEAR": ("analog_input", 0x12),
+        "INPUT_MONTH": ("analog_input", 0x13),
+        "INPUT_DAY": ("analog_input", 0x14),
+        "INPUT_HOUR": ("analog_input", 0x15),
+        "INPUT_MINUTE": ("analog_input", 0x16),
+        "INPUT_SECOND": ("analog_input", 0x17),
+
+        # Holding Register
+        "HR_PV_GIR": ("holding_register", 0x00),
+        "HR_KP_GIR": ("holding_register", 0x02),
+        "HR_KI_GIR": ("holding_register", 0x04),
+        "HR_KD_GIR": ("holding_register", 0x06),
+        "HR_AZIMUTE": ("holding_register", 0x08),
+        "HR_PV_ELE": ("holding_register", 0x0A),
+        "HR_KP_ELE": ("holding_register", 0x0C),
+        "HR_KI_ELE": ("holding_register", 0x0E),
+        "HR_KD_ELE": ("holding_register", 0x10),
+        "HR_ALTITUDE": ("holding_register", 0x12),
+        "HR_LATITUDE": ("holding_register", 0x14),
+        "HR_LONGITUDE": ("holding_register", 0x16),
+        "HR_STATE": ("holding_register", 0x18),
+        "HR_YEAR": ("holding_register", 0x19),
+        "HR_MONTH": ("holding_register", 0x1A),
+        "HR_DAY": ("holding_register", 0x1B),
+        "HR_HOUR": ("holding_register", 0x1C),
+        "HR_MINUTE": ("holding_register", 0x1D),
+        "HR_SECOND": ("holding_register", 0x1E),
+
+        # Coil Input
+        "DISCRETE_FAIL": ("coil_input", 0x00),
+        "DISCRETE_POWER": ("coil_input", 0x01),
+        "DISCRETE_TIME": ("coil_input", 0x02),
+        "DISCRETE_GPS": ("coil_input", 0x03),
+        "DISCRETE_CONNECTED": ("coil_input", 0x04),
+
+        # Coil Register
+        "COIL_POWER": ("coil_register", 0x00),
+        "COIL_LED": ("coil_register", 0x01),
+        "COIL_M_GIR": ("coil_register", 0x02),
+        "COIL_M_ELE": ("coil_register", 0x03),
+        "COIL_LEDR": ("coil_register", 0x04),
+        "COIL_LEDG": ("coil_register", 0x05),
+        "COIL_LEDB": ("coil_register", 0x06),
+        "COIL_SYNC_DATE": ("coil_register", 0x07)
+    }
+
     # Valores default  
     ZEN_HOME: int = 30
     AZI_HOME: int = 40 
@@ -67,19 +142,29 @@ class SystemManager:
     # STATE atual 
     state: int
 
+    time_between_save_history: float = 60.0
+
     # Valores do sistema 
     init_registers: bool = False 
     database: ModbusDatabase
     slave: int
     port: str 
 
+    _db_lock: threading.Lock
 
     """ Inicia o Banco de dados """
-    def __init__(self, debug: bool = False ):
-        self.database = ModbusDatabase( DB_PATH = DB_PATH, init_registers = True, debug = debug )
+    def __init__(self, db_lock: threading.Lock, debug: bool = False ):
+        self.database = ModbusDatabase( DB_PATH = DB_PATH, init_registers = True, debug = True )
         self.device = None
         self.state = self.IDLE 
-        self._debug = debug        
+        self._debug = debug   
+        self._db_lock = db_lock
+
+        # Variável para controlar o término da thread
+        self._stop_thread = threading.Event()
+        self._data_thread = threading.Thread(target=self._save_system_data_thread, daemon = True )
+        self._data_thread.start()
+            
     
 
     """
@@ -199,3 +284,50 @@ class SystemManager:
     def get_system_state( self ) -> int:
         self.state = self.SYSTEM_TABLE['HR_STATE']
         return self.state
+
+
+    def _save_system_data_thread(self):
+        # Cria uma nova conexão para esta thread
+        con_thread = sqlite3.connect(self.database.db_path, timeout=10)
+        con_thread.execute("PRAGMA journal_mode=WAL")
+        con_thread.execute("PRAGMA busy_timeout = 3000")
+        cursor_thread = con_thread.cursor()
+        device_address = 0x12  
+
+        while not self._stop_thread.is_set():
+            init_time = time.time() 
+            if self.device is not None and self.device.is_connected():
+                for tag_name, value in self.SYSTEM_TABLE.items():
+                    # Atualiza todos os registradores 
+                    if tag_name in self.TAG_MAPPING:
+                        tag_type, address = self.TAG_MAPPING[tag_name]
+                        query = f"""UPDATE {tag_type} SET value = ?, last_update = ? WHERE device_address = ? AND address = ?"""
+                        current_time = datetime.datetime.now(pytz.timezone('America/Sao_Paulo'))
+                        # Usa o lock para sincronizar o acesso à conexão
+                        with self._db_lock:
+                            cursor_thread.execute(query, (value, current_time, device_address, address))
+                            con_thread.commit()
+                        Logger.debug(f"Atualizado {tag_name} em {tag_type} (endereço {address}) com valor: {value}")
+
+
+                # Armazena as tags apropridas                    
+                for hist_table, tag_key in historical_mapping.items():
+                    current_time = datetime.datetime.now(pytz.timezone('America/Sao_Paulo'))
+                    query = f"INSERT INTO {hist_table} (tag_id, value, update_time) VALUES (?, ?, ?)"
+                    with self._db_lock:
+                        cursor_thread.execute(query, (
+                            self.TAG_MAPPING[tag_key][1],
+                            self.SYSTEM_TABLE[tag_key],
+                            current_time
+                        ))
+                        con_thread.commit()
+                    Logger.info(f"Salvo no historico de {hist_table} o valor {self.SYSTEM_TABLE[tag_key]}")
+
+                        
+            time.sleep( 0 if (time.time() - init_time) >= self.time_between_save_history else (time.time() - init_time)  )
+        con_thread.close()
+
+    def stop_data_thread(self):
+        self._stop_thread.set()
+        if self._data_thread.is_alive():
+            self._data_thread.join()

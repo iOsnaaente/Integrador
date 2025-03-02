@@ -99,31 +99,40 @@ class AS5600:
       angle = rawAngle * 360/4096 = rawAngle * 0.087890625
     """ 
     raw_angle = self.read_raw_angle()
-    if raw_angle == -1: 
-      return False
-    
-    """ Converta para angulos """
-    angle = raw_angle * ( 360.0 / 0x0fff )
-    
-    """ Normaliz para o multi voltas """
-    if (angle - self.start_angle) >= 0:
-      angle = angle - self.start_angle 
-    else: 
-      angle = (angle - self.start_angle) + 360.0 
+    if raw_angle == -1:
+        return False
 
-    """ Normaliza os angulos contando os pulsos """
-    delta_angle = angle - self.prev_angle 
-    self.prev_angle = angle 
-    if delta_angle < -180:
-      self.total_turns -= 1
-    elif delta_angle > 180:
-      self.total_turns += 1 
-    
-    self.total_angle = angle + ( self.total_turns * 360.0 )
-    if ( not accumulate ):
-      return angle 
+    # Converte a leitura bruta para graus
+    angle = raw_angle * (360.0 / 0x0fff)
+
+    # Normaliza em relação ao ângulo inicial
+    normalized_angle = angle - self.start_angle
+    if normalized_angle < 0:
+        normalized_angle += 360.0
+
+    # Calcula a variação entre a leitura atual e a última
+    delta_angle = normalized_angle - self.prev_angle
+
+    # Corrige o salto se houver wrap-around
+    if delta_angle > 180.0:
+        delta_angle -= 360.0
+    elif delta_angle < -180.0:
+        delta_angle += 360.0
+
+    if delta_angle > 500:
+        delta_angel = 0
+    # Atualiza o acumulador com a variação
+    self.accumulator += delta_angle
+
+    # Atualiza a última leitura para a próxima chamada
+    self.prev_angle = normalized_angle
+
+    # Retorna o ângulo acumulado ou apenas o ângulo normalizado
+    if accumulate:
+        return self.accumulator
     else:
-      return self.total_angle 
+        return normalized_angle
+    
 
   ## Verify the status of the magnetic range 
   ### The status be in the 0x0B address in the 5:3 bits

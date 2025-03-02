@@ -48,21 +48,21 @@ class LoginScreenView( BaseScreenView ):
                 
     # Tenta iniciar o socket de login
     def on_enter(self, *args):
-        self.model.connect_server()
-        self.ping_pong = Clock.schedule_interval( self.model.keep_connection_alive, 1 )
-        if not self.model.get_server_connection_status():
+        self.model.server.connect_server()
+        self.ping_pong = Clock.schedule_interval( self.model.server.keep_connection_alive, 1 )
+        if not self.model.server.connection:
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "O sistema pode não funcionar de acordo" )
         return super().on_enter(*args)
     
     # Faz o login 
     def login ( self ):
         # Primeiro verifica o status da conexão com o servidor 
-        if not self.model.get_server_connection_status():
+        if not self.model.server.connection:
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "Sistema de login indisponível" )
             return 
         else: 
             # Tenta executar o login 
-            ans = self.model.login( self.username.text, self.password.text )
+            ans = self.model.server.login( self.username.text, self.password.text )
             if ans:
                 # Se o login foi estabelecido, verifica o checkbox para reter as credenciais 
                 if self.ids.checkbox_keep_login.state == 'down':
@@ -85,11 +85,11 @@ class LoginScreenView( BaseScreenView ):
     # Criar novo usuário 
     def create_new_user( self, user, password, sup, sup_psd ):
         # Primeiro verifica o status da conexão 
-        if not self.model.get_server_connection_status():
+        if not self.model.server.connection:
             SweetAlert( ).fire( 'Servidor não conectado', type = 'warning', footer = "Sistema de registro indisponível" )
             return 
         else: 
-            ans = self.model.create_new_user( user, password, sup, sup_psd )
+            ans = self.model.server.create_new_user( user, password, sup, sup_psd )
             if ans == 'NEW USER CREATED':
                 # Lançar o sweetAlert de usuário registrado com sucesso 
                 SweetAlert( timer = 2 ).fire( 'Usuário registrado com sucesso', type = 'success' )

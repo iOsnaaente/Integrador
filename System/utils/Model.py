@@ -37,10 +37,11 @@ class ModbusDatabase:
                 Logger.warning( f'DB Exception: {err}' )
 
     def create_db( self ) -> None:
+        # self.con.execute( "PRAGMA foreign_keys = ON")
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS device (
                 id INTEGER PRIMARY KEY,
-                address INTEGER,
+                address INTEGER UNIQUE,
                 name TEXT UNIQUE,
                 description TEXT,
                 version TEXT,
@@ -116,6 +117,61 @@ class ModbusDatabase:
                 FOREIGN KEY (device_address) REFERENCES device (address)
             )
         """)
+
+        # Salva os dados de sensor de giro 
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS history_sensor_gir (
+                id INTEGER PRIMARY KEY,
+                tag_id INTEGER,
+                value RAW,
+                update_time TEXT,
+                FOREIGN KEY( tag_id ) REFERENCES analog_input( id )
+            );
+        """)
+
+        # Salva os dados de sensor de elevação 
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS history_sensor_ele (
+                id INTEGER PRIMARY KEY,
+                tag_id INTEGER,
+                value RAW,
+                update_time TEXT,
+                FOREIGN KEY( tag_id ) REFERENCES analog_input( id )
+            );
+        """)
+
+        # Salva os dados de setpoint de azimute  
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS history_azimute (
+                id INTEGER PRIMARY KEY,
+                tag_id INTEGER,
+                value RAW,
+                update_time TEXT,
+                FOREIGN KEY( tag_id ) REFERENCES analog_input( id )
+            );
+        """)
+
+        # Salva os dados de setpoint de zenite  
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS history_zenite (
+                id INTEGER PRIMARY KEY,
+                tag_id INTEGER,
+                value RAW,
+                update_time TEXT,
+                FOREIGN KEY( tag_id ) REFERENCES analog_input( id )
+            );
+        """)
+
+        # Salva os dados de setpoint de geração  
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS history_generation (
+                id INTEGER PRIMARY KEY,
+                tag_id INTEGER,
+                value RAW,
+                update_time TEXT,
+                FOREIGN KEY( tag_id ) REFERENCES analog_input( id )
+            );
+        """)                
         self.con.commit() 
 
     #
@@ -323,22 +379,21 @@ class ModbusDatabase:
                     Logger.warning(f"Tag with address '{address}' and type '{tag_type}' updated successfully!")
                 return True
 
-
     """
-        Retorna os registros da tabela especificada cujo campo last_update está entre start_date e end_date.
-        :param table: Nome da tabela onde buscar (ex: 'holding_register', 'analog_input', etc.)
-        :param start_date: Data inicial (datetime)
-        :param end_date: Data final (datetime)
-        :return: Lista de tuplas com os registros encontrados.
+    Retorna os registros da tabela especificada cujo campo update_time está entre start_date e end_date.
+    :param table_name: Nome da tabela onde buscar (ex: 'history_sensor_gir', 'history_sensor_ele', etc.)
+    :param start_date: Data inicial (datetime)
+    :param end_date: Data final (datetime)
+    :return: Lista de tuplas com os registros encontrados.
     """
-    def read_data_by_date_range(self, tag_type: str, start_date: datetime.datetime, end_date: datetime.datetime) -> list:
+    def read_data_by_date_range(self, table_name: str, start_date: datetime.datetime, end_date: datetime.datetime) -> list:
         # Formata as datas para string no formato padrão ISO (ou no formato que você esteja utilizando)
         start_str = start_date.strftime("%Y-%m-%d %H:%M:%S")
         end_str = end_date.strftime("%Y-%m-%d %H:%M:%S")
         query = f"""
             SELECT *
-            FROM {tag_type}
-            WHERE last_update BETWEEN ? AND ?
+            FROM {table_name}
+            WHERE update_time BETWEEN ? AND ?
         """
         self.cursor.execute(query, (start_str, end_str))
         results = self.cursor.fetchall()

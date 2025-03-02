@@ -39,7 +39,7 @@ class SerialConfiguration( MDCard ):
     is_connected: bool = False   
     comport: str = ''
 
-    app: MDApp = MDApp.get_running_app()
+    app: MDApp | None = MDApp.get_running_app()
     model: SystemModel | None = None 
 
     def on_kv_post(self, base_widget = None ):
@@ -64,7 +64,7 @@ class SerialConfiguration( MDCard ):
                     "viewclass": "OneLineListItem",
                     "height": dp(40),
                     "on_release": lambda x = i : self.select_baudrate( x ),
-                } for i in ['9600', '19200', '57600', '115200']
+                } for i in ['9600', '19200', '57600', '115200', '921600']
             ],
             width_mult = 2
         )

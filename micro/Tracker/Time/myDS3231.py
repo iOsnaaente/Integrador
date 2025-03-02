@@ -87,7 +87,7 @@ class DS3231:
         >>> Retorna 1 caso a data tenha sido trocada
         >>> Retorna -1 em caso de erro 
     '''
-    def set_time(self, y : int, m : int, d : int, hh : int, mm : int, ss : int ) -> bool: 
+    def set_time(self, y : int | bytes, m : int | bytes, d : int | bytes, hh : int | bytes, mm : int | bytes, ss : int | bytes ) -> bool: 
         dow = self.get_day_of_week_index( int(y), int(m), int(d) )
         buff = struct.pack( 'bbbbbb', self.dec2bcd(ss), self.dec2bcd(mm), self.dec2bcd(hh), self.dec2bcd(dow), self.dec2bcd(d), self.dec2bcd(m), self.dec2bcd(y) )
         status = self._write(  self.ADDR_DS, 0x00, buff )
@@ -171,8 +171,14 @@ class DS3231:
 
 
     ''' Conversão dos bytes em formato BCD apartir do formato Decimal '''
-    def dec2bcd(self, dec : int ) -> bytes:
-        return bytes( ((dec//10)<<4) + (dec % 10) ) 
+    def dec2bcd(self, dec : int | bytes ) -> int:
+        ret: int = 0
+        if isinstance( dec, bytes ):
+            dec = int.from_bytes( dec )
+            ret = ((dec//10)<<4) + (dec % 10) 
+        if isinstance( dec, int ):
+            ret = ((dec//10)<<4) + (dec % 10)
+        return ret 
     
 
     def scan( self, dec : bool = True ) -> list:

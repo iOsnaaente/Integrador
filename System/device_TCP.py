@@ -1,6 +1,5 @@
 from pymodbus.client.tcp import ModbusTcpClient 
 from System.utils.Model import ModbusDatabase
-from Model.system_model import SystemModel
 from System.device_base import * 
 from kivy.logger import Logger 
 from kivy.app import App
@@ -14,8 +13,6 @@ import time
     Device_TCP implementa a comunicação via Modbus TCP
 """
 class Device_TCP( DeviceBase ):
-
-    shared_data: SystemModel
 
     def __init__(self, 
         slave: int, host: str, database: ModbusDatabase, port: int = 502, 

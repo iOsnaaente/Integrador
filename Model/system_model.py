@@ -5,6 +5,7 @@ from kivy.clock import Clock
 
 # Import de Libs Root 
 from libs.Sun           import SunPosition 
+from System.utils.Model import ModbusDatabase 
 from Model.db.database  import Database
 from System.tracker     import Device 
 from System.Tags        import * 
@@ -15,6 +16,7 @@ from Model.system_manager import SystemManager
 from Model.user_manager   import UserManager 
 from Model.params_config  import * 
 
+import threading
 import os 
 
 
@@ -53,33 +55,50 @@ class SystemModel( BaseScreenModel ):
     server_manager: ServerManager 
     system_manager: SystemManager 
     user_manager: UserManager 
-    
 
     # Parametros do modelo 
     _connected: bool = False
     _debug: bool = True 
+    _datetime: str = ''
     _date: str = ''
     _time: str = ''
-    _datetime: str = ''
+
+    _db_locker: threading.Lock 
 
 
     def __init__( self, _debug: bool = False  ) -> None:
         super().__init__()
         self.database_manager = Database( )
+        self.db_lock = threading.Lock()
+        
         self.server_manager = ServerManager( debug = _debug )         
-        self.system_manager = SystemManager( debug = _debug )
+        self.system_manager = SystemManager( self.db_lock, debug = _debug )
         self.user_manager = UserManager( debug = _debug )
         self._debug = _debug
 
         # Outras propriedades de controle
         self._date = '00:00:00 01/01/2001'
-        self._connected = False
-
+        self._connected = False        
 
 
     # ---------------------------------------------------------------#
     #                   Properties Definitions                       #
     # ---------------------------------------------------------------#      
+    @property 
+    def database( self ) -> Database:
+        return self.database_manager
+    @property 
+    def server( self ) -> ServerManager | None:
+        return self.server_manager
+    
+    # @property 
+    # def user( self ) -> UserManager:
+    #     return self.user_manager
+
+    @property
+    def system_database( self ) -> ModbusDatabase:
+        return self.system_manager.database
+    
     @property 
     def system( self ) -> SystemManager | None:
         return self.system_manager
@@ -155,22 +174,6 @@ class SystemModel( BaseScreenModel ):
                 pass
         except:
             pass 
-
-    # ---------------------------------------------------------------#
-    #                   Server Manager Functions                     # 
-    # ---------------------------------------------------------------# 
-    def connect_server( self, clock_event = None ) -> bool:
-        return self.server_manager.connect_server( clock_event )
-    def keep_connection_alive(self, dt = None ):
-        return self.server_manager.keep_connection_alive( dt )
-    def login(self, user: str, psd: str):
-        return self.server_manager.login( user, psd )
-    def create_new_user(self, user: str, password: str, manager_group: str, manager_psd: str) -> str:
-        return self.server_manager.create_new_user( user, password, manager_group, manager_psd )
-    def close(self):
-        return self.server_manager.close()
-    def get_server_connection_status(self) -> bool:
-        return self.server_manager.connection
 
     # ---------------------------------------------------------------#
     #                   System Manager Functions                     #

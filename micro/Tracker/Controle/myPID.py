@@ -77,7 +77,6 @@ class PID:
     """ Atualiza o valor desejado (setpoint) e reseta os acumuladores """
     def set_setpoint(self, setpoint: float):
         self.setpoint = setpoint
-        self.reset()
 
 
     """ Retorna os parâmetros do controlador """

@@ -201,18 +201,21 @@ class Device_RTU( ModbusRTU, DeviceBase ):
                     # HOMESCREEN então lê somente os valores de Posição e geração  
                     if current_screen == 'home screen' or current_screen == 'map screen':
                         data = self.read_modbus( 'analog_input', 0x00, 4, 'FLOAT'  )
-                        for dt, ind in zip( data, ["INPUT_POS_ELE", "INPUT_POS_GIR"]):
-                            self.shared_data.SYSTEM_TABLE[ind] = dt
-                        data = self.read_modbus( 'analog_input', 0x00, 4, 'INT'  )                            
-                        for dt, ind in zip( self.read_modbus( 'analog_input', 0x12, 0x17-0x12, 'INT' ), [ "INPUT_YEAR", "INPUT_MONTH", "INPUT_DAY", "INPUT_HOUR", "INPUT_MINUTE", "INPUT_SECOND" ] ):
-                            self.shared_data.SYSTEM_TABLE[ind] = dt
+                        if data and isinstance( data, list ):
+                            for dt, ind in zip( data, ["INPUT_POS_ELE", "INPUT_POS_GIR"]):
+                                self.shared_data.SYSTEM_TABLE[ind] = dt
+                        # data = self.read_modbus( 'analog_input', 0x00, 4, 'INT'  )                            
+                        # for dt, ind in zip( self.read_modbus( 'analog_input', 0x12, 0x17-0x12, 'INT' ), [ "INPUT_YEAR", "INPUT_MONTH", "INPUT_DAY", "INPUT_HOUR", "INPUT_MINUTE", "INPUT_SECOND" ] ):
+                        #     self.shared_data.SYSTEM_TABLE[ind] = dt
                     
 
                     # SE SERIAL SCREEN
                     if current_screen == 'serial screen':
                         data = self.read_modbus( 'analog_input', 0x00, 8, 'FLOAT'  )
-                        for dt, ind in zip( data, ["INPUT_POS_ELE", "INPUT_POS_GIR", 'INPUT_AZIMUTE', 'INPUT_ZENITE']):
-                            self.shared_data.SYSTEM_TABLE[ind] = dt
+                        if data and isinstance( data, list ):
+                            for dt, ind in zip( data, ["INPUT_POS_ELE", "INPUT_POS_GIR", 'INPUT_AZIMUTE', 'INPUT_ZENITE']):
+                                if dt != 0:
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
 
 
                     # SE SENSOR SCREEN 

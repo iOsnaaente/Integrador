@@ -9,6 +9,7 @@ from constants import *
 from pinout import *
 
 import machine
+import math 
 import time 
 
 
@@ -47,7 +48,7 @@ SGIR = AS5600( I2C0 )
 #wdt.feed() 
 print( f'Iniciando RTC DS3231: {I2C0.scan()}' )
 DS = DS3231( I2C0 )
-
+DS.set_time( 25, 2, 11, 12, 30, 12 )
 
 ''' Prevent a long loop to reset'''
 #wdt.feed() 
@@ -83,6 +84,8 @@ while True:
     
     # Atualiza as posições do sol 
     AZIMUTE, ALTITUDE = compute( LOCALIZATION,  DS.get_datetime() )
+    INPUTS.set_reg_float ( INPUT_AZIMUTE, AZIMUTE ) 
+    INPUTS.set_reg_float ( INPUT_ZENITE, ALTITUDE ) 
     
     # Atualiza a geração solar 
     power_gen = generation.read_u16()
@@ -93,55 +96,90 @@ while True:
     INPUTS.set_reg_float ( INPUT_TEMP, DS.get_temperature() )
     
     # Lê as posições dos motores 
-    pos_az = SGIR.read_angle(accumulate=True)
-    pos_ze = SELE.read_angle(accumulate=True)
+    pos_az = SGIR.read_angle( accumulate = True )
+    pos_ze = SELE.read_angle( accumulate = True )
     INPUTS.set_reg_float(INPUT_POS_GIR, pos_az)
     INPUTS.set_reg_float(INPUT_POS_ELE, pos_ze)
-    
+
     # Atualiza o Set Point do sistema 
-    if HOLDINGS.get_reg( HR_STATE ) == REMOTE:
-        INPUTS.set_reg_float ( INPUT_AZIMUTE, HOLDINGS.get_reg_float( HR_PV_GIR) ) 
-        INPUTS.set_reg_float ( INPUT_ZENITE, HOLDINGS.get_reg_float( HR_PV_ELE) ) 
-    #
-    elif HOLDINGS.get_reg( HR_STATE ) == AUTOMATIC: 
-        INPUTS.set_reg_float ( INPUT_AZIMUTE, AZIMUTE ) 
-        INPUTS.set_reg_float ( INPUT_ZENITE, ALTITUDE ) 
-    #
-    elif HOLDINGS.get_reg( HR_STATE ) == FAIL_STATE:
-        INPUTS.set_reg_float ( INPUT_AZIMUTE, 0.0 )
-        INPUTS.set_reg_float ( INPUT_ZENITE, 0.0  )
+    state = HOLDINGS.get_reg( HR_STATE ) 
+    if  state == REMOTE:
+        setpoint_az = HOLDINGS.get_reg_float(HR_PV_GIR)
+        setpoint_ze = HOLDINGS.get_reg_float(HR_PV_ELE) 
+    elif state == AUTOMATIC: 
+        setpoint_az = AZIMUTE
+        setpoint_ze = ALTITUDE
+    elif state == FAIL_STATE:
+        setpoint_az = 0.0
+        setpoint_ze = 0.0
     else: 
-        INPUTS.set_reg_float ( INPUT_AZIMUTE, 0.0 )
-        INPUTS.set_reg_float ( INPUT_ZENITE, 0.0 )
+        setpoint_az = 0.0
+        setpoint_ze = 0.0
         DISCRETES.set_reg_bool( DISCRETE_FAIL, True )
 
-    # Atualiza o relé de acionamento     
-    DISCRETES.set_reg_bool( DISCRETE_POWER, COILS.get_reg_bool( COIL_POWER ) )
+    # Atualiza o INPUT com o valor adotado 
+    INPUTS.set_reg_float(INPUT_AZIMUTE, setpoint_az)
+    INPUTS.set_reg_float(INPUT_ZENITE, setpoint_ze)
+
+    # Atualiza o SetPoint 
+    pid_azimuth.set_setpoint( setpoint = setpoint_az )
+    pid_zenith.set_setpoint( setpoint = setpoint_ze )
     
-    # Informações de data e hora sincronizados 
-    DISCRETES.set_reg_bool( DISCRETE_TIME, False )
-    DISCRETES.set_reg_bool( DISCRETE_GPS, False )
+    # Calcula a malha de controle PID
+    pid_output_az = pid_azimuth.update(pos_az)
+    pid_output_ze = pid_zenith.update(pos_ze)
+
+    # Limita entre -100 e 100 
+    pid_output_az = min(max( -100, pid_output_az ), 100 )
+    pid_output_ze = min(max( -100, pid_output_ze ), 100 )
 
     
     '''	Para mover os motores, COIL_M_GIR/ELE deve ser ON '''
-    if HOLDINGS.get_reg( HR_STATE ) == REMOTE:
-        GIR.move( INPUTS.get_reg_float ( INPUT_AZIMUTE )/100 )  
-        ELE.move( INPUTS.get_reg_float ( INPUT_ZENITE )/100 ) 
+    if state in [ REMOTE, AUTOMATIC ]:
+        if math.fabs(pid_azimuth.error) < pid_azimuth.tol:
+            pid_azimuth.reset()
+            GIR.break_motor() 
+        else:   
+            GIR.move( pid_output_az/100 )  
+
+        if math.fabs( pid_zenith.error) < pid_zenith.tol:
+            pid_zenith.reset()
+            ELE.break_motor()
+        else:
+            ELE.move( pid_output_ze/100 ) 
     else: 
         GIR.break_motor() 
         ELE.break_motor() 
-        
+    
+
     ''' Para Atualizar a hora do sistema '''   
     if COILS.get_reg_bool( COIL_SYNC_DATE ):
-        DS.set_datetime( HOLDINGS.get_reg( HR_YEAR ), HOLDINGS.get_reg( HR_MONTH ), HOLDINGS.get_reg( HR_DAY ), HOLDINGS.get_reg( HR_HOUR ), HOLDINGS.get_reg( HR_MINUTE ), HOLDINGS.get_reg( HR_SECOND ), 3 )
+        try:
+            DS.set_time( 
+                HOLDINGS.get_reg( HR_YEAR ), 
+                HOLDINGS.get_reg( HR_MONTH ), 
+                HOLDINGS.get_reg( HR_DAY ), 
+                HOLDINGS.get_reg( HR_HOUR ), 
+                HOLDINGS.get_reg( HR_MINUTE ), 
+                HOLDINGS.get_reg( HR_SECOND )
+            )
+        except:
+            pass 
     
     ''' Se acontecer um FAIL STATE  '''
     LED_FAIL.value( True if HOLDINGS.get_reg( HR_STATE ) == FAIL_STATE else False )
     
-    # Atualiza os valores de COILS
+    """ Atualiza os valores de COILS """
     POWER_LED.value( True if HOLDINGS.get_reg( HR_STATE ) == FAIL_STATE else False )
     POWER_MOTOR.value( COILS.get_reg_bool( COIL_POWER ) )
+
+    """ Atualiza o relé de acionamento """    
+    DISCRETES.set_reg_bool( DISCRETE_POWER, COILS.get_reg_bool( COIL_POWER ) )
     
+    """ Informações de data e hora sincronizados """ 
+    DISCRETES.set_reg_bool( DISCRETE_TIME, False )
+    DISCRETES.set_reg_bool( DISCRETE_GPS, False )
+
 
     ''' 
         Loop de Debug do sistema a cada 1s  
