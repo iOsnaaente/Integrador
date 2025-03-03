@@ -27,7 +27,8 @@ def filter_noisy_data( y_values: list, threshold_factor: float = 0.10 ) -> list:
 
 class DiganosticosScreenView( BaseScreenView ):
     # Card que armazena o gráfico
-    series: dict | None = None
+    x_serie: list | None = None 
+    y_series: dict | None = None
     graph_card: MDCard
 
 
@@ -145,7 +146,8 @@ class DiganosticosScreenView( BaseScreenView ):
         """
             Condiciona os dados medidos 
         """
-        self.series = {
+        self.x_serie = x_values
+        self.y_series = {
             'sensor_ele': {
                 'y_values': filter_noisy_data( [ (row[2]+180.0)%360.0 for row in sensor_ele] ),
                 'color': [1, 0, 0, 1]  # Vermelho
@@ -191,7 +193,7 @@ class DiganosticosScreenView( BaseScreenView ):
 
         ''' Adiciona os plots '''
         # Para cada série, cria um MeshLinePlot usando x_numeric como eixo X e os valores y correspondentes
-        for name, props in self.series.items():
+        for name, props in self.y_series.items():
             plot = MeshLinePlot( color = props['color'] )
             points = []
             
@@ -220,23 +222,25 @@ class DiganosticosScreenView( BaseScreenView ):
     def gerar_relatorio(self):
         # Implementar a lógica para geração de relatório
         try: 
-            if self.series:
+            if self.y_series and self.x_serie:
                 # Pega os nome das colunas 
-                series_names = list(self.series.keys())
-                min_length = min(len(self.series[name]['y_values']) for name in series_names)
+                series_names = list(self.y_series.keys())
+                min_length = min(len(self.y_series[name]['y_values']) for name in series_names)
+                min_length = min(min_length, len(self.x_serie) ) 
 
-                # Abre (ou cria) o arquivo report.csv em modo de escrita
-                with open(f'Relatorios/relatorio_{datetime.date.today().strftime("%Y_%m_%d-%H_%M_%S")}.csv', 'w', newline = '' ) as f:
+                # Cria o arquivo para salvar o relatório
+                with open(f'Relatorios/relatorio_{datetime.date.today().strftime("%Y_%m_%d")}.csv', 'w', newline = '' ) as f:
                     writer = csv.writer( f, delimiter = ';' )
 
                     # Escreve o cabeçalho: primeira coluna é "index" e as demais são as chaves das séries
-                    writer.writerow(['index'] + series_names)
+                    writer.writerow(['index', 'date'] + series_names)
 
-                    # Para cada índice até o min_length, escreve uma linha com:
+                    # Escreve até min_length 
                     for i in range(min_length):
-                        row_data = [i]  # primeira coluna: índice
+                        row_data = [i]  
+                        row_data.append( self.x_serie[i])
                         for name in series_names:
-                            row_data.append(self.series[name]['y_values'][i])
+                            row_data.append(self.y_series[name]['y_values'][i])
                         writer.writerow(row_data)
 
                 # Lança um aviso de sucesso

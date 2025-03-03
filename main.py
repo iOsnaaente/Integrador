@@ -8,12 +8,12 @@ import os
 
 
 # Obtém o monitor primário (índice 0) ou o segundo monitor (índice 1)
-# Tenta iniciar no monitor secundário 
-# Caso não consiga, inicia no monitor primário
 from screeninfo import get_monitors
 try: 
+    # Tenta iniciar no monitor secundário 
     monitor = get_monitors()[1] if get_monitors()[1].is_primary == False else get_monitors()[0]  
 except:
+    # Caso não consiga, inicia no monitor primário
     monitor = get_monitors()[0]
 
 
@@ -29,7 +29,7 @@ Window.fullscreen = 'auto'
 
 # FileHandler para gravar os logs do programa dentro de App.log
 file_handler = logging.FileHandler( "App.log", encoding = "utf-8" )
-file_handler.setLevel( logging.DEBUG ) 
+file_handler.setLevel( logging.INFO ) 
 formatter = logging.Formatter( "%(asctime)s - %(name)s - %(levelname)s - %(message)s" )
 file_handler.setFormatter( formatter )
 
