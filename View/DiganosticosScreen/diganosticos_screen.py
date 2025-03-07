@@ -233,7 +233,7 @@ class DiganosticosScreenView( BaseScreenView ):
                     writer = csv.writer( f, delimiter = ';' )
 
                     # Escreve o cabeçalho: primeira coluna é "index" e as demais são as chaves das séries
-                    writer.writerow(['index', 'date'] + series_names)
+                    writer.writerow(['index', 'date', 'mv_azimute', 'mv_zenite', 'sp_azimute', 'sp_zenite', 'geracao' ])
 
                     # Escreve até min_length 
                     for i in range(min_length):

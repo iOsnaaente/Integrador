@@ -211,9 +211,15 @@ class Device_RTU( ModbusRTU, DeviceBase ):
 
                     # SE SERIAL SCREEN
                     if current_screen == 'serial screen':
-                        data = self.read_modbus( 'analog_input', 0x00, 8, 'FLOAT'  )
+                        data = self.read_modbus( 'analog_input', 0x00, 4, 'FLOAT'  )
                         if data and isinstance( data, list ):
-                            for dt, ind in zip( data, ["INPUT_POS_ELE", "INPUT_POS_GIR", 'INPUT_AZIMUTE', 'INPUT_ZENITE']):
+                            for dt, ind in zip( data, ["INPUT_POS_GIR", "INPUT_POS_ELE" ]):
+                                if dt != 0:
+                                    self.shared_data.SYSTEM_TABLE[ind] = dt
+
+                        data = self.read_modbus( 'analog_input', 0x04, 4, 'FLOAT'  )
+                        if data and isinstance( data, list ):
+                            for dt, ind in zip( data, ['INPUT_ZENITE', 'INPUT_AZIMUTE']):
                                 if dt != 0:
                                     self.shared_data.SYSTEM_TABLE[ind] = dt
 
